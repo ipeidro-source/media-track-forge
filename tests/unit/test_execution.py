@@ -49,13 +49,27 @@ def service(
         runner = Mock()
 
         def write(arguments: tuple[str, ...], timeout: float) -> ProcessOutcome:
+            target = Path(arguments[-1])
+            assert execution_request.plan.destination_path is not None
+            assert target != execution_request.plan.destination_path
+            assert target.parent.name.startswith(".mediatrack-")
+            assert not execution_request.plan.destination_path.exists()
             Path(arguments[-1]).write_bytes(b"synthetic validated output")
             return ProcessOutcome(0)
 
         runner.run.side_effect = write
     if validator is None:
         validator = Mock()
-        validator.validate.return_value = ValidationReport((), None, ())
+
+        def validate(
+            plan: object, path: Path, inspector: object, timeout: float
+        ) -> ValidationReport:
+            assert path.stat().st_size > 0
+            assert execution_request.plan.destination_path is not None
+            assert not execution_request.plan.destination_path.exists()
+            return ValidationReport((), None, ())
+
+        validator.validate.side_effect = validate
     return RemuxExecutionService(
         inspector=inspector, runner=runner, staging=staging, validator=validator
     )

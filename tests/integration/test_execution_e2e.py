@@ -263,6 +263,7 @@ def test_e2e_09_last_moment_exclusive_publication(
     tmp_path: Path, planning_tools: tuple[str, str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source = media(tmp_path, planning_tools, "mp4")
+    original_hash = hashlib.sha256(source.source.path.read_bytes()).digest()
     destination = tmp_path / "out.mp4"
     original_allocate = PrivateStagingStore.allocate
 
@@ -282,6 +283,7 @@ def test_e2e_09_last_moment_exclusive_publication(
     assert result.diagnostics[0].code == "DESTINATION_COLLISION"
     assert destination.read_bytes() == b"competitor" and result.cleanup_complete
     assert not list(tmp_path.glob(".mediatrack-*"))
+    assert hashlib.sha256(source.source.path.read_bytes()).digest() == original_hash
 
 
 @pytest.mark.parametrize("scenario", ["failure", "timeout", "validation"])
