@@ -122,14 +122,18 @@ def test_warning_acknowledgement_and_final_confirmation_are_separate(
     model: DesktopController,
 ) -> None:
     model.edit_track(model.intent.selections[-1].reference, include=False)
+    model.edit_track(model.intent.selections[0].reference, metadata=MetadataIntent(language="und"))
     model.generate_plan()
     settle(model)
     assert model.plan is not None and model.plan.pending_warnings and not model.can_execute
     revision = model.plan.revision
-    model.acknowledge(frozenset(), revision)
+    warnings = frozenset(model.plan.pending_warnings)
+    assert len(warnings) >= 2
+    model.acknowledge(frozenset({sorted(warnings)[0]}), revision)
     settle(model)
     assert not model.can_execute and model.confirmed_revision is None
-    model.acknowledge(frozenset(model.plan.pending_warnings), revision)
+    assert model.plan.effective_acknowledged_warnings and model.plan.pending_warnings
+    model.acknowledge(warnings, revision)
     settle(model)
     assert model.can_execute and model.confirmed_revision is None
     with pytest.raises(ValueError):
