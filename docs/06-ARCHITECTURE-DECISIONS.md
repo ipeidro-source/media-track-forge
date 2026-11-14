@@ -55,3 +55,41 @@ ADR-015 (accepted for PR-01): Node 24 Actions with exact stable tags, explicit s
 Alternatives rejected for this scope: exposing raw vendor JSON, renumbering streams,
 shipping binaries, network probing, adding a parsing/CLI framework, or optional
 CI media checks. Inspection does not settle output compatibility or editing design.
+
+## November 14, 2026 - approved PR-03 D4-D8
+
+- ADR-019 / D4 (accepted): conservative kind/codec/container allowlist, enabled only
+  with mandatory real muxing evidence on both CI platforms. Candidates are not
+  support claims. Leave DTS, AC-3/E-AC-3, ASS/SSA and bitmap subtitles blocked in
+  this iteration; no audio/video encoding. Alternative automatic codec recognition
+  would overpromise output compatibility.
+- ADR-020 / D5 (accepted): references use full source identity plus original index;
+  explicit selections group video/audio/subtitle/attachment, stably ordered within
+  each group. Output indices follow maps. Multiple defaults per kind block rather
+  than silently choosing a winner. Implicit omissions require acknowledgement.
+- ADR-021 / D6 (accepted): ExternalTrack is an extension record. No importer or SRT
+  parser is implemented. A validated claim must match supplied inspected metadata;
+  no index/codec is derived from a suffix. Alternative premature importing exceeds
+  scope. Inspected SubRip can be explicitly planned for mov_text conversion.
+- ADR-022 / D7 (accepted): explicit supported metadata, chapter and attachment
+  decisions, warnings for losses/uncertainties, blockers for unvalidated selected
+  content. Primary MKV chapter times/titles and text/plain attachments only are
+  enabled. Per-chapter titles must be explicitly set after metadata auto-copy is
+  disabled. Exact metadata bytes, chapter IDs and player semantics are not promised.
+- ADR-023 / D8 (accepted): immutable declarative plan_version 1, separate public
+  serialization and command generator. Intrinsic validity, warning acknowledgement
+  and future execution confirmation are distinct. No executable arguments for
+  blocked/unacknowledged plans. Alternative mutable vendor-command dictionaries
+  would hide intent and invalidate source identities.
+
+  PR-03 D8 review correction: warning codes must be paired with the SHA-256
+  revision of the exact reviewed immutable intent and diagnostic occurrences.
+  Source/order/metadata/output/chapter/external or diagnostic changes invalidate
+  prior acknowledgement even if codes are unchanged. Acknowledgement state and
+  generated arguments do not affect the revision. Intrinsic validity, warning
+  acknowledgement and future final confirmation remain distinct. Unbound code
+  sets are ineffective; blocked/unacknowledged plans expose no arguments. This
+  establishes the initial unmerged plan v1 contract without altering inspection v1.
+
+See [contract v1](14-OPERATION-PLAN-CONTRACT.md) for detailed choices and limitations.
+These decisions authorize planning and test-harness muxing only, not PR-04 execution.

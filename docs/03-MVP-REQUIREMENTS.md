@@ -50,3 +50,12 @@
 ## Definition of done
 
 Every mandatory AC must have repeatable tests and recorded results, including representative real FFmpeg/ffprobe invocations. A passed smoke test alone is insufficient.
+
+## PR-03 planning-only coverage
+
+FR-04/05/06/07/09/10/12 have explicit planning coverage: video-only selection,
+stream ordering, metadata intent, conservative codec policy, subtitle conversion
+warnings, destination checks, reviewable plans and exact mappings. Tests named
+for AC-01/02/03/04/05/06/07/10/12 cover only their planning portions. Actual remux,
+external subtitle import, output validation/publication and end-user confirmation
+remain deferred; no full E2E acceptance criterion is declared passed here.

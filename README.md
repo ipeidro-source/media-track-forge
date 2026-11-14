@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status:** PR-02 media inspection implementation - November 14, 2026. PR-01 is merged. Local read-only ffprobe inspection and a versioned JSON CLI are implemented on this branch; media editing, GUI and executable releases remain deferred.
+**Status:** PR-01 and PR-02 are merged. PR-03 adds compatibility and declarative planning on this feature branch; G2 remains pending owner review. No product media execution, GUI or executable release is implemented.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -25,6 +25,12 @@ Success prints one JSON document; errors go to stderr with documented exit codes
 See the [version 1 inspection contract](docs/13-INSPECTION-CONTRACT.md) for fields,
 units and local-file security limitations. Global help and version remain available.
 
+Planning is available through `OperationPlanningService`, with explicit stream
+references, deterministic ordering, a conservative tested codec allowlist, metadata
+diagnostics and warning acknowledgements. It creates no output and runs no FFmpeg.
+See the [plan v1 contract](docs/14-OPERATION-PLAN-CONTRACT.md) for the Python API,
+supported combinations and limits. There is no public planning/editing CLI.
+
 ## Documentation index
 
 - [01 — Vision and scope](docs/01-VISION-AND-SCOPE.md)
@@ -40,6 +46,8 @@ units and local-file security limitations. Global help and version remain availa
 - [11 — ChatGPT project context](docs/11-CHATGPT-PROJECT-CONTEXT.md)
 - [12 - Development and delivery foundation](docs/12-DEVELOPMENT-AND-DELIVERY.md)
 - [13 - Inspection JSON contract](docs/13-INSPECTION-CONTRACT.md)
+
+- [14 - Operation plan contract](docs/14-OPERATION-PLAN-CONTRACT.md)
 
 ## Guiding principles
 

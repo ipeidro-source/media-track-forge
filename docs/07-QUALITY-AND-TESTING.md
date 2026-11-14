@@ -62,3 +62,23 @@ fixture encoders fail the suite, and no media cases use skip/xfail.
 Fixture encoders are checked before use: native mpeg4, aac, pcm_s16le, ffv1 and srt.
 This validates specific inspection samples, not arbitrary codec/container output
 compatibility. No AC-01 through AC-12 media-editing scenario is claimed complete.
+
+## PR-03 planning and compatibility validation
+
+Offline unit tests cover explicit identity/order, video-only plans, default
+conflicts, metadata intent/loss, external validation, destination collisions,
+unknown codecs/kinds, immutable serialization and command safety. Planning-only
+AC-01/02/03/04/05/06/07/10/12 coverage is named explicitly in tests.
+`test_planning_mux.py` tests every enabled allowlist entry using tiny local media:
+H.264/HEVC with AAC or MP3, MPEG-4 Part 2/MP3 AVI, SubRip copying/mov_text conversion,
+mov_text copying, multi-video/video-only output and MKV chapter/text attachments.
+Fixture encoders libx264/libx265/libmp3lame/mov_text are required, never skipped.
+Only the test harness executes generated arguments against temporary files and
+probes expected streams/codecs/metadata. Source hashes and identities are compared.
+The matrix-to-test check prevents enabling an unrepresented codec entry. Existing
+mandatory Windows/Ubuntu Python 3.12 integration jobs run all cases unchanged.
+
+The mixed H.264/AAC chapter fixture permits 50 ms timestamp movement because hosted
+FFmpeg 6.1.1 applied an approximately 21 ms offset. Plans report this as uncertain
+and require acknowledgement. This test tolerance does not implement or preapprove
+the future output validator's general timing policy.

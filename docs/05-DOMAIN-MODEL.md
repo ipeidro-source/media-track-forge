@@ -24,7 +24,7 @@ to planning, not probing. Source size/mtime is rechecked after successful probin
 
 ## Proposed future operation model
 
-The following broader entities/fields remain proposals, not implemented classes.
+The following broader model is a planning baseline. The PR-03 section below identifies actual planning fields; execution/publication entities remain proposals.
 
 | Entity / value object | Responsibility | Representative fields |
 | --- | --- | --- |
@@ -64,3 +64,23 @@ Optional local persistence for GUI preferences only; no relational database and 
 ## Future domain extensions
 
 Phase 1 adds `TranscodePlan` and codec/quality settings. Phase 2 adds `BatchJob`, reusable rules, and runtime capabilities. New entities must not make the MVP core depend on a GUI.
+
+## Implemented PR-03 planning entities
+
+| Entity | Actual responsibility |
+| --- | --- |
+| StreamReference | Full immutable PR-02 source identity plus original stream index |
+| MetadataIntent | Optional language/title/default/forced changes; null preserves |
+| TrackSelection | Reference, inclusion/exclusion and metadata; request order is explicit |
+| ExternalTrack | Source, intended kind, optional inspected index/codec/format, metadata and validation claim |
+| OutputProfile | Requested container and destination path |
+| CompatibilityIssue | Stable code, severity, reference, message and suggestion |
+| PreservationDecision | Category and preserve/modify/exclude/unsupported/uncertain status |
+| PlannedStream | Original source stream, input/output indices, action, expected codec/tags/dispositions |
+| ExcludedStream | Reference/source stream, explicit versus implicit exclusion, exclude action |
+| OperationPlan | Sources, all intent, included/excluded streams, chapters, diagnostics, acknowledgements and proposed arguments |
+
+PlannedStream carries the expected-output responsibilities; a second duplicate
+ExpectedOutputStream model is unnecessary. Frozen tuples/frozensets keep snapshots
+immutable. ExecutionJob and ValidationReport remain future implementation. Complete
+fields, semantics and versioning are defined in [plan contract v1](14-OPERATION-PLAN-CONTRACT.md).

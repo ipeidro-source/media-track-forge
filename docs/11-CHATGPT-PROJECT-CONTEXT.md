@@ -55,14 +55,14 @@ If two sources conflict, identify the conflict and the relevant versions/commits
 | `docs/11-CHATGPT-PROJECT-CONTEXT.md` | This knowledge-management policy |
 | `docs/12-DEVELOPMENT-AND-DELIVERY.md` | Implemented development/CI foundation, local media tools and deferred delivery gates |
 | `docs/13-INSPECTION-CONTRACT.md` | Versioned public inspection JSON, exit codes and security limitations |
+| `docs/14-OPERATION-PLAN-CONTRACT.md` | Separate versioned planning JSON, compatibility policy and proposed commands |
 
 Read only the documents relevant to a question when possible, but review related ADRs and requirements before recommending material architectural or scope changes.
 
 ## 5. Project baseline — November 14, 2026
 
-**Current status:** PR-01 foundation merged, with passing main CI at d0ca69b. PR-02
-implements local ffprobe inspection on its feature branch, pending its own CI
-evidence and owner review. Confirm actual repository state whenever discussing
+**Current status:** PR-01 foundation merged, with passing main CI at d0ca69b. PR-02 is merged at 392ce94 with passing main CI. PR-03 implements
+compatibility/planning on its feature branch, pending its CI evidence and review. Confirm actual repository state whenever discussing
 progress; unmerged implementation is not accepted main behavior.
 
 - **Product:** independent Windows-first application for local media track management; not part of YouTube Smart Downloader.
@@ -75,7 +75,7 @@ progress; unmerged implementation is not accepted main behavior.
 - **Safety:** preserve original media, require explicit track selection, disallow silent video/audio transcoding, validate staged outputs before publication.
 - **Delivery model:** ChatGPT supports specification and review; Codex implements in small PRs; the project owner approves scope changes, merges, tags, and Releases.
 
-Product capabilities beyond read-only inspection remain planning decisions, not
+Product capabilities beyond read-only inspection and declarative planning remain decisions, not
 implemented features. PR-02 D1-D3 approval covers schema v1, configurable external
 local-only ffprobe and mandatory real synthetic integration; see ADR-016 through
 ADR-018. Consult its PR for actual validation results and review status.

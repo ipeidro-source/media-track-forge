@@ -27,3 +27,12 @@ Documenting later phases **does not authorize Codex to implement them during the
 ## Working principles
 
 Use narrow PRs; review acceptance criteria at each gate; update the roadmap with actual results and newly discovered constraints. Never represent a planned feature as already implemented.
+
+## Current milestone evidence
+
+PR-01 and PR-02 are merged. The PR-02 main baseline is
+`392ce9456f63ca2cdc836b168766b43d10035d37`, with successful
+[main CI](https://github.com/ipeidro-source/media-track-forge/actions/runs/43604124796).
+PR-03 targets G2 with compatibility policy and declarative plans only. G2 remains
+pending review and acceptance by the owner; no execution, publication or GUI gate
+is completed by planning tests.

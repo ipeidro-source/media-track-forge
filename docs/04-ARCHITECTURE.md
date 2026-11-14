@@ -83,6 +83,19 @@ from mediatrack_forge.infrastructure.ffprobe import FFprobeAdapter
 asset = InspectionService(FFprobeAdapter()).inspect("example.mkv")
 ```
 
-Only inspection is operational. Planning, execution, cancellation of processing
-jobs, output validation and publication in the broader workflow remain deferred.
+Inspection and the PR-03 declarative planning API are implemented. Execution,
+processing cancellation, output validation and publication remain deferred.
 See [contract and safety limits](13-INSPECTION-CONTRACT.md).
+
+## PR-03 planning subsystem
+
+`domain/planning.py` defines frozen references, selection/metadata/external intent,
+output profiles, issues, preservation decisions and plans. `domain/compatibility.py`
+is an explicit allowlist with no filesystem or process dependency.
+`application/planning.py` validates supplied inspection snapshots and caller intent,
+coordinates read-only path checks, compatibility and metadata policies, and returns
+an immutable plan. It composes the pure infrastructure argument generator and
+read-only path adapter, independently of CLI/GUI. `infrastructure/ffmpeg_arguments.py`
+generates explicit mappings/codecs/metadata/dispositions/chapters without subprocess.
+`ui/operation_plan_json.py` serializes plan_version 1 separately from inspection.
+No product runner, importing, persistence or new framework is introduced.

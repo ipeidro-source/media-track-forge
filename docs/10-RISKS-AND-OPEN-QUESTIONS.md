@@ -68,3 +68,35 @@ These questions do not prevent initial scaffolding, but the relevant ones must b
   JSON contract v1 and the inspection implementation take precedence for inspection.
 - GUI, licensing, packaging, output compatibility, subtitle import, extraction,
   remuxing and publication questions remain unresolved and outside this PR.
+
+## PR-03 limitations and resolved policy choices
+
+- D4-D8 are owner approved. This PR enables a narrow tested allowlist rather than
+  all candidates. DTS, AC-3/E-AC-3, ASS/SSA, image subtitles, FFV1/PCM output and
+  unknown combinations stay blocked; they need separate real cross-platform evidence.
+- Text/plain null-codec attachments with filename/MIME metadata are the only
+  enabled attachments. Other attachment types and all MP4 attachments are blocked.
+- MP4 chapter copying remains blocked: it can introduce additional data streams
+  and needs a separate expected-output policy. Primary chapter times/titles into
+  MKV are tested. Other tags/secondary chapters require explicit loss acknowledgement.
+- Real testing found Matroska may omit explicit und language tags; warn without
+  silently normalizing requested intent. MP4 metadata semantics are uncertain.
+  Stream/global tags outside the supported policy and nonzero other dispositions
+  are disclosed losses. Exact metadata or chapter-ID round-tripping is not promised.
+- Hosted FFmpeg 6.1.1 shifted chapter bounds by roughly 21 ms in the mixed H.264/AAC
+  fixture. Chapter timing is explicitly uncertain and requires acknowledgement;
+  the integration test checks a 50 ms fixture tolerance, not a general product
+  duration-validation guarantee. FFmpeg 9/local builds did not show the same shift.
+- More than one effective default per stream kind blocks. Alternative silent
+  default selection was rejected. Missing flags stay absent in domain snapshots;
+  command generation disables auto-default but muxers may emit zero-valued flags.
+- Warning acknowledgement is bound to the exact immutable plan/diagnostic revision
+  and submitted codes, not a persisted authorization. Caller-supplied inspection/external-validation provenance is trusted;
+  the planner is not a sandbox for forged in-memory domain objects.
+- Source/destination checks are read-only and subject to races, mounted-network
+  limitations and noncryptographic size/mtime identities. Missing output parents
+  are not created. Future execution must revalidate, stage, validate and publish;
+  proposed direct output arguments do not implement that safety workflow.
+- Compatibility tests establish tiny representative mux cases on observed builds,
+  not every codec profile/player or runtime build. FFmpeg is external. No binary
+  bundling, importing, GUI, execution, publication or release policy is changed.
