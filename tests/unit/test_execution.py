@@ -281,3 +281,29 @@ def test_forged_warning_set_cannot_be_confirmed(execution_request: ExecutionRequ
     )
     assert result.diagnostics[0].code == "INVALID_PLAN"
     runner.run.assert_not_called()
+
+
+def test_external_subtitle_cannot_bypass_scope_by_omitting_external_record(
+    execution_request: ExecutionRequest,
+    tmp_path: Path,
+) -> None:
+    source = execution_request.plan.sources[0]
+    subtitle = asset(tmp_path, [stream(0, "subtitle", "subrip")], name="external.srt")
+    plan = acknowledged(
+        OperationPlanningService().plan(
+            (source, subtitle),
+            (select(source, 0), select(source, 2), select(subtitle, 0)),
+            execution_request.plan.output,
+        )
+    )
+    assert plan.intrinsically_valid and not plan.external_tracks
+    inspector = Mock()
+    inspector.inspect.side_effect = lambda path, **kwargs: (
+        source if path == source.source.path else subtitle
+    )
+    runner = Mock()
+    result = RemuxExecutionService(inspector=inspector, runner=runner).execute(
+        ExecutionRequest(plan, plan.revision, plan.revision)
+    )
+    assert result.diagnostics[0].code == "EXTERNAL_IMPORT_DEFERRED"
+    runner.run.assert_not_called()

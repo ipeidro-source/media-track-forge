@@ -50,7 +50,9 @@ Any forged derived fields, altered intent, changed diagnostics or stale content
 fail. A supplied arguments tuple is ignored even if it appears valid. All fresh
 arguments come from the existing PR-03 generator, not a second operation planner.
 ExternalTrack execution/import remains explicitly deferred; supplying external
-records is rejected. Multiple already-inspected container inputs can be revalidated
+records is rejected. Each fresh input must be a video-bearing container; subtitle-
+or audio-only additional files cannot bypass the boundary by omitting an external
+record. Multiple already-inspected video-bearing container inputs can be revalidated
 and mapped; no additional importing workflow is implemented.
 
 After processing and validation, every source is re-inspected and the plan is

@@ -98,6 +98,10 @@ class RemuxExecutionService:
             raise ExecutionFailure("CHANGED_INPUT") from exc
         if fresh != supplied.sources:
             raise ExecutionFailure("CHANGED_INPUT")
+        if any(not any(stream.kind == "video" for stream in asset.streams) for asset in fresh):
+            # A missing ExternalTrack record must not turn a raw SRT/audio file into
+            # an authorized PR-04 importing workflow. Inputs are video-bearing containers.
+            raise ExecutionFailure("EXTERNAL_IMPORT_DEFERRED")
         regenerated = OperationPlanningService().plan(
             fresh,
             supplied.selections,
