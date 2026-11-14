@@ -365,6 +365,8 @@ class DesktopController:
             self.reviewed_revision = None
         else:
             self.error = "Unknown background operation result."
+        if reply.kind != "execute":
+            self.progress = None
 
     def poll(self) -> bool:
         if self.closed:

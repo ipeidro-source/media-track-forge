@@ -49,7 +49,17 @@ def test_desktop_user_journeys(
         "incompatible": "avi",
         "one_video": "multivideo",
     }.get(scenario, "mp4")
-    asset = media(tmp_path, planning_tools, kind)
+    if scenario == "silent_srt":
+        from .conftest import VIDEO, generate
+
+        silent = tmp_path / "silent 日本語.mp4"
+        generate(
+            planning_tools[0], [*VIDEO, "-map", "0:v:0", "-c:v", "libx264", "-threads", "1"], silent
+        )
+        asset = DesktopBackend().inspect(str(silent))
+        assert not any(s.kind == "audio" for s in asset.streams)
+    else:
+        asset = media(tmp_path, planning_tools, kind)
     original = hashlib.sha256(asset.source.path.read_bytes()).hexdigest()
     controller = DesktopController(
         DesktopBackend(ProcessConfiguration(ffmpeg=planning_tools[0], ffprobe=planning_tools[1]))

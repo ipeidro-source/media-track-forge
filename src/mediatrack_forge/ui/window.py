@@ -667,6 +667,10 @@ class DesktopWindow:
                 self.progress_bar.start()
             else:
                 self.progress_bar.stop()
+        else:
+            self.phase.set("No operation running")
+            self.progress_bar.stop()
+            self.progress_bar.set(0)
 
     def _poll(self) -> None:
         if self._destroyed:

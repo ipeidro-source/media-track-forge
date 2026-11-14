@@ -62,6 +62,29 @@ def test_empty_and_backend_imports_do_not_load_gui() -> None:
     assert result.returncode == 0, result.stderr
 
 
+@pytest.mark.parametrize(
+    "kind,codec,family,extension",
+    [("audio", "aac", "mp4", "aac"), ("subtitle", "subrip", "matroska", "srt")],
+)
+def test_desktop_extraction_does_not_require_video(
+    tmp_path: Path, kind: str, codec: str, family: str, extension: str
+) -> None:
+    source = asset(tmp_path, [stream(7, kind, codec) | {"profile": "LC"}])
+    source = replace(source, format=replace(source.format, name=family))
+    controller = DesktopController()
+    controller.apply(WorkerReply(0, "inspect", source))
+    reference = controller.intent.selections[0].reference
+    controller.change(
+        mode="Extract", extraction_target=reference, destination=str(tmp_path / f"out.{extension}")
+    )
+    controller.generate_plan()
+    settle(controller)
+    assert controller.plan is not None and controller.plan.intrinsically_valid
+    controller.acknowledge(frozenset(controller.plan.pending_warnings), controller.plan.revision)
+    settle(controller)
+    assert controller.can_execute and controller.plan.included[0].reference.index == 7
+
+
 def test_all_streams_visible_and_explicit_edits_keep_original_identity(
     model: DesktopController,
 ) -> None:
@@ -89,6 +112,7 @@ def ready(model: DesktopController) -> None:
     model.generate_plan()
     settle(model)
     assert model.plan is not None and model.plan.intrinsically_valid
+    assert model.progress is None  # A finished review must not remain visibly preparing.
     model.acknowledge(frozenset(model.plan.pending_warnings), model.plan.revision)
     settle(model)
     assert model.can_execute
