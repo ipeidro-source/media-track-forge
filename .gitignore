@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+# IDE
+.vscode/
+.idea/
+# Windows
+Thumbs.db
+Desktop.ini
+# Logs and outputs
+*.log
+*.tmp
+*.part
+out/
+output/
+temp/
+# Private multimedia: do not commit media files or examples that are not synthetic
+*.avi
+*.mp4
+*.mkv
+*.mov
+*.webm
+*.wav
+*.mp3

@@ -1,0 +1,52 @@
+# 03 — MVP Functional Requirements and Acceptance Criteria
+
+## Input and inspection
+
+- **FR-01:** Open local AVI, MP4, MKV, MOV, and other ffprobe-readable media. Display a clear error for unreadable files. Acceptance of an input format does not guarantee every output conversion.
+- **FR-02:** Support video with zero audio streams and zero subtitle streams. Display all detected video, audio, and subtitle tracks with index, type, codec, language, title, and default/disposition details.
+- **FR-03:** Add external supported tracks by selecting local files. **SRT subtitle input is mandatory for the MVP**; external audio input is optional until verified fully.
+- **FR-04:** Allow retaining zero audio streams, zero subtitle streams, and one or more video streams when the destination container supports them. Audio must never be mandatory.
+
+## Stream editing and output
+
+- **FR-05:** Explicitly retain/remove tracks, reorder tracks within their types, and set supported language, title, and default metadata.
+- **FR-06:** Remux without re-encoding video or audio when the output container supports the codecs. MKV and MP4 are output formats; AVI is initially input-only.
+- **FR-07:** For MP4, convert supported text subtitles to `mov_text` after warning that styling may change. For MKV, copy compatible SRT subtitle streams. Never silently convert bitmap subtitle images to text.
+- **FR-08:** Extract an individual stream to a codec-appropriate file if FFmpeg supports lossless extraction; explain codec, extension, or bitstream-filter limitations.
+- **FR-09:** Let the user choose an output destination and filename. Reject unsafe overwrites; never modify the original.
+- **FR-10:** Show a complete pre-execution plan: sources, streams to retain/remove/add, codecs, subtitle conversions, destination, warnings, and actionable errors. Require confirmation.
+
+## Execution and reliability
+
+- **FR-11:** Execute work outside the UI thread; display progress where available and support safe cancellation.
+- **FR-12:** Generate explicit FFmpeg `-map` entries, copying compatible video/audio streams (`-c copy`). No video/audio encoders in the MVP.
+- **FR-13:** Probe output with ffprobe: existence, expected container, reasonable duration, stream count/types, codec mapping, language tags and output ordering. Document metadata uncertainty.
+- **FR-14:** Write to a temporary destination; validate before publishing; preserve diagnostic information on failure, and never publish partial or corrupt output.
+- **FR-15:** Support Windows 10/11 x64 with an accessible, understandable GUI, file selection, stream list, and helpful errors.
+
+## Mandatory end-to-end scenarios
+
+| ID | Input | Action | Expected result |
+| --- | --- | --- | --- |
+| AC-01 | H.264/AAC MP4 | Remove all audio | Video-only MP4 |
+| AC-02 | Multi-track MKV | Keep one audio, remove others and subtitles | Exactly selected streams; no video/audio transcoding |
+| AC-03 | Xvid/MP3 AVI | Add SRT, output MKV | Valid MKV if the streams can be copied; video quality unchanged |
+| AC-04 | MP4 with audio plus SRT | Output MP4 | `mov_text` subtitle and copied compatible video/audio |
+| AC-05 | Silent video | Add SRT, output MKV | Video plus subtitle; zero audio streams |
+| AC-06 | Input incompatible with MP4 stream-copy | Choose MP4 | Block plan and suggest MKV; no implicit video/audio encoding |
+| AC-07 | Input path equals output path | Attempt execution | Reject before writing |
+| AC-08 | Running remux | Cancel | Original intact; no corrupt final output |
+| AC-09 | Unicode/space-containing paths | Remux | Valid output using safe subprocess arguments |
+| AC-10 | Multiple video streams | Retain only one | Correct chosen video stream and consistent metadata |
+| AC-11 | Malformed external subtitle file | Import SRT | Contextual error; no published output |
+| AC-12 | Target file already exists | Execute | Block or request a new filename; no overwrite by default |
+
+## Non-functional requirements
+
+- No telemetry by default; local-only operation if FFmpeg and ffprobe are installed.
+- Responsive UI, Unicode Windows path handling, ffprobe timeouts, minimized diagnostic logs, Windows CI.
+- No copyrighted fixtures, personal media, secrets, or downloads required by automated tests.
+
+## Definition of done
+
+Every mandatory AC must have repeatable tests and recorded results, including representative real FFmpeg/ffprobe invocations. A passed smoke test alone is insufficient.
