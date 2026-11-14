@@ -8,6 +8,15 @@ import tempfile
 from pathlib import Path
 
 from mediatrack_forge.domain.execution import ExecutionFailure
+from mediatrack_forge.infrastructure.planning_paths import destination_path
+
+
+def _local_destination(path: Path) -> None:
+    try:
+        if destination_path(str(path)) != path:
+            raise ValueError("Destination normalization changed")
+    except (OSError, ValueError, RuntimeError) as exc:
+        raise ExecutionFailure("INVALID_DESTINATION") from exc
 
 
 def _identity(path: Path) -> tuple[int, int]:
@@ -53,6 +62,7 @@ class PrivateStage:
         self._close()
 
     def publish(self, destination: Path) -> None:
+        _local_destination(destination)
         self.verify()
         if destination.parent != self.directory.parent:
             raise ExecutionFailure("PUBLICATION_FAILED")
@@ -87,6 +97,7 @@ class PrivateStage:
 
 class PrivateStagingStore:
     def allocate(self, destination: Path) -> PrivateStage:
+        _local_destination(destination)
         parent = destination.parent
         if not parent.is_dir():
             raise ExecutionFailure("INVALID_DESTINATION")

@@ -163,3 +163,18 @@ Unverified termination/cleanup blocks further work and keeps recovery details vi
 the GUI provides no unsafe force-close/kill/delete shortcut. Existing filesystem,
 process containment and source identity limits remain. PR-07 license/notices,
 packaging, executable validation and owner release approval remain separate work.
+
+## D24 Windows read-only network source limits
+
+ADR-039 supersedes the former UNC input rejection for trusted Windows media/SRT.
+Canonical snapshots/reinspection/revisions remain; source input and local-only
+output policies are separate. Native Windows remote/unknown volume rejection also
+covers mapped destinations retaining drive letters. SMB access depends on session/
+permissions/connectivity; OS filesystem I/O can outwait subprocess limits and metadata
+may be cached/coarse. Canonical path/size/mtime is not a transaction/content hash.
+Aliases not canonicalized by Windows are not universally deduplicated. File-only
+FFmpeg protocols do not sandbox Windows filesystem providers. Genuine SMB evidence
+is unavailable in this environment (no mapping; enumeration unavailable); offline
+simulation and actual local tests must not be presented as proof of remote access.
+The explicit real-share utility/manual procedure is in document 17. Network output
+requires a separate capability/safety decision. No credentials or shares are created.

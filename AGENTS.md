@@ -56,3 +56,18 @@ PR-07 packaging/release work remains deferred. No external audio, batch, video/a
 ## PR reporting template
 
 Describe the goal and linked acceptance criteria; list files changed; summarize architectural decisions; report executed checks and results; state residual risks and open questions. Never report a test as passed unless it was actually run.
+
+## D24 network input boundary - owner approved
+
+Allow trusted Windows mapped-drive and direct UNC regular files as read-only media/
+SRT sources. Preserve resolved source identity, original stream indices, reinspection,
+revision binding and change detection. Reject URL/protocol inputs and non-file device paths;
+keep file-only FFmpeg/ffprobe arguments. Inputs do not authorize network outputs:
+reject UNC/remote/unknown Windows destinations, recheck before staging/publication
+and retain all private-staging/no-overwrite/atomic/cancellation/cleanup protections.
+Show bounded specific controlled InspectionError messages in the GUI; never expose
+raw vendor logs or unexpected exception text. Simulated UNC tests are not real SMB
+evidence. Real-share checks are opt-in with owner-supplied tiny synthetic fixtures;
+report unavailable evidence, session/permissions, filesystem metadata/cache and OS
+I/O timeout limitations. Do not create shares, mappings or credentials implicitly.
+ADR-039 records D24; ADR-034..038 retain their PR-06 meanings.

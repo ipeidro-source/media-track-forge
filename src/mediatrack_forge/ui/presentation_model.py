@@ -129,7 +129,7 @@ class DesktopController:
         self.result: ExecutionResult | None = None
         self.progress: ProgressEvent | None = None
         self.error: str | None = None
-        self.status = "Open a local media file to begin."
+        self.status = "Open a media file to begin."
         self.close_pending = False
         self.closed = False
         self.recovery_required = False

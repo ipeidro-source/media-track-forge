@@ -224,3 +224,14 @@ ACL/mode, process-containment and crash-durability limitations remain. No OS san
 full decoding, hostile executable containment, GUI, batch, external audio, video/audio
 transcoding, packaging, tag or release is implemented. G3 acceptance remains with
 the owner after independent review.
+
+## D24 Windows file-share inputs
+
+External SRT validation and independent probing also support trusted Windows UNC/
+mapped regular files. Encoding, size/cue limits, genuine indices, source roles and
+metadata/review/reinspection semantics are unchanged. Approved remux/extraction
+operations may read those inputs and publish to supported local destinations only.
+D24 changes input access, not the codec/container matrix (for example MKV H.264
+elementary extraction remains outside the existing enabled matrix). No network
+staging/publication, credential storage, protocol URLs or automatic mounting/copying.
+See document 17 for timeout/cache/session limits and actual-share evidence procedure.

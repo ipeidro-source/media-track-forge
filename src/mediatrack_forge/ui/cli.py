@@ -1,4 +1,4 @@
-"""Command-line presentation for local media inspection."""
+"""Command-line presentation for read-only filesystem media inspection."""
 
 import argparse
 import math
@@ -25,11 +25,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Inspect media with JSON-only stdout; ordinary errors never expose tracebacks."""
     parser = argparse.ArgumentParser(
         prog="mediatrack-forge",
-        description="Inspect local media without modifying it. Media editing is not available yet.",
+        description="Inspect filesystem media read-only, including trusted Windows shares.",
     )
     parser.add_argument("--version", action="version", version=f"MediaTrack Forge {__version__}")
     commands = parser.add_subparsers(dest="command")
-    inspect = commands.add_parser("inspect", help="Inspect a local media file as versioned JSON.")
+    inspect = commands.add_parser(
+        "inspect", help="Inspect a filesystem media source as versioned JSON."
+    )
     inspect.add_argument("path")
     inspect.add_argument("--ffprobe", help="Trusted external ffprobe executable name or path.")
     inspect.add_argument("--timeout-seconds", type=_positive_seconds, default=30.0)

@@ -465,3 +465,13 @@ before processing/publication; caller validated=true alone never authorizes impo
 Multiple sources retain exact source ordering and original indices. Separate
 extraction_version 1 serialization does not overload this remux JSON contract.
 See document 16 for APIs, external source roles and cancellation/confirmation rules.
+
+## D24 Windows network sources
+
+Trusted mapped/UNC inputs and external SRT retain their canonical resolved source
+snapshots and original indices in the same plan v1 contract. Source order, complete
+inspections and diagnostics remain revision-bound. New normalization/changed source
+snapshots require fresh review; drive aliases cannot redirect confirmed canonical
+inputs. Output paths remain local-only: UNC and native Windows remote/unknown
+volumes block before staging and are checked again before publication. File-share
+input support does not broaden codecs, extraction formats or publication semantics.

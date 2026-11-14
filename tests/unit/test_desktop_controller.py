@@ -12,7 +12,11 @@ import pytest
 from test_planning import asset, stream
 
 from mediatrack_forge.application.control import ExecutionControl
-from mediatrack_forge.application.inspection import ProbeFailedError
+from mediatrack_forge.application.inspection import (
+    InspectionError,
+    InvalidInputError,
+    ProbeFailedError,
+)
 from mediatrack_forge.domain.execution import ExecutionResult, ProgressEvent
 from mediatrack_forge.domain.planning import ExternalTrack, MetadataIntent, StreamReference
 from mediatrack_forge.ui.presentation_model import DesktopBackend, DesktopController, result_text
@@ -217,7 +221,14 @@ def test_external_add_edit_remove_and_primary_replacement(
 
 
 @pytest.mark.parametrize(
-    "error", [RuntimeError("private vendor output"), ProbeFailedError("private path")]
+    "error",
+    [
+        RuntimeError("private vendor output"),
+        ProbeFailedError("The source became unavailable during inspection; retry."),
+        InvalidInputError(
+            "Source access was denied; check file permissions and network share access."
+        ),
+    ],
 )
 def test_worker_errors_are_safe_recoverable_and_bounded(
     model: DesktopController, error: Exception
@@ -229,6 +240,8 @@ def test_worker_errors_are_safe_recoverable_and_bounded(
     model.open_media("input")
     settle(model)
     assert model.error and "private" not in model.error and not model.can_execute
+    if isinstance(error, InspectionError):
+        assert str(error) in model.error
     backend.inspect.side_effect = None
     backend.inspect.return_value = original
     model.open_media("input")

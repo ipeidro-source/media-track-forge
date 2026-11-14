@@ -28,7 +28,7 @@ def test_only_approved_desktop_runtime_dependency() -> None:
 
 def test_default_entry_point_shows_scope(capsys: pytest.CaptureFixture[str]) -> None:
     assert main([]) == 0
-    assert "Inspect local media" in " ".join(capsys.readouterr().out.split())
+    assert "Inspect filesystem media" in " ".join(capsys.readouterr().out.split())
 
 
 @pytest.mark.parametrize("option", ["--help", "--version"])

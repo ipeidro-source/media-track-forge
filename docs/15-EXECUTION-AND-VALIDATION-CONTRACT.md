@@ -263,3 +263,18 @@ remux duration still requires observed timing and a reliable tolerance. Elementa
 extraction uses its separate documented packet-based validation alternative when
 raw duration is unavailable, without weakening the remux policy. Filesystem, cleanup,
 process trust and diagnostic limits above remain. GUI and release work stay deferred.
+
+## D24 read-only network input boundary
+
+The existing source/role/revision checks now accept trusted Windows UNC/mapped media
+and SRT through the shared inspection service. Exact canonical paths remain FFmpeg
+inputs with explicit maps and the file-only protocol whitelist. All sources are
+reinspected before execution and publication; unavailable/changed sources prevent
+publication. This does not make metadata a cryptographic or transactional SMB snapshot.
+Network outputs remain blocked by canonical UNC and native Windows volume checks
+at planning, staging allocation and publication. Local private staging, validation,
+exclusive hard link, collision/cancellation/cleanup guarantees are unchanged. OS
+network filesystem operations can outwait subprocess deadlines; the GUI waits for
+safe worker completion and never force-publishes or deletes potentially active data.
+POSIX mounted-network identification remains outside existing guarantees; this
+Windows input change does not certify remote output filesystems.

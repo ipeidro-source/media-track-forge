@@ -1,4 +1,4 @@
-"""Local source validation and inspection orchestration with a replaceable probe port."""
+"""Read-only filesystem source inspection, including trusted Windows file shares."""
 
 import math
 import os
@@ -43,30 +43,41 @@ class MediaProbe(Protocol):
 
 
 def snapshot_source(path: str | Path) -> MediaSource:
-    """Resolve a regular local file; reject protocol URLs and UNC network paths."""
+    """Canonicalize a readable regular file; Windows UNC is a file path, not a URL."""
     raw = str(path)
+    windows_spelling = raw.replace("/", "\\")
+    extended_unc = os.name == "nt" and windows_spelling.upper().startswith("\\\\?\\UNC\\")
     drive_path = os.name == "nt" and re.match(r"^[a-zA-Z]:[\\/]", raw)
     if (
         not raw
         or "\x00" in raw
-        or raw.startswith(("\\\\", "//"))
+        or (os.name != "nt" and raw.startswith(("\\\\", "//")))
+        or (windows_spelling.startswith(("\\\\?\\", "\\\\.\\")) and not extended_unc)
         or (re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", raw) and not drive_path)
     ):
         raise InvalidInputError(
-            "Provide a regular local file path; URLs and UNC paths are blocked."
+            "Provide a regular filesystem file path; URLs and device paths are blocked."
         )
     try:
         resolved = Path(path).resolve(strict=True)
-        if str(resolved).startswith(("\\\\", "//")):
-            raise InvalidInputError("Network source paths are not supported.")
+        if os.name != "nt" and str(resolved).startswith(("\\\\", "//")):
+            raise InvalidInputError("UNC source paths require Windows.")
         info = resolved.stat()
         if not stat.S_ISREG(info.st_mode):
-            raise InvalidInputError("The input must be a regular local file.")
+            raise InvalidInputError("The input must be a regular file.")
         with resolved.open("rb"):
             pass
+    except FileNotFoundError as exc:
+        raise InvalidInputError(
+            "Cannot find the source file; check the path and mapped drive/share availability."
+        ) from exc
+    except PermissionError as exc:
+        raise InvalidInputError(
+            "Source access was denied; check file permissions and network share access."
+        ) from exc
     except (OSError, ValueError, RuntimeError) as exc:
         raise InvalidInputError(
-            "Cannot read the input file; check its path and permissions."
+            "Cannot read the source file; check its path, permissions and network connection."
         ) from exc
     return MediaSource(resolved, info.st_size, info.st_mtime_ns)
 

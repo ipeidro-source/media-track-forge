@@ -58,7 +58,7 @@ class Worker:
                 reply = WorkerReply(
                     generation,
                     kind,
-                    error=f"Inspection error ({exc.exit_code}): Check the local file and ffprobe.",
+                    error=f"Inspection error ({exc.exit_code}): {str(exc)[:1000]}",
                 )
             except Exception:
                 reply = WorkerReply(

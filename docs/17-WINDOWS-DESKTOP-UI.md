@@ -213,7 +213,94 @@ Manual Windows 10/11 checklist before final acceptance:
 7. Inspect published/failed/cancelled and cleanup evidence; originals remain intact.
 8. Check light/dark, full keyboard traversal, native pickers and screen-reader limits.
 
-No recent-files/history persistence, telemetry, network media, GUI process runner,
+No recent-files/history persistence, telemetry, protocol media URLs, GUI process runner,
 video/audio transcoding, batch, PyInstaller, portable ZIP, installer or release is
 introduced. PR-07 must address packaging, dependency notices/license, executable
 smoke and owner-authorized release gates separately.
+
+## D24 trusted Windows network media sources
+
+The owner-approved input extension accepts mapped paths such as `Z:\Media\movie.mkv`
+and direct `\\server\share\movie.mkv`, including mapped inputs that strictly resolve
+to UNC. Open Media and Add SRT use these filesystem inputs without mounting/copying
+them or storing credentials. The extended UNC file form (`\\?\UNC\server\share\file`)
+is also accepted so resolved long UNC identities can be reinspected. Other Windows
+device-namespace paths remain unsupported.
+Trust the selected server/share and content. HTTP/FTP/SMB URLs and other media
+protocol inputs remain blocked; the tools retain `-protocol_whitelist file`.
+The underlying Windows file provider performs network access, not a new FFmpeg
+network protocol. This remains a trusted-file policy, not an OS sandbox.
+
+Canonical source identity is resolved path, size and mtime. Original stream indices,
+fresh complete inspection, plan revisions and warning/final-confirmation binding
+are unchanged. The reviewed UNC is used again, so changing a drive mapping does not
+redirect a confirmed input; a new inspection sees the new mapping. Selected network
+media/SRT is opened read-only and never deleted. Existing codec policies still apply.
+
+Output remains local-only. Canonical UNC and Windows volume classification reject
+remote/unknown destinations, including mapped drives that retain their letter.
+GetVolumePathNameW/GetDriveTypeW checks are repeated at staging and publication;
+local persistent-ACL/hard-link validation and all ownership/collision/commitment/
+cleanup protections remain. Network input does not authorize network output.
+Native volume API references: [GetDriveTypeW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdrivetypew)
+and [GetVolumePathNameW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getvolumepathnamew).
+
+GUI inspection errors now include the specific controlled backend message and exit
+category, bounded to 1000 message characters. Missing sources, permission denial,
+unavailable connections and source changes remain distinguishable; unexpected
+exceptions and raw tool logs are not exposed. Drive mappings/share credentials
+must already be available to the same user/session running the app. Elevated or
+different sessions may not see the same mappings; the app does not bridge them.
+
+Remaining network limitations: SMB disconnects/permissions/server changes can fail
+at any reinspection boundary. Redirector/OS resolution/stat/open/read calls may
+block beyond the ffprobe/FFmpeg process timeout, and cancellation/shutdown waits
+for the worker to reach safe boundaries. SMB caching/coarse timestamps and edits
+that preserve metadata are not fully detectable; no cryptographic input identity,
+server transaction snapshot, alias deduplication or arbitrary provider guarantee
+is claimed. Existing trusted-namespace/process containment limits remain. No
+network publication, atomicity, ACL, durability or cleanup guarantee is claimed.
+
+### Evidence and repeatable real-share check
+
+Offline tests simulate mapped-to-UNC normalization and direct UNC, including SRT,
+source identity/change/failure, original indices/file-only arguments, remux/extraction
+to actual local private staging with controlled process/validator fakes, mapped/UNC
+output rejection and native volume classification. They are not real SMB evidence.
+Existing real local media and native GUI suites remain mandatory in all their
+required CI environments. Do not rename these simulations as network integration.
+
+No mapped SMB drive was present in the current agent environment, and share
+enumeration was unavailable. Real SMB operations were therefore not executed here;
+no SMB connection/dialect or remote-server compatibility is certified. Do not create
+shares/mappings or use private media/credentials merely to fabricate passing evidence.
+
+When the owner provides genuine trusted shares containing tiny synthetic fixtures,
+run on native Windows with the same session/mapping used by the application:
+
+```powershell
+Get-SmbConnection | Select-Object ServerName, ShareName, Dialect
+python scripts/check_network_sources.py `
+  --unc-media "\\server\fixtures\tiny-h264-aac.mp4" `
+  --mapped-media "Z:\fixtures\tiny-h264-aac.mp4" `
+  --unc-srt "\\server\fixtures\captions.srt" `
+  --local-directory "C:\MediaTrackEvidence"
+```
+
+The existing local evidence directory must support publication. Supply equivalent
+mapped/UNC media (H.264/AAC MP4 for the enabled extraction path) and UTF-8 SRT, each
+at most 16 MiB for this bounded evidence utility (SRT retains its tighter parser
+limit). It uses actual Windows path resolution/native remote-drive classification,
+real inspection, SRT import, remux and extraction to a unique local directory,
+validates outputs and compares source hashes. Test-harness warnings are explicitly
+acknowledged; the product GUI still requires user review/confirmation. Outputs are
+retained locally for independent review; no share is written or automatically
+cleaned. Failure returns nonzero, with no silent skip. Record the actual connection/
+dialect, tool versions, platform, command result and retained output evidence before
+claiming real SMB coverage. A Windows UNC file operation alone is not proof of the
+underlying SMB dialect; correlate Get-SmbConnection with the actual input share.
+
+Also manually inspect a genuine mapped/UNC MKV in the GUI, then disconnect the test
+share or change a synthetic source after review and verify failure without final
+publication. Choose a network destination and verify it is blocked. These tests
+need an owner-controlled network environment and remain unavailable evidence here.

@@ -214,3 +214,54 @@ backend implementation, not G3 acceptance, GUI, packaging or release publication
 Document 17 records context, APIs, consequences, test procedure and residual limits.
 These owner-approved choices authorize PR-06 implementation, not automatic G4/MVP
 acceptance, branch merging, tags or releases.
+
+## November 14, 2026 - approved PR-06 D24
+
+ADR-039 / D24 (accepted): read-only Windows file-share media sources.
+
+Context: strict Path.resolve() can turn a valid mapped SMB filename into UNC;
+the former local-only input check rejected both that result and direct UNC paths.
+This blocked legitimate trusted media/SRT inspection and existing remux/extraction
+to local output. ADR-034 through ADR-038 already belong to the desktop decisions.
+
+Decision: accept regular readable Windows filesystem sources, including mapped
+drives resolving to UNC and direct UNC. Keep strict resolved path/size/mtime source
+snapshots, original indices, full fresh inspection and exact revision binding.
+The canonical UNC identity, rather than the original drive-letter alias, is the
+reviewed execution input. A later remapping cannot silently redirect that plan;
+new inspection of a different mapping produces another identity/revision. Source
+handles remain read-only. No credentials, mappings or shares are created/stored.
+Protocol URLs/non-file device paths stay blocked; ffprobe/FFmpeg retain file-only
+whitelists. Extended UNC file identities are allowed for consistent reinspection.
+
+Output policy remains separate: UNC and Windows remote/unknown volumes are rejected
+using canonical path checks and GetVolumePathNameW/GetDriveTypeW classification,
+including mapped outputs that retain a drive letter. Recheck at actual staging and
+exclusive publication boundaries. Local private ACLs/modes, owned staging, validation,
+no overwrite, atomic link, cancellation commitment and cleanup are unchanged.
+GUI InspectionError presentation now retains bounded specific controlled messages;
+unexpected exception/vendor text stays suppressed.
+
+Alternatives: preserve drive letters without resolution (rejected: weaker alias
+identity/remapping semantics); accept only direct UNC (rejected: breaks normal
+Windows usage); permit SMB outputs (rejected: unvalidated safety/capability scope);
+mount/copy/download inputs automatically (rejected: credentials, writes and scope).
+Reusing the filesystem inspection path avoids a second media/network adapter.
+
+Trade-offs/limitations: file protocol is not an OS sandbox and Windows file providers
+perform their own network access/authentication. SMB availability/permissions and
+drive mappings are tied to the application's session; metadata may be cached/coarse.
+Path/size/mtime plus inspection is not cryptographic content identity or a network
+transaction snapshot. Python filesystem calls can wait on OS/redirector timeouts
+beyond subprocess limits; cancellation remains cooperative at safe boundaries.
+Server/share aliases are not universally deduplicated. Network/remote output support
+needs a separate capability/atomicity/ACL/durability decision and real evidence.
+
+Consequences: schema fields, codecs and plan/extraction versions are unchanged;
+the accepted Windows input set expands without changing existing local payloads.
+Regression tests simulate UNC normalization offline and are explicitly not SMB
+proof. The opt-in check_network_sources.py runs actual UNC/mapped media/SRT with
+real tools and local output when synthetic shares are supplied; Get-SmbConnection
+evidence establishes transport/dialect separately. No real SMB share was available
+for validation in the current agent environment (no mapping; enumeration unavailable).
+Document 17 records the manual evidence procedure and remaining limits.

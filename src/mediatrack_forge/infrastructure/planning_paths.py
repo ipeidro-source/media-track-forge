@@ -23,6 +23,9 @@ def destination_path(value: str) -> Path:
     if str(path).startswith(("//", "\\\\")):
         raise ValueError("Network output paths are unsupported.")
     if os.name == "nt":
+        from mediatrack_forge.infrastructure.windows_paths import require_local_volume
+
+        require_local_volume(path)
         for part in path.parts[1:]:
             stem = part.split(".")[0].upper()
             if (

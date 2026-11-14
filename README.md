@@ -61,7 +61,7 @@ for supported filesystem/process guarantees and timing limitations.
 
 **No surprises:** never overwrite original files, never silently transcode audio/video, preview the exact track operations, detect incompatible codecs, validate output before publication, and provide a clear audit trail.
 
-The MVP works with local media only. It is independent of YouTube Smart Downloader and does not download media from the internet.
+The MVP reads local media and trusted Windows file-share media (D24); output publication remains local-only. It is independent of YouTube Smart Downloader and does not download media from the internet.
 
 **Language policy:** all project artifacts must be written in **English**, including documentation, ADRs, source-code comments/docstrings, commit messages, PR descriptions, Issues, tests, UI copy, and instructions to Codex. ChatGPT may explain the project conversationally in Spanish if the user asks, but changes committed to the repository must remain in English.
 
@@ -92,3 +92,13 @@ publication and cancellation remain authoritative. The installed alternative ent
 point is `mediatrack-forge-desktop`; the inspection CLI is unchanged.
 See [Windows desktop workflow and smoke procedure](docs/17-WINDOWS-DESKTOP-UI.md).
 Native Windows 10/11 manual acceptance and PR-07 packaging remain pending.
+
+## Trusted Windows network inputs (D24)
+
+Windows mapped-drive inputs such as `Z:\Media\movie.mkv` and direct UNC inputs
+such as `\\server\share\movie.mkv` can be inspected and used read-only, including
+external SRT. Mapped inputs retain their resolved canonical source identity through
+review/reinspection. HTTP/FTP/other media URLs remain blocked; FFmpeg/ffprobe use
+only the file protocol. Outputs must remain on supported local volumes: network
+publication is not enabled. See document 17 for access, timeout, identity and real
+SMB validation limitations. No real SMB execution is claimed from simulated tests.

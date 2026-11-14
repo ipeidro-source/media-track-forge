@@ -43,7 +43,9 @@ class DesktopWindow:
         self.default = tk.StringVar(value="Keep original")
         self.forced = tk.StringVar(value="Keep original")
         self.status = tk.StringVar(value=self.controller.status)
-        self.summary = tk.StringVar(value="No media selected. Local files only.")
+        self.summary = tk.StringVar(
+            value="No media selected. Local files or trusted Windows shares."
+        )
         self.phase = tk.StringVar(value="No operation running")
         self.root.rowconfigure(1, weight=1)
         self.root.columnconfigure(0, weight=1)
@@ -333,7 +335,7 @@ class DesktopWindow:
             return
         path = filedialog.askopenfilename(
             parent=self.root,
-            title="Open local media",
+            title="Open media file (local or Windows share)",
             filetypes=[
                 ("Media files", "*.mkv *.mp4 *.avi *.mov *.aac *.mp3 *.srt"),
                 ("All files", "*.*"),
