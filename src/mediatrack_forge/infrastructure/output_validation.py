@@ -249,12 +249,12 @@ class FFprobeOutputValidator:
         budget: float | None,
         index: int | None,
     ) -> None:
-        if before is None or budget is None:
+        if before is None:
             checks.append(
                 ValidationCheck(
                     "DURATION_UNVERIFIED",
                     "warning",
-                    "Source timing or timestamp/frame resolution is unavailable.",
+                    "Expected source duration is unavailable; duration integrity is unverified.",
                     index,
                     before,
                     after,
@@ -267,6 +267,18 @@ class FFprobeOutputValidator:
                     "DURATION_UNVERIFIABLE",
                     "error",
                     "Known source duration cannot be verified in the output.",
+                    index,
+                    before,
+                    after,
+                    budget,
+                )
+            )
+        elif budget is None:
+            checks.append(
+                ValidationCheck(
+                    "DURATION_TOLERANCE_UNAVAILABLE",
+                    "error",
+                    "Known source duration requires a reliable metadata-derived timing tolerance.",
                     index,
                     before,
                     after,

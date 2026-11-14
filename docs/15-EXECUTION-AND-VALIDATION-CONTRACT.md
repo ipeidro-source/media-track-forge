@@ -153,6 +153,8 @@ The following mismatches block publication:
   its metadata-derived boundary.
 - Known source duration that cannot be observed in output, or difference exceeding
   the metadata-derived timing budget.
+- Known source duration for which no metadata-derived timing tolerance is available,
+  even if the observed duration appears equal. No unverified comparison authorizes publication.
 
 Only existing, accepted plan uncertainties soften the corresponding metadata
 check: MP4 normalization of language/title/dispositions may warn; MKV can omit
@@ -187,11 +189,18 @@ Per-selected-video/audio durations are checked independently. If all are availab
 their maximum is also compared with container duration. If unavailable, container
 duration is checked as an estimate only for a single source retaining all timed
 media streams; excluding an unknown-length stream must not invent output duration.
-Missing source timing/resolution produces explicit DURATION_UNVERIFIED or
-DURATION_ESTIMATE_UNCERTAIN warnings. Known expected timing with missing observed
-timing fails DURATION_UNVERIFIABLE. Materially truncated outputs are covered by
-negative tests; missing-duration output is explicitly unverified, not silently passed
-as a duration guarantee. Chapter bounds use the same operation-derived budget,
+Genuinely unknown expected source duration produces DURATION_UNVERIFIED; container
+estimation limitations produce DURATION_ESTIMATE_UNCERTAIN. These warnings do not
+fabricate an expected value. **Known expected duration is different:** missing
+observed duration fails DURATION_UNVERIFIABLE, whether or not a budget is available.
+If observed duration is present but no timing budget can be established, validation
+fails DURATION_TOLERANCE_UNAVAILABLE. Apparent equality does not bypass this rule.
+PR-04 provides no alternative integrity check that waives a required duration
+comparison and introduces no arbitrary fallback tolerance. Any such error prevents
+publication and triggers safe owned-output cleanup. Regression tests exercise
+material truncation without a budget, missing observed duration, valid matching
+timing, genuine unknown-duration warnings and the orchestration publication barrier.
+Chapter bounds use the same operation-derived budget,
 with accepted CHAPTER_TIMESTAMPS_UNCERTAIN where exact timing is unavailable.
 
 ## Results, state and cleanup

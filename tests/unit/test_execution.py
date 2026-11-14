@@ -17,6 +17,7 @@ from mediatrack_forge.domain.execution import (
     ValidationReport,
 )
 from mediatrack_forge.domain.planning import MetadataIntent, OutputProfile
+from mediatrack_forge.infrastructure.output_validation import FFprobeOutputValidator
 from mediatrack_forge.infrastructure.staging import PrivateStagingStore
 
 
@@ -307,3 +308,53 @@ def test_external_subtitle_cannot_bypass_scope_by_omitting_external_record(
     )
     assert result.diagnostics[0].code == "EXTERNAL_IMPORT_DEFERRED"
     runner.run.assert_not_called()
+
+
+@pytest.mark.parametrize("after", [1.0, None])
+def test_required_duration_failure_never_attempts_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    after: float | None,
+) -> None:
+    monkeypatch.setattr(
+        "mediatrack_forge.application.execution.discover_ffmpeg", lambda _: "ffmpeg"
+    )
+    source = asset(tmp_path, [stream(0, "video", "h264") | {"duration": "10"}])
+    assert source.streams[0].properties.time_base is None
+    plan = acknowledged(
+        OperationPlanningService().plan(
+            (source,), (select(source, 0),), OutputProfile("mkv", str(tmp_path / "final.mkv"))
+        )
+    )
+    observed = replace(
+        source,
+        format=replace(source.format, name="matroska", duration_seconds=after),
+        streams=(replace(source.streams[0], duration_seconds=after),),
+    )
+    inspector = Mock()
+    inspector.inspect.side_effect = lambda path, **kwargs: (
+        source if path == source.source.path else observed
+    )
+    stage = PrivateStagingStore().allocate(tmp_path / "final.mkv")
+    publish = Mock()
+    monkeypatch.setattr(stage, "publish", publish)
+    store = Mock()
+    store.allocate.return_value = stage
+    runner = Mock()
+
+    def write(arguments: tuple[str, ...], timeout: float) -> ProcessOutcome:
+        Path(arguments[-1]).write_bytes(b"staged output")
+        return ProcessOutcome(0)
+
+    runner.run.side_effect = write
+    result = RemuxExecutionService(
+        inspector=inspector, runner=runner, staging=store, validator=FFprobeOutputValidator()
+    ).execute(ExecutionRequest(plan, plan.revision, plan.revision))
+    assert result.state == "failed" and not result.published and result.cleanup_complete
+    assert result.diagnostics[0].code == "OUTPUT_VALIDATION_FAILED"
+    assert result.validation is not None and not result.validation.passed
+    code = "DURATION_UNVERIFIABLE" if after is None else "DURATION_TOLERANCE_UNAVAILABLE"
+    assert any(check.code == code and check.status == "error" for check in result.validation.checks)
+    publish.assert_not_called()
+    assert not (tmp_path / "final.mkv").exists() and not stage.directory.exists()
+    assert source.source.path.read_bytes() == b"synthetic unit source"

@@ -105,6 +105,11 @@ These decisions authorize planning and test-harness muxing only, not PR-04 execu
   budget uses available timestamp ticks plus known frame/packet boundaries;
   missing metadata is explicitly unverified. Structural mismatches are errors,
   not blanket warnings. Metadata alone is not full decode integrity.
+  PR-04 D10 review clarification: only genuinely unknown expected duration may be
+  unverified with a warning. Known expected duration requires observed duration
+  and a metadata-derived timing tolerance; missing either blocks publication.
+  Matching numbers alone do not justify omitting the timing check. No universal
+  fallback tolerance or alternative integrity waiver is implemented.
 - ADR-026 / D11 (accepted): reviewed and explicitly confirmed revision must match
   full fresh source inspections and a regenerated plan. Repeat before publication;
   ignore caller arguments even when execution_allowed is true. Bind only fresh

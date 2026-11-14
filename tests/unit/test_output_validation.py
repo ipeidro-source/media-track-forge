@@ -220,3 +220,67 @@ def test_mp4_only_acknowledged_metadata_uncertainty_can_warn(
     )
     inspector.inspect.return_value = replace(observed, streams=tuple(reversed(observed.streams)))
     assert not FFprobeOutputValidator().validate(plan, path, inspector, 5).passed
+
+
+@pytest.mark.parametrize(
+    "before,after,has_budget,code,status",
+    [
+        (10.0, 1.0, False, "DURATION_TOLERANCE_UNAVAILABLE", "error"),
+        (10.0, 10.0, False, "DURATION_TOLERANCE_UNAVAILABLE", "error"),
+        (10.0, None, False, "DURATION_UNVERIFIABLE", "error"),
+        (10.0, None, True, "DURATION_UNVERIFIABLE", "error"),
+        (10.0, 10.0, True, "DURATION", "passed"),
+        (None, 1.0, False, "DURATION_UNVERIFIED", "warning"),
+        (None, 1.0, True, "DURATION_UNVERIFIED", "warning"),
+    ],
+)
+def test_duration_integrity_requires_tolerance_for_known_source(
+    validation_plan: OperationPlan,
+    tmp_path: Path,
+    before: float | None,
+    after: float | None,
+    has_budget: bool,
+    code: str,
+    status: str,
+) -> None:
+    original = validation_plan.sources[0]
+    source_streams = tuple(
+        replace(
+            s,
+            duration_seconds=before,
+            properties=s.properties
+            if has_budget
+            else replace(
+                s.properties, time_base=None, average_frame_rate=None, sample_rate_hz=None
+            ),
+        )
+        for s in original.streams
+    )
+    source = replace(original, streams=source_streams)
+    plan = replace(
+        validation_plan,
+        sources=(source,),
+        included=tuple(
+            replace(p, source_stream=source_streams[i])
+            for i, p in enumerate(validation_plan.included)
+        ),
+    )
+    observed = replace(
+        source,
+        format=replace(source.format, name="matroska", duration_seconds=after),
+        streams=tuple(replace(s, duration_seconds=after) for s in source_streams),
+    )
+    assert (timing_budget(source.streams + observed.streams) is not None) is has_budget
+    inspector = Mock()
+    inspector.inspect.return_value = observed
+    path = tmp_path / "duration-stage.part"
+    path.write_bytes(b"nonempty")
+    report = FFprobeOutputValidator().validate(plan, path, inspector, 5)
+    matching = [check for check in report.checks if check.code == code]
+    assert matching and all(check.status == status for check in matching)
+    assert report.passed is (status != "error")
+    assert all(
+        check.expected_seconds == before and check.observed_seconds == after for check in matching
+    )
+    if not has_budget:
+        assert all(check.tolerance_seconds is None for check in matching)
