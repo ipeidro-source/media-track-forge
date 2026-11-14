@@ -275,7 +275,12 @@ def test_unc_output_is_still_rejected_without_filesystem_access(path: str) -> No
         destination_path(path)
 
 
-def test_mapped_output_resolving_to_unc_is_rejected(network_file: tuple[str, Path, Path]) -> None:
+def test_mapped_output_resolving_to_unc_is_rejected(
+    network_file: tuple[str, Path, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "mediatrack_forge.infrastructure.planning_paths.os", SimpleNamespace(name="nt")
+    )
     with pytest.raises(ValueError, match="Network output"):
         destination_path(network_file[0])
 
