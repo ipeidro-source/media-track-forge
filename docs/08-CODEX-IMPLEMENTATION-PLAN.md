@@ -46,3 +46,11 @@ PR-02 is merged at 392ce94 with successful main CI. PR-03 implements D4-D8 plann
 on its own feature branch. Test evidence and actual hosted results are recorded
 in the PR. G2 requires owner review/acceptance. PR-04 execution and all subsequent
 features remain separately authorized work, not part of this iteration.
+
+## PR-04 iteration state
+
+PR-03 is merged with revision-bound warning acknowledgements. D9-D13 authorize
+PR-04 remux execution/validation/exclusive publication only. Its final PR description
+must contain real Windows/Ubuntu service-level E2E and log evidence. PR-05 extraction,
+user cancellation and later GUI/release work remain deferred. G3 is not completed
+by the remux-only iteration.

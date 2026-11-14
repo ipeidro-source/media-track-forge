@@ -3,7 +3,7 @@
 PR-03 implements planning only. This contract is separate from inspection
 `schema_version: 1`, whose fields and meaning remain unchanged. Domain snapshots
 are frozen dataclasses with tuples/frozensets; public JSON uses objects and arrays.
-No planning CLI, product FFmpeg execution, output creation or publication exists.
+The planning component has no CLI and does not execute FFmpeg or publish output; PR-04 consumes plans through the separate execution contract.
 
 ## Application API
 
@@ -443,3 +443,14 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
   ]
 }
 ```
+
+## PR-04 consumption boundary
+
+PR-03 plans remain declarative and contract v1 is unchanged. PR-04's separate
+RemuxExecutionService requires an ExecutionRequest with exact reviewed and confirmed
+revisions, fresh source inspections, trusted regeneration and effective warning
+acknowledgements. It never trusts supplied arguments or execution_allowed as
+authorization, including immutable copies retaining a stale tuple. Proposed direct
+destination arguments are not executed: a controlled infrastructure boundary
+binds fresh mappings to an exclusive owned staging file, validates it and publishes
+exclusively. See [execution contract](15-EXECUTION-AND-VALIDATION-CONTRACT.md).

@@ -84,3 +84,16 @@ PlannedStream carries the expected-output responsibilities; a second duplicate
 ExpectedOutputStream model is unnecessary. Frozen tuples/frozensets keep snapshots
 immutable. ExecutionJob and ValidationReport remain future implementation. Complete
 fields, semantics and versioning are defined in [plan contract v1](14-OPERATION-PLAN-CONTRACT.md).
+
+## Implemented PR-04 execution values
+
+ExecutionRequest carries plan, reviewed_revision, confirmed_revision (None by
+default) and ProcessConfiguration. ExecutionResult has immutable state/history,
+bounded structured diagnostics, optional ValidationReport, published destination,
+published flag and cleanup_complete. ValidationReport contains expected stream
+summary, observed inspection snapshot and structured ValidationChecks; checks
+distinguish passed/warning/error and record optional timing evidence in seconds.
+These values provide the ExecutionJob/ValidationReport responsibilities without
+introducing a mutable job scheduler. Completed requires validation, publication
+and normal cleanup. Failed and timed_out are explicit; future cancellation is not
+implemented. Existing inspection and operation-plan field semantics are unchanged.

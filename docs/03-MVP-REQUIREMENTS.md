@@ -59,3 +59,13 @@ warnings, destination checks, reviewable plans and exact mappings. Tests named
 for AC-01/02/03/04/05/06/07/10/12 cover only their planning portions. Actual remux,
 external subtitle import, output validation/publication and end-user confirmation
 remain deferred; no full E2E acceptance criterion is declared passed here.
+
+## PR-04 execution coverage
+
+The application service executes the existing policy for FR-04/05/06/07/09/10/11/
+12/13/14 using revision-bound confirmation, private staging, independent validation
+and exclusive publication. E2E tests cover the applicable remux/safety behavior of
+AC-01/02/06/07/09/10/12, including original hashes and destination races. AVI-to-MKV
+and internal SubRip conversion cover remux portions only of AC-03/04. Full external
+SRT AC-03/04/05 and cancellation AC-08 remain pending, as do GUI acceptance and
+extraction. No complete MVP or G3 acceptance is claimed from these results alone.

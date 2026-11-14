@@ -100,3 +100,31 @@ These questions do not prevent initial scaffolding, but the relevant ones must b
 - Compatibility tests establish tiny representative mux cases on observed builds,
   not every codec profile/player or runtime build. FFmpeg is external. No binary
   bundling, importing, GUI, execution, publication or release policy is changed.
+
+## PR-04 safety assumptions and residual limits
+
+- Staging is same-filesystem, owner-private and exclusive. Filesystem hard-link
+  semantics are mandatory, with no unsafe fallback. Unix mode 0600/private Windows
+  DACL remains on the final inode. No user output directories are auto-created.
+- Trusted local destination namespaces exclude adversarial same-principal/admin
+  reparse/inode replacement. Source reinspection and ownership checks detect
+  ordinary changes but cannot eliminate all filesystem races or same-metadata
+  encoded-content attacks. Final-name collisions are protected by the atomic link.
+- Atomic visibility is not transactional crash durability: file data is fsynced,
+  directory entries are not universally crash-committed. Network/FAT-like/mapped
+  storage is not promised. Unsupported primitives fail rather than copy/rename.
+- Windows job assignment has a brief launch interval; malicious overrides escaping
+  before assignment and deliberate POSIX new-session children are not sandboxed.
+  Ordinary descendants are terminated and quiescence checked. Unverified stop
+  retains staging, closes our descriptor and reports cleanup incomplete.
+- Timing bounds derive from source/output ticks and frame/packet metadata. Missing
+  stream timing or coarse/variable frame clocks reduce guarantees explicitly.
+  Metadata inspection does not prove every packet decodes or that indistinguishable
+  same-codec streams have byte-identical content; selected tests compare packets.
+- ExternalTrack records remain blocked by execution: full SRT importing is deferred.
+  Internal approved subtitle conversion is allowed. No codec allowlist expansion,
+  signing, bundling, GUI, extraction, cancellation UI or release change is implied.
+- Failed cleanup after successful publication reports published=true with failed
+  state; it never rolls back by deleting a valid final file. Recovery should inspect
+  only the reported destination parent's .mediatrack-* artifacts privately and
+  confirm no process writes before manual deletion. Never delete unknown contents.

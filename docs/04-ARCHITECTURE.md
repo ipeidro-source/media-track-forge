@@ -99,3 +99,14 @@ read-only path adapter, independently of CLI/GUI. `infrastructure/ffmpeg_argumen
 generates explicit mappings/codecs/metadata/dispositions/chapters without subprocess.
 `ui/operation_plan_json.py` serializes plan_version 1 separately from inspection.
 No product runner, importing, persistence or new framework is introduced.
+
+## PR-04 execution boundary
+
+`domain/execution.py` defines immutable requests/configuration, state histories,
+diagnostics and validation/results. `application/execution.py` orchestrates meaningful
+injected ports in `execution_ports.py`: Inspector, ProcessRunner, OutputValidator,
+StagingStore and OwnedStage. It reuses the inspection/planning services and existing
+argument generator; stored supplied arguments are never trusted. Native filesystem,
+process groups/Windows jobs, pipe draining, output validation and private staging
+remain infrastructure-owned in focused modules. No GUI or background scheduler
+is introduced. See [execution contract](15-EXECUTION-AND-VALIDATION-CONTRACT.md).

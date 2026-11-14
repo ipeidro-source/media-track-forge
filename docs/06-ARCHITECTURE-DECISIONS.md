@@ -93,3 +93,34 @@ CI media checks. Inspection does not settle output compatibility or editing desi
 
 See [contract v1](14-OPERATION-PLAN-CONTRACT.md) for detailed choices and limitations.
 These decisions authorize planning and test-harness muxing only, not PR-04 execution.
+
+## November 14, 2026 - approved PR-04 D9-D13
+
+- ADR-024 / D9 (accepted): owner-private, exclusive same-filesystem staging and
+  exclusive os.link publication after validation/fsync; no rename/replace/copy
+  fallback. Atomic name visibility is not power-loss durability. Local filesystem
+  support is proven by tests, not assumed for network/FAT-like filesystems.
+- ADR-025 / D10 (accepted): independent ffprobe validation of layout, codecs,
+  supported metadata, chapters/attachments and timing. The per-operation timing
+  budget uses available timestamp ticks plus known frame/packet boundaries;
+  missing metadata is explicitly unverified. Structural mismatches are errors,
+  not blanket warnings. Metadata alone is not full decode integrity.
+- ADR-026 / D11 (accepted): reviewed and explicitly confirmed revision must match
+  full fresh source inspections and a regenerated plan. Repeat before publication;
+  ignore caller arguments even when execution_allowed is true. Bind only fresh
+  approved mappings to the reserved staging target. The fixed -n becomes -y only
+  for that owned preallocated file, never for the final pathname.
+- ADR-027 / D12 (accepted): automatic owned-temporary cleanup after proven process
+  stop, stable bounded diagnostics and explicit cleanup failure. No raw logs are
+  retained. If stop/ownership is uncertain, retain artifacts and report it rather
+  than deleting unknown/active files. Never delete a published final as rollback.
+- ADR-028 / D13 (accepted): hidden shell-free trusted native execution with bounded
+  pipes, finite timeout, Windows Job Object or Ubuntu session/group containment.
+  Ordinary descendants are tested; deliberate malicious escape is not sandboxed.
+  Worker-callable service and immutable states are PR-05 extension boundaries,
+  not authorization for cancellation/progress UI or batch scheduling.
+
+Alternatives rejected: direct final writes, check-then-rename, copying placeholder
+finals, trusting a supplied command tuple, universal fixed 50 ms duration tolerance,
+unbounded logs and silently weakening unsupported publication/termination behavior.
+See document 15 for exact guarantees, observed evidence boundaries and limitations.
