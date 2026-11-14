@@ -53,12 +53,17 @@ If two sources conflict, identify the conflict and the relevant versions/commits
 | `docs/09-GITHUB-AND-DEVELOPMENT.md` | Repository configuration and local development setup |
 | `docs/10-RISKS-AND-OPEN-QUESTIONS.md` | Risks, technical debt, unresolved decisions |
 | `docs/11-CHATGPT-PROJECT-CONTEXT.md` | This knowledge-management policy |
+| `docs/12-DEVELOPMENT-AND-DELIVERY.md` | Implemented development/CI foundation, local media tools and deferred delivery gates |
+| `docs/13-INSPECTION-CONTRACT.md` | Versioned public inspection JSON, exit codes and security limitations |
 
 Read only the documents relevant to a question when possible, but review related ADRs and requirements before recommending material architectural or scope changes.
 
 ## 5. Project baseline — November 14, 2026
 
-**Current status:** planning and documentation. No product implementation is established by this document. Confirm actual repository state whenever discussing progress.
+**Current status:** PR-01 foundation merged, with passing main CI at d0ca69b. PR-02
+implements local ffprobe inspection on its feature branch, pending its own CI
+evidence and owner review. Confirm actual repository state whenever discussing
+progress; unmerged implementation is not accepted main behavior.
 
 - **Product:** independent Windows-first application for local media track management; not part of YouTube Smart Downloader.
 - **MVP:** inspect media using ffprobe, select/add/remove/reorder/extract streams, remux compatible inputs into MKV or MP4, including **video-only outputs**, without video or audio transcoding.
@@ -66,11 +71,14 @@ Read only the documents relevant to a question when possible, but review related
 - **Subtitle processing:** SRT as a required MVP input; MP4 text subtitles may need an explicit conversion to `mov_text`.
 - **Phase 1:** selective video/audio transcoding and quality profiles, subject to a separate approval gate.
 - **Phase 2:** batch processing, rules, GPU-aware options, and size estimates, subject to a separate approval gate.
-- **Architecture:** Windows-native development in VS Code, Python/CustomTkinter proposed, FFmpeg/ffprobe subprocess integration, GUI-independent processing core.
+- **Architecture:** Python 3.11+ selected; four-layer src package and GUI-independent core. CustomTkinter remains proposed. PR-02 adds external ffprobe inspection, frozen media entities, an application service and versioned JSON CLI; no GUI or media-writing operations.
 - **Safety:** preserve original media, require explicit track selection, disallow silent video/audio transcoding, validate staged outputs before publication.
 - **Delivery model:** ChatGPT supports specification and review; Codex implements in small PRs; the project owner approves scope changes, merges, tags, and Releases.
 
-These are planning decisions, not evidence that a feature is implemented.
+Product capabilities beyond read-only inspection remain planning decisions, not
+implemented features. PR-02 D1-D3 approval covers schema v1, configurable external
+local-only ffprobe and mandatory real synthetic integration; see ADR-016 through
+ADR-018. Consult its PR for actual validation results and review status.
 
 ## 6. Language policy
 

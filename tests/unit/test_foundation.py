@@ -28,7 +28,7 @@ def test_no_runtime_dependencies() -> None:
 
 def test_default_entry_point_shows_scope(capsys: pytest.CaptureFixture[str]) -> None:
     assert main([]) == 0
-    assert "Media operations are not available yet" in " ".join(capsys.readouterr().out.split())
+    assert "Inspect local media" in " ".join(capsys.readouterr().out.split())
 
 
 @pytest.mark.parametrize("option", ["--help", "--version"])
@@ -42,9 +42,9 @@ def test_information_options(option: str, capsys: pytest.CaptureFixture[str]) ->
 
 def test_unimplemented_command_is_rejected(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as exc:
-        main(["inspect"])
+        main(["remux"])
     assert exc.value.code == 2
-    assert "unrecognized arguments" in capsys.readouterr().err
+    assert "invalid choice" in capsys.readouterr().err
 
 
 def test_module_entry_point_outside_repository(tmp_path: Path) -> None:

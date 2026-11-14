@@ -1,6 +1,6 @@
 # Codex Agent Instructions — MediaTrack Forge
 
-Read `README.md` and `docs/01` through `docs/10` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
+Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/13` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
 
 ## Language policy — mandatory
 
@@ -31,9 +31,13 @@ Use **English exclusively** for repository files, code identifiers, comments, do
 - After pushing, inspect all actual CI job results and full logs, including setup and cleanup, for Node.js deprecation, runner-image migration/retirement, unsupported Actions and dependency compatibility warnings. Correct avoidable warnings before marking a PR ready. Record run URLs, skipped checks and any unavailable evidence; syntax validation alone is insufficient.
 - Keep default workflow permissions minimal and publication gated by explicit owner authorization. A merge into main must never publish a Release.
 
-## Initial task
+## Current implementation baseline
 
-Implement only the first small engineering PR: an installable Python project skeleton (`src/mediatrack_forge/`), `pyproject.toml`, Windows CI, pytest/Ruff/mypy configuration, and unit tests. A minimal CLI `inspect` command backed by `ffprobe` is the next separate PR, unless the user explicitly changes the plan. Do not build the full GUI or introduce transcoding in the initial PR.
+PR-01 was merged and its main CI passed. Preserve its src layout, dependency pins, four layers and quality controls. PR-02 implements only read-only inspection using external ffprobe, immutable media snapshots, application orchestration, and the documented schema_version 1 JSON CLI. D1-D3 were approved by the owner for this iteration: versioned normalized JSON; external configurable local-only ffprobe with a 30-second default timeout; mandatory synthetic media integration on Windows 2025 and Ubuntu 24.04.
+
+Keep unit tests runnable without media tools across the full Python matrix. Integration tests must fail when required tools/fixture codecs are missing; never silently skip mandatory media coverage. Run them on both Python 3.12 CI platforms. Preserve original ffprobe indices and ordering, all stream kinds and unknown metadata values. Changes to the public JSON contract must follow docs/13 compatibility policy.
+
+No GUI, track planning/editing, external subtitle import, remuxing, extraction, transcoding, output publication, packaging or release automation is authorized by PR-02. FFmpeg may generate local synthetic fixtures only. Do not start PR-03 before separate authorization.
 
 ## PR reporting template
 

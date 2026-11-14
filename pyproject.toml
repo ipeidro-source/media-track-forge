@@ -25,7 +25,7 @@ mediatrack_forge = ["py.typed"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-config --strict-markers"
-markers = ["integration: synthetic local FFmpeg/ffprobe tests (deferred to PR-02)"]
+markers = ["integration: real FFmpeg/ffprobe tests with synthetic local media; tools required"]
 
 [tool.ruff]
 target-version = "py311"

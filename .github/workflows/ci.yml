@@ -51,7 +51,30 @@ jobs:
       - name: Type checking
         run: python -m mypy
       - name: Unit tests
-        run: python -m pytest
+        run: python -m pytest tests/unit
+      - name: Install media tools on Ubuntu
+        if: matrix.python == '3.12' && runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ffmpeg
+      - name: Install media tools on Windows
+        if: matrix.python == '3.12' && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue) -or
+              -not (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'FFmpeg installation failed' }
+          }
+      - name: Require media tools and record versions
+        if: matrix.python == '3.12'
+        run: |
+          python -c "import shutil; assert all(shutil.which(x) for x in ('ffmpeg', 'ffprobe')), 'Required media tools missing'"
+          ffmpeg -version
+          ffprobe -version
+      - name: Mandatory real media integration
+        if: matrix.python == '3.12'
+        run: python -m pytest tests/integration -m integration -v -s
       - name: YAML validation
         run: python scripts/check_yaml.py
       - name: Build Python distributions

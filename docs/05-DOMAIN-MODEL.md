@@ -1,4 +1,30 @@
-# 05 — Domain Model (Proposal v0.2)
+# 05 — Domain Model
+
+## Implemented PR-02 inspection entities
+
+`domain/media.py` uses frozen dataclasses. Nested stream/chapter collections,
+tags and dispositions are tuples; no mutable raw ffprobe dictionaries are exposed.
+
+| Entity | Implemented fields |
+| --- | --- |
+| MediaSource | resolved Path, size_bytes, modified_time_ns |
+| MediaFormat | name, long_name, duration_seconds, bit_rate_bps, tags |
+| MediaAsset | source, format, ordered streams tuple, ordered chapters tuple |
+| Stream | original index, normalized kind, codec, language, title, disposition, duration_seconds, properties, tags |
+| StreamProperties | width/height, channels, sample_rate_hz, channel_layout, pixel_format, bit_rate_bps, codec_long_name, profile, time_base, average_frame_rate |
+| Chapter | original id, start_seconds, end_seconds, title, tags |
+
+The [public contract](13-INSPECTION-CONTRACT.md) defines types and units.
+Indices are unique, source-local and unmodified; order is preserved independently
+of index order. Attachment/data/unknown streams survive normalization. Zero audio,
+zero subtitles and multiple video streams are valid inspection snapshots. Missing
+scalar metadata stays None; unknown language codes and Unicode remain unchanged.
+Inspection does not require video: future main-video output invariants below apply
+to planning, not probing. Source size/mtime is rechecked after successful probing.
+
+## Proposed future operation model
+
+The following broader entities/fields remain proposals, not implemented classes.
 
 | Entity / value object | Responsibility | Representative fields |
 | --- | --- | --- |

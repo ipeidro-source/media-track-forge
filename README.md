@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status:** PR-01 development foundation - November 14, 2026. Installable Python scaffold, offline tests and CI; media features and executable releases remain unimplemented.
+**Status:** PR-02 media inspection implementation - November 14, 2026. PR-01 is merged. Local read-only ffprobe inspection and a versioned JSON CLI are implemented on this branch; media editing, GUI and executable releases remain deferred.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -11,7 +11,19 @@ A free, open-source, Windows-first desktop application for **inspecting, adding,
 3. Codex must follow [AGENTS.md](AGENTS.md) and the [Codex implementation plan](docs/08-CODEX-IMPLEMENTATION-PLAN.md).
 4. Record new decisions in the [Architecture Decision Record](docs/06-ARCHITECTURE-DECISIONS.md); do not silently override accepted decisions.
 
-For Python setup, validation commands, CI policy and deferred Windows release gates, see [Development and delivery](docs/12-DEVELOPMENT-AND-DELIVERY.md). The current entry point supports help and `--version` only.
+For Python setup, validation commands, CI policy and deferred Windows release gates, see [Development and delivery](docs/12-DEVELOPMENT-AND-DELIVERY.md).
+
+With external ffprobe installed on PATH:
+
+```powershell
+mediatrack-forge inspect "C:\Media\example.mp4"
+python -m mediatrack_forge inspect "C:\Media\example.mkv" --ffprobe "C:\Tools\ffprobe.exe" --timeout-seconds 30
+```
+
+Inspection preserves stream order/indices, metadata, chapters, and video-only inputs.
+Success prints one JSON document; errors go to stderr with documented exit codes.
+See the [version 1 inspection contract](docs/13-INSPECTION-CONTRACT.md) for fields,
+units and local-file security limitations. Global help and version remain available.
 
 ## Documentation index
 
@@ -27,6 +39,7 @@ For Python setup, validation commands, CI policy and deferred Windows release ga
 - [10 — Risks and open questions](docs/10-RISKS-AND-OPEN-QUESTIONS.md)
 - [11 — ChatGPT project context](docs/11-CHATGPT-PROJECT-CONTEXT.md)
 - [12 - Development and delivery foundation](docs/12-DEVELOPMENT-AND-DELIVERY.md)
+- [13 - Inspection JSON contract](docs/13-INSPECTION-CONTRACT.md)
 
 ## Guiding principles
 

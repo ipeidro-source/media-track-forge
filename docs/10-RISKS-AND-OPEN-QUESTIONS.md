@@ -42,3 +42,29 @@ These questions do not prevent initial scaffolding, but the relevant ones must b
 - The final application license and dependency notices remain release blockers. Do not invent a LICENSE or bundle FFmpeg/PyInstaller executables now.
 - Release infrastructure means a tested version/tag validator plus documented future gates in PR-01. Alternative: runnable placeholder packaging workflow; rejected because executable-specific acceptance cannot yet be meaningful. No release workflow exists.
 - Windows Server CI is not evidence of Windows 10/11 GUI compatibility. Native desktop and executable smoke checks remain deferred.
+
+## PR-02 scope and limitations - November 14, 2026
+
+- Owner approved D1-D3: public version 1 JSON, external configurable local-only
+  ffprobe and mandatory real synthetic-media integration on both CI platforms.
+- Source identity uses path/size/mtime before/after inspection. It is not a hash
+  identity or a guarantee against concurrent replacement with unchanged metadata.
+- File-only ffprobe protocols and input URL/UNC rejection block direct and nested
+  network protocols. They are not an OS sandbox; local demuxer references can read
+  local files, and mounted network storage/mapped drives may look like local files.
+- Timeout kills/reaps the ffprobe process; trusted overrides that spawn other
+  programs are not process-tree sandboxed. Future processing cancellation remains
+  separate work. Decode CPU/memory limits require OS-level isolation if later needed.
+- Captured output is bounded (8 MiB stdout, 64 KiB stderr); very large metadata is
+  rejected with exit 6. Raw diagnostics are suppressed; nonzero exit 4 cannot always
+  distinguish corrupt, unsupported or inaccessible media from ffprobe alone.
+- Optional invalid scalar metadata becomes null; malformed structural collections
+  fail. Empty stream arrays are accepted. Missing chapter arrays are empty.
+- Language/title extraction uses exact lowercase ffprobe tag names while preserving
+  every string tag verbatim. Unknown case variants remain available in tags.
+- CI uses maintained apt/Chocolatey packages rather than pinned binary URLs. Tool
+  versions can change; record observed versions and fail missing fixture capabilities.
+- Existing architecture prose describes future operations, not PR-02 behavior.
+  JSON contract v1 and the inspection implementation take precedence for inspection.
+- GUI, licensing, packaging, output compatibility, subtitle import, extraction,
+  remuxing and publication questions remain unresolved and outside this PR.

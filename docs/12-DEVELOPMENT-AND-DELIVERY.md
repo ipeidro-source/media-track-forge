@@ -4,8 +4,9 @@
 
 An installable Python 3.11+ package, four layer boundaries, offline unit tests,
 Ruff, mypy, YAML validation, actionlint, Dependabot and CI. The application only
-prints help or `--version`. No media inspection, GUI, PyInstaller executable,
-portable package, tags or Releases are implemented by this PR.
+printed help or `--version` only at PR-01. PR-01 is merged; PR-02 adds inspection
+as described below. No GUI, PyInstaller executable, portable package, tags or
+Releases are implemented by either PR.
 
 ## Local setup
 
@@ -22,7 +23,8 @@ mediatrack-forge --help
 ```
 
 On Linux use `python3.12 -m venv .venv` and `source .venv/bin/activate`.
-There are no production dependencies; FFmpeg/ffprobe are not needed for PR-01.
+There are no Python production dependencies. PR-02 inspection requires external
+ffprobe; real integration tests also require FFmpeg. Neither binary is bundled.
 The dependency file pins direct and transitive development dependencies. Build
 backend pins also appear in `pyproject.toml`; update them together. Pins select
 versions, not identical platform wheels or cryptographically locked downloads.
@@ -33,7 +35,8 @@ matrix verifies Windows 3.11/3.12/3.13 and Linux 3.12 compatibility.
 python -m ruff check .
 python -m ruff format --check .
 python -m mypy
-python -m pytest
+python -m pytest tests/unit
+python -m pytest tests/integration -m integration -v -s
 python scripts/check_yaml.py
 actionlint -color
 python -m build --no-isolation
@@ -45,19 +48,43 @@ the Linux x64 archive and checks the recorded hash before execution. This is a
 standalone Go binary, with no JavaScript Action runtime. Review its version and
 hash manually with workflow changes; Dependabot cannot update this shell URL.
 
-Unit tests use the installed package, including invocation outside the checkout.
-Future integration fixtures belong in `tests/integration`, use pytest temporary
-directories and tiny locally generated synthetic media, and require no network.
-`python -m pytest -m integration` currently has no selected tests; it is not an
-implemented integration suite.
+Unit tests use the installed package, including invocation outside the checkout,
+and require no media tools. Integration tests use pytest temporary directories
+and subsecond locally generated synthetic media; missing tools/fixture encoders
+fail rather than skip. With both tools installed, `python -m pytest` runs both.
+
+## External media tools and PR-02 inspection
+
+Install FFmpeg/ffprobe through a trusted distribution. CI uses the verified
+[Chocolatey ffmpeg package](https://community.chocolatey.org/packages/ffmpeg)
+on Windows (when not already available) and Ubuntu's
+[ffmpeg package](https://packages.ubuntu.com/noble/ffmpeg) via apt on Linux:
+
+```powershell
+choco install ffmpeg --yes --no-progress
+ffmpeg -version
+ffprobe -version
+mediatrack-forge inspect "C:\Media\example.mkv" --timeout-seconds 30
+```
+
+On Ubuntu: `sudo apt-get update` then
+`sudo apt-get install --yes --no-install-recommends ffmpeg`.
+Existing local installations need not be replaced. CI requires both executables
+and prints their versions. These package names/sources were verified, but binary
+versions are not pinned; observed hosted versions belong in each PR's evidence.
+The local PR-02 baseline used FFmpeg/ffprobe N-127043-g5a54fcf75e-20260930.
+Unit tests never need these binaries. Product inspection never invokes FFmpeg;
+it is only a test fixture generator. See [schema v1](13-INSPECTION-CONTRACT.md)
+for command options, fields, errors and limitations.
 
 ## Architecture and versioning
 
-`domain` holds entities and policies; `application` will orchestrate use cases;
-`infrastructure` will hold external process, validation and publication adapters;
-`ui` holds presentation adapters. Empty layers deliberately contain no speculative
-interfaces. Future probe/planner/runner modules fit these boundaries as described
-in document 04. The CLI is a presentation adapter and does not import a GUI.
+`domain` holds frozen inspection entities; `application` orchestrates inspection
+through its `MediaProbe` Protocol; `infrastructure` implements external ffprobe
+execution/normalization; `ui` holds CLI and JSON presentation. Future planning,
+media execution, validation and publication remain unimplemented. The CLI does
+not import a GUI. The four boundaries and zero Python runtime dependencies remain
+unchanged from PR-01.
 
 `mediatrack_forge.__version__` is the single literal version source. Setuptools
 derives distribution metadata from it; the CLI and future release validator read
@@ -71,6 +98,9 @@ ADR-008 remains pending; this does not grant a license or authorize distribution
 Verification date: **November 14, 2026**. CI runs on PRs targeting `main`, pushes
 to `main`, and manual dispatch. All four test jobs run lint, format, strict types,
 unit tests, YAML validation and source/wheel builds; a separate job runs actionlint.
+PR-02 adds mandatory real media integration steps in both Python 3.12 test jobs.
+Only the 3.11/3.13 jobs intentionally omit those steps; their unit suite still runs.
+Integration fixtures validate required encoders before creation and never skip.
 Errors fail their jobs; there is no continue-on-error. Pip caches are keyed using
 the dependency file and project configuration. Token access is `contents: read`,
 checkout credentials are not persisted, and newer runs cancel duplicate runs.
