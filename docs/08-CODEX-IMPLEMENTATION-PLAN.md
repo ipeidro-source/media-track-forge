@@ -63,3 +63,12 @@ dedicated PR-05 branch. Document 16 defines the backend contract. Preserve exist
 tests and all five required CI jobs and inspect their complete final logs.
 PR-06 GUI and PR-07 packaging remain unimplemented. G3 requires owner acceptance;
 do not merge, tag or release as part of implementation.
+
+## PR-06 approved iteration
+
+Continue the existing feat/windows-desktop-gui branch from merged PR-05 3b9a560.
+D19-D23 authorize the documented desktop interface and GUI-independent controller,
+bounded worker, exact plan review/confirmation, cancellation and safe shutdown.
+Preserve all backend tests and contracts 13-16. Complete native smoke and all five
+CI jobs with actual full-log evidence. PR-07 packaging and final desktop executable
+acceptance remain deferred. Do not merge, tag, publish a Release or claim G4 complete.

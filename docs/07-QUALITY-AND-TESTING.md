@@ -114,3 +114,27 @@ All prior suites remain mandatory; unit cases run across the complete matrix and
 real media on both Python 3.12 platforms, without hidden skips. Exact counts, tools,
 filesystems, run URLs and complete-log findings belong in the PR. No GUI acceptance
 or complete decoding guarantee is inferred from these tests.
+
+## PR-06 desktop test layers
+
+Headless controller/worker tests require neither Tk nor FFmpeg and run on the full
+matrix. Real-service desktop orchestration runs with the existing synthetic media
+integration suite on both Python 3.12 platforms. Native Windows GUI tests are
+explicitly invoked with `python -m pytest tests/gui -v -s` in Windows 3.12 CI.
+Default pytest discovery covers unit/integration only, with no Linux display.
+Each native scenario runs in an isolated process with one root; failures are not
+silently skipped. Controlled widget cases and a real GUI-to-backend video-only
+operation are identified separately. Actual tests, counts and full CI log review
+belong in the PR. Manual Windows 10/11 OS-DPI, keyboard and screen-reader acceptance
+is still required; see document 17. A native Tk test is not desktop certification.
+
+## D24 network input evidence boundary
+
+test_network_sources.py is offline Windows-path/volume simulation with a local
+backing file, including source/SRT identity, change/failure, exact mapping and
+local-only staging/publication regressions. It is not SMB transport evidence.
+check_network_sources.py provides an opt-in actual Windows UNC/mapped/SRT remux/
+extraction check with real tools and retained local evidence when tiny trusted
+synthetic share inputs exist. No real share is available in the current agent/CI
+configuration; report this explicitly without skipping mandatory local suites or
+claiming simulated paths are SMB. Document 17 gives commands and evidence limits.

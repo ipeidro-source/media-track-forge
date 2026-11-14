@@ -1,6 +1,6 @@
 # Codex Agent Instructions — MediaTrack Forge
 
-Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/16` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
+Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/17` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
 
 ## Language policy — mandatory
 
@@ -47,8 +47,27 @@ Keep all existing codec/inspection/plan contracts and CI controls. Unit tests ru
 
 PR-04 is merged at 3bea7ee with successful main CI. Owner-approved D14-D18 authorize PR-05 external UTF-8 SRT import, exact-matrix single-stream extraction, thread-safe cancellation and backend progress. Preserve the shared execution stack, fresh source-role validation, revision binding, private staging and exclusive publication. Cancellation must linearize against the successful exclusive link; never roll back a published result. Never claim cancelled without proven process quiescence. Progress uses bounded structured FFmpeg output, stays indeterminate without selected timing, and reaches 100% only after completion. Extraction has a separate versioned contract and validator; never broaden general remux compatibility from its matrix. Every enabled extraction pair requires real Windows/Ubuntu evidence. See document 16 and ADR-029..033.
 
-GUI, progress UI, packaging and release work remain PR-06/PR-07. No external audio, batch or video/audio transcoding is authorized. G3 requires independent owner acceptance after PR-05 review. Do not merge, tag or publish without owner authorization.
+PR-05 is merged at 3b9a560 with successful main CI. Owner-approved D19-D23 authorize PR-06 CustomTkinter/ttk desktop work only. Preserve GUI-independent backend imports and immutable stream identities; keep editable intent separate. Every edit invalidates reviewed/acknowledged/confirmed state. Show all warning occurrences, rebuild acknowledgements against the exact revision and require separate final confirmation. Never construct editable FFmpeg commands in widgets.
+
+Run blocking services on one background worker; only the main thread calls Tk. Keep one bounded reply and latest progress slot, reject stale generations and disable conflicting edits while busy. Closing must wait for safe backend termination; retain recovery details when cleanup is unverified. Do not infer no published output from a failed state. Keep GUI dependencies pinned in the development snapshot and document runtime installation impact. Use separate explicit native GUI tests so Linux backend tests require no display; missing required Windows smoke capabilities fail rather than silently skip. Report real widgets/fakes/media evidence and manual Windows desktop limitations separately. See document 17 and ADR-034..038.
+
+PR-07 packaging/release work remains deferred. No external audio, batch, video/audio transcoding or releases are authorized. G4 requires later packaging and independent owner acceptance. Do not merge, tag or publish without owner authorization.
 
 ## PR reporting template
 
 Describe the goal and linked acceptance criteria; list files changed; summarize architectural decisions; report executed checks and results; state residual risks and open questions. Never report a test as passed unless it was actually run.
+
+## D24 network input boundary - owner approved
+
+Allow trusted Windows mapped-drive and direct UNC regular files as read-only media/
+SRT sources. Preserve resolved source identity, original stream indices, reinspection,
+revision binding and change detection. Reject URL/protocol inputs and non-file device paths;
+keep file-only FFmpeg/ffprobe arguments. Inputs do not authorize network outputs:
+reject UNC/remote/unknown Windows destinations, recheck before staging/publication
+and retain all private-staging/no-overwrite/atomic/cancellation/cleanup protections.
+Show bounded specific controlled InspectionError messages in the GUI; never expose
+raw vendor logs or unexpected exception text. Simulated UNC tests are not real SMB
+evidence. Real-share checks are opt-in with owner-supplied tiny synthetic fixtures;
+report unavailable evidence, session/permissions, filesystem metadata/cache and OS
+I/O timeout limitations. Do not create shares, mappings or credentials implicitly.
+ADR-039 records D24; ADR-034..038 retain their PR-06 meanings.

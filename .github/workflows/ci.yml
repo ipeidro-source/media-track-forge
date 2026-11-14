@@ -75,6 +75,9 @@ jobs:
       - name: Mandatory real media integration
         if: matrix.python == '3.12'
         run: python -m pytest tests/integration -m integration -v -s
+      - name: Native Windows GUI smoke and interaction
+        if: matrix.python == '3.12' && runner.os == 'Windows'
+        run: python -m pytest tests/gui -v -s
       - name: YAML validation
         run: python scripts/check_yaml.py
       - name: Build Python distributions

@@ -130,12 +130,16 @@ ffprobe -v error -protocol_whitelist file -of json -show_format -show_streams -s
 Options are verified against [ffprobe documentation](https://ffmpeg.org/ffprobe.html)
 and the [protocol whitelist documentation](https://ffmpeg.org/ffmpeg-protocols.html#Protocol-Options).
 The supported synthetic containers are tested against the real binary in CI.
-Remote URLs, protocol-style paths and UNC paths are rejected before execution.
+Remote URLs and protocol-style inputs remain rejected. D24 permits trusted Windows
+UNC and mapped-drive filesystem sources read-only, including mapped paths that resolve
+to UNC. Extended UNC file paths are accepted; other device paths remain blocked.
+UNC inputs on non-Windows platforms are unsupported.
 Nested HTTP access is rejected by the file-only whitelist. The whitelist is not
 an OS filesystem sandbox: local references can read other local files, and mounted
-network filesystems or mapped drives cannot reliably be identified as remote by
-this path policy. Use trusted local media and executables. No ffprobe binary is
-bundled, and FFmpeg is never invoked by the product.
+network filesystems may be reached through the OS file provider. Use trusted sources
+and executables; no credentials or shares are configured by the product. No ffprobe
+binary is bundled. Inspection invokes only ffprobe; separate execution services may
+invoke FFmpeg under their own contracts. D24 does not authorize network publication.
 
 Captured stdout is capped at 8 MiB and stderr at 64 KiB, with concurrent draining
 and termination on overflow. Raw diagnostics are never printed; bounded English
@@ -150,3 +154,18 @@ changed/unavailable source fails safely. It never opens media for writing.
 Integration tests also compare file content/hash. Size/mtime checks are not a
 cryptographic identity and cannot prevent every concurrent replacement race.
 No guarantee of stream indices remaining valid after a file changes is made.
+
+## D24 Windows source compatibility
+
+The schema_version 1 fields/types/units remain unchanged. source.path is still the
+strictly resolved native absolute path, which may now be canonical UNC on Windows.
+Mapped/direct paths resolving to that same file share its snapshot/reference.
+Existing local documents remain unchanged. Reinspection uses the reviewed canonical
+path; remapping a drive letter cannot redirect an existing plan. Different aliases
+that the OS does not canonicalize together are not universally deduplicated.
+Share access denied, missing/disconnected sources and changed snapshots are controlled
+errors. Network caching/coarse metadata and same-metadata edits remain limitations;
+no full file hash or transaction snapshot is promised. Filesystem resolution/stat/open
+can wait for OS network timeouts independently of the subprocess timeout. The GUI
+displays the specific controlled error; raw vendor logs remain suppressed. Document
+17 distinguishes simulated coverage from opt-in actual-share evidence.

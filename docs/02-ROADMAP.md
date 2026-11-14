@@ -53,3 +53,11 @@ remaining backend external SRT, exact-matrix extraction, cancellation and progre
 work on this branch. Evidence and review belong in PR-05; G3 remains pending owner
 acceptance. PR-06 implements GUI interaction; PR-07 addresses packaging/Windows
 desktop smoke checks and release gates. Neither is implemented here.
+
+## PR-06 desktop iteration
+
+PR-05 is merged at 3b9a560 with successful main CI 43618260739. Approved D19-D23
+authorize the native desktop workflow on this branch. Unit/controller, real-media
+orchestration and explicit Windows Tk smoke evidence belong in PR-06. G4 remains
+incomplete until PR-07 packaging and native Windows 10/11 acceptance; no release
+gate is advanced automatically. The complete desktop contract is document 17.

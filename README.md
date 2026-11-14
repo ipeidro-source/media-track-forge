@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status:** PR-01 through PR-04 are merged. PR-05 on this branch adds validated external SRT, conservative single-stream extraction, safe backend cancellation and structured progress. GUI and packaging remain PR-06/PR-07; no release is published.
+**Status:** PR-01 through PR-05 are merged. PR-06 on this branch adds the Windows desktop workflow using the existing safe backend. PR-07 packaging and release approval remain deferred; no release is published.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -61,7 +61,7 @@ for supported filesystem/process guarantees and timing limitations.
 
 **No surprises:** never overwrite original files, never silently transcode audio/video, preview the exact track operations, detect incompatible codecs, validate output before publication, and provide a clear audit trail.
 
-The MVP works with local media only. It is independent of YouTube Smart Downloader and does not download media from the internet.
+The MVP reads local media and trusted Windows file-share media (D24); output publication remains local-only. It is independent of YouTube Smart Downloader and does not download media from the internet.
 
 **Language policy:** all project artifacts must be written in **English**, including documentation, ADRs, source-code comments/docstrings, commit messages, PR descriptions, Issues, tests, UI copy, and instructions to Codex. ChatGPT may explain the project conversationally in Spanish if the user asks, but changes committed to the repository must remain in English.
 
@@ -76,3 +76,29 @@ exclusive publication. These are worker-callable Python APIs, with no new CLI/GU
 See [external tracks, extraction and cancellation](docs/16-EXTERNAL-TRACKS-EXTRACTION-AND-CANCELLATION.md)
 for usage, encoding/matrix limits, revision confirmation and atomic commitment.
 G3 remains subject to owner review; the complete MVP is not claimed.
+
+## Windows desktop (PR-06)
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m pip install --no-build-isolation --no-deps -e .
+python -m mediatrack_forge.ui.desktop
+```
+
+CustomTkinter 6.0.0 provides one window with Media, Operation and Execution areas.
+Inspect local media, edit explicit track intent, add SRT, review remux/extraction,
+acknowledge warnings and separately confirm execution. Backend staging/validation/
+publication and cancellation remain authoritative. The installed alternative entry
+point is `mediatrack-forge-desktop`; the inspection CLI is unchanged.
+See [Windows desktop workflow and smoke procedure](docs/17-WINDOWS-DESKTOP-UI.md).
+Native Windows 10/11 manual acceptance and PR-07 packaging remain pending.
+
+## Trusted Windows network inputs (D24)
+
+Windows mapped-drive inputs such as `Z:\Media\movie.mkv` and direct UNC inputs
+such as `\\server\share\movie.mkv` can be inspected and used read-only, including
+external SRT. Mapped inputs retain their resolved canonical source identity through
+review/reinspection. HTTP/FTP/other media URLs remain blocked; FFmpeg/ffprobe use
+only the file protocol. Outputs must remain on supported local volumes: network
+publication is not enabled. See document 17 for access, timeout, identity and real
+SMB validation limitations. No real SMB execution is claimed from simulated tests.

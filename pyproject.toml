@@ -8,10 +8,13 @@ dynamic = ["version"]
 description = "Windows-first media track manager: development foundation"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["customtkinter==6.0.0"]
 
 [project.scripts]
 mediatrack-forge = "mediatrack_forge.ui.cli:main"
+
+[project.gui-scripts]
+mediatrack-forge-desktop = "mediatrack_forge.ui.desktop:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "mediatrack_forge.__version__"}
@@ -23,7 +26,7 @@ where = ["src"]
 mediatrack_forge = ["py.typed"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/unit", "tests/integration"]
 addopts = "-ra --strict-config --strict-markers"
 markers = ["integration: real FFmpeg/ffprobe tests with synthetic local media; tools required"]
 
@@ -38,3 +41,7 @@ select = ["E", "F", "I", "UP", "B"]
 python_version = "3.11"
 strict = true
 files = ["src", "tests", "scripts"]
+
+[[tool.mypy.overrides]]
+module = ["customtkinter"]
+ignore_missing_imports = true

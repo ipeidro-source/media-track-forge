@@ -10,7 +10,7 @@ Statuses: **Accepted baseline**, **Proposed / pending**, or **Deferred**. These 
 | ADR-004 | Accepted baseline | No video/audio transcoding in the MVP | Bounded scope; preserve media quality |
 | ADR-005 | Accepted baseline | MKV/MP4 outputs; AVI accepted as input; verify compatibility | Useful formats without false codec guarantees |
 | ADR-006 | Accepted baseline | Immutable original, staged output and post-run validation | Reduce risk of data loss |
-| ADR-007 | Accepted for PR-01; GUI deferred | Python 3.11+, pytest, Ruff, mypy; CustomTkinter remains proposed | Explicit PR-01 scope approval; no GUI dependency |
+| ADR-007 | Accepted for PR-01; GUI deferred | Python 3.11+, pytest, Ruff, mypy; CustomTkinter approved for PR-06 (ADR-034) | Explicit PR-01 scope approval; no GUI dependency |
 | ADR-008 | Proposed / pending | MIT for application code | Easy contributions; review redistribution constraints |
 | ADR-009 | Accepted target; implementation deferred | PyInstaller Windows `.exe`, versioned portable ZIP and SHA256SUMS.txt | Explicit PR-01 delivery direction; no executable or release yet |
 | ADR-010 | Deferred | GPU acceleration and specialized codecs | Phase 2; requires capability/licensing assessment |
@@ -170,3 +170,98 @@ See document 15 for exact guarantees, observed evidence boundaries and limitatio
 Context, exact matrix, alternatives' consequences, timing/packet limitations, API
 contracts and test boundaries are detailed in document 16. These decisions authorize
 backend implementation, not G3 acceptance, GUI, packaging or release publication.
+
+## November 14, 2026 - approved PR-06 D19-D23
+
+- ADR-034 / D19 (accepted): desktop controls need a native Python toolkit while the
+  backend remains display-independent. Choose pinned CustomTkinter 6.0.0 with ttk
+  Treeview and native dialogs; preserve lazy GUI imports and the inspection CLI.
+  Alternatives were Electron/web server or a custom table framework; rejected for
+  dependencies and maintenance. The trade-off is Tk accessibility and untyped toolkit
+  boundaries; native tests and a scoped mypy import override cover the adapter.
+  Runtime CLI installations now also install GUI libraries; no display is initialized.
+  This resolves ADR-007's GUI proposal without changing tooling decisions.
+- ADR-035 / D20 (accepted): users need direct inspection/edit/review/results without
+  a wizard. Choose one window with Media/Operation/Execution tabs, original immutable
+  references, explicit keep/set/clear metadata and within-kind order. Alternative
+  auto-resolving defaults/omitting incompatible tracks was rejected. Initially include
+  all detected tracks so unsupported selections stay visible as blockers; this can
+  require correction before a valid plan. Source replacement clears external state.
+  Only backend-supported extraction extensions are offered; no second codec policy.
+- ADR-036 / D21 (accepted): review cannot authorize another intent. Use generation-
+  invalidated immutable plans, all-occurrence warning presentation and explicit
+  revision-bound acknowledgement rebuild, followed by a distinct default-No execution
+  confirmation. Alternatives: auto-acknowledgement or execution_allowed alone; rejected
+  as unsafe. Any edit, including pending metadata, clears review. Worker results cannot
+  restore stale authority. The cost is repeated review after edits; backend regeneration
+  remains mandatory and public contracts 13-16 are unchanged.
+- ADR-037 / D22 (accepted): blocking media/filesystem work must not freeze Tk. Choose
+  one non-daemon worker with bounded discrete reply/latest progress and main-thread
+  polling. Alternatives: widget process management, unbounded queue or abrupt close;
+  rejected. Disable conflicting edits, use the existing job cancellation token and
+  wait for safe terminal cleanup before closing. Unverified cleanup keeps recovery
+  visible and blocks new operations; published results are never rolled back. Probe
+  cancellation still waits for existing timeout bounds. No scheduler/database is added.
+- ADR-038 / D23 (accepted): choose system-following theme, matching ttk colors,
+  resizable/scrollable layout, toolkit DPI support and explicit keyboard adapters.
+  Alternatives: fixed light-only styling or packaging in this PR; rejected. Native
+  smoke uses one root per isolated process after local repeated-root Tcl failures;
+  exact display/widget evidence is reported separately from manual Windows 10/11
+  acceptance. Widget scaling tests do not certify actual OS DPI or screen readers.
+  Accessibility limitations remain documented. PR-07 owns executable/ZIP/installer
+  and release gates; no packaging or release is authorized here.
+
+Document 17 records context, APIs, consequences, test procedure and residual limits.
+These owner-approved choices authorize PR-06 implementation, not automatic G4/MVP
+acceptance, branch merging, tags or releases.
+
+## November 14, 2026 - approved PR-06 D24
+
+ADR-039 / D24 (accepted): read-only Windows file-share media sources.
+
+Context: strict Path.resolve() can turn a valid mapped SMB filename into UNC;
+the former local-only input check rejected both that result and direct UNC paths.
+This blocked legitimate trusted media/SRT inspection and existing remux/extraction
+to local output. ADR-034 through ADR-038 already belong to the desktop decisions.
+
+Decision: accept regular readable Windows filesystem sources, including mapped
+drives resolving to UNC and direct UNC. Keep strict resolved path/size/mtime source
+snapshots, original indices, full fresh inspection and exact revision binding.
+The canonical UNC identity, rather than the original drive-letter alias, is the
+reviewed execution input. A later remapping cannot silently redirect that plan;
+new inspection of a different mapping produces another identity/revision. Source
+handles remain read-only. No credentials, mappings or shares are created/stored.
+Protocol URLs/non-file device paths stay blocked; ffprobe/FFmpeg retain file-only
+whitelists. Extended UNC file identities are allowed for consistent reinspection.
+
+Output policy remains separate: UNC and Windows remote/unknown volumes are rejected
+using canonical path checks and GetVolumePathNameW/GetDriveTypeW classification,
+including mapped outputs that retain a drive letter. Recheck at actual staging and
+exclusive publication boundaries. Local private ACLs/modes, owned staging, validation,
+no overwrite, atomic link, cancellation commitment and cleanup are unchanged.
+GUI InspectionError presentation now retains bounded specific controlled messages;
+unexpected exception/vendor text stays suppressed.
+
+Alternatives: preserve drive letters without resolution (rejected: weaker alias
+identity/remapping semantics); accept only direct UNC (rejected: breaks normal
+Windows usage); permit SMB outputs (rejected: unvalidated safety/capability scope);
+mount/copy/download inputs automatically (rejected: credentials, writes and scope).
+Reusing the filesystem inspection path avoids a second media/network adapter.
+
+Trade-offs/limitations: file protocol is not an OS sandbox and Windows file providers
+perform their own network access/authentication. SMB availability/permissions and
+drive mappings are tied to the application's session; metadata may be cached/coarse.
+Path/size/mtime plus inspection is not cryptographic content identity or a network
+transaction snapshot. Python filesystem calls can wait on OS/redirector timeouts
+beyond subprocess limits; cancellation remains cooperative at safe boundaries.
+Server/share aliases are not universally deduplicated. Network/remote output support
+needs a separate capability/atomicity/ACL/durability decision and real evidence.
+
+Consequences: schema fields, codecs and plan/extraction versions are unchanged;
+the accepted Windows input set expands without changing existing local payloads.
+Regression tests simulate UNC normalization offline and are explicitly not SMB
+proof. The opt-in check_network_sources.py runs actual UNC/mapped media/SRT with
+real tools and local output when synthetic shares are supplied; Get-SmbConnection
+evidence establishes transport/dialect separately. No real SMB share was available
+for validation in the current agent environment (no mapping; enumeration unavailable).
+Document 17 records the manual evidence procedure and remaining limits.

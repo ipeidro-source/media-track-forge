@@ -244,14 +244,16 @@ def test_malformed_or_unusable_response(source: MediaSource, payload: bytes) -> 
     [
         "",
         "http://example.invalid/a.mp4",
+        "ftp://example.invalid/a.mp4",
+        "smb://example.invalid/share/a.mp4",
         "file:movie.mp4",
         "pipe:0",
-        "\\\\server\\share\\file.mkv",
-        "//server/file",
+        "\\\\.\\PhysicalDrive0",
+        "\\\\?\\GLOBALROOT\\Device\\Harddisk0",
         "\x00",
     ],
 )
-def test_nonlocal_input_is_rejected(path: str) -> None:
+def test_protocol_and_device_inputs_are_rejected(path: str) -> None:
     with pytest.raises(InvalidInputError):
         snapshot_source(path)
 
