@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status:** PR-01 through PR-03 are merged. PR-04 adds confirmed staged remux execution, independent validation and exclusive publication on this branch. GUI, extraction, cancellation UI, importing and releases remain deferred.
+**Status:** PR-01 through PR-04 are merged. PR-05 on this branch adds validated external SRT, conservative single-stream extraction, safe backend cancellation and structured progress. GUI and packaging remain PR-06/PR-07; no release is published.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -66,3 +66,13 @@ The MVP works with local media only. It is independent of YouTube Smart Download
 **Language policy:** all project artifacts must be written in **English**, including documentation, ADRs, source-code comments/docstrings, commit messages, PR descriptions, Issues, tests, UI copy, and instructions to Codex. ChatGPT may explain the project conversationally in Spanish if the user asks, but changes committed to the repository must remain in English.
 
 The repository name `media-track-forge` and the final license are subject to confirmation before public release.
+
+## PR-05 backend APIs
+
+ExternalSubtitleService validates UTF-8 SRT and independently probes its actual stream.
+ExtractionPlanningService/ExtractionExecutionService support the explicit elementary
+matrix. Both execution services share cancellation, progress, private staging and
+exclusive publication. These are worker-callable Python APIs, with no new CLI/GUI.
+See [external tracks, extraction and cancellation](docs/16-EXTERNAL-TRACKS-EXTRACTION-AND-CANCELLATION.md)
+for usage, encoding/matrix limits, revision confirmation and atomic commitment.
+G3 remains subject to owner review; the complete MVP is not claimed.

@@ -69,3 +69,14 @@ AC-01/02/06/07/09/10/12, including original hashes and destination races. AVI-to
 and internal SubRip conversion cover remux portions only of AC-03/04. Full external
 SRT AC-03/04/05 and cancellation AC-08 remain pending, as do GUI acceptance and
 extraction. No complete MVP or G3 acceptance is claimed from these results alone.
+
+## PR-05 backend coverage
+
+External SRT and remux E2E address FR-03 and AC-03/04/05/11. Extraction tests
+exercise FR-08 for every enabled codec/source/output pair. Backend cancellation
+and progress address FR-11 and AC-08 using the shared confirmed/safe pipeline
+for FR-09/10/12/13/14. Unicode paths continue AC-09 coverage. Mandatory real tests
+retain original hashes, inspect actual outputs and check cleanup/collisions.
+Exact enabled combinations, evidence boundaries and diagnostics are in document 16.
+No GUI interaction, full FR-15, packaging, complete MVP or owner G3 acceptance is
+claimed. Exact final test counts and platform results belong in the PR.

@@ -1,5 +1,6 @@
 """Managed, bounded shell-free process execution; no command strings are accepted."""
 
+import io
 import math
 import os
 import shutil
@@ -9,9 +10,11 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import BinaryIO
+from typing import cast
 
+from mediatrack_forge.application.control import ExecutionControl
 from mediatrack_forge.domain.execution import ExecutionFailure, ProcessOutcome
+from mediatrack_forge.infrastructure.ffmpeg_progress import ProgressParser
 from mediatrack_forge.infrastructure.windows_job import WindowsJob
 
 CAPTURE_LIMIT = 64 * 1024
@@ -68,8 +71,15 @@ def _stop_group(process: subprocess.Popen[bytes], job: WindowsJob | None) -> boo
 
 class FFmpegProcessRunner:
     def run(self, arguments: tuple[str, ...], timeout_seconds: float) -> ProcessOutcome:
+        return self.run_controlled(arguments, timeout_seconds, None)
+
+    def run_controlled(
+        self, arguments: tuple[str, ...], timeout_seconds: float, control: ExecutionControl | None
+    ) -> ProcessOutcome:
         if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
             return ProcessOutcome(None, "INVALID_TIMEOUT")
+        if control is not None and control.cancellation.requested:
+            return ProcessOutcome(None, "PROCESS_CANCELLED")
         job: WindowsJob | None = None
         process: subprocess.Popen[bytes] | None = None
         readers: list[threading.Thread] = []
@@ -77,15 +87,21 @@ class FFmpegProcessRunner:
         overflow = threading.Event()
         code: str | None = None
         safe = True
+        parser = ProgressParser()
+        progress_lock = threading.Lock()
+        last_event = 0.0
 
-        def drain(pipe: BinaryIO, target: bytearray) -> None:
+        def drain(pipe: io.BufferedReader, target: bytearray) -> None:
             try:
-                while chunk := pipe.read(8192):
+                while chunk := pipe.read1(8192):
                     remaining = CAPTURE_LIMIT - len(target)
                     target.extend(chunk[:remaining])
-                    if len(chunk) > remaining:
+                    if control is not None and target is buffers[0]:
+                        with progress_lock:
+                            parser.feed(chunk)
+                    elif len(chunk) > remaining:
                         overflow.set()
-            except OSError:
+            except (OSError, ValueError):
                 overflow.set()
             finally:
                 pipe.close()
@@ -111,11 +127,23 @@ class FFmpegProcessRunner:
                     return ProcessOutcome(process.returncode, "PROCESS_CONTAINMENT_FAILED", False)
             assert process.stdout is not None and process.stderr is not None
             for pipe, buffer in zip((process.stdout, process.stderr), buffers, strict=True):
-                reader = threading.Thread(target=drain, args=(pipe, buffer), daemon=True)
+                reader = threading.Thread(
+                    target=drain, args=(cast(io.BufferedReader, pipe), buffer), daemon=True
+                )
                 readers.append(reader)
                 reader.start()
             deadline = time.monotonic() + timeout_seconds
             while process.poll() is None or any(reader.is_alive() for reader in readers):
+                if control is not None:
+                    if control.cancellation.requested:
+                        control.emit("cancelling")
+                        code = "PROCESS_CANCELLED"
+                        break
+                    if time.monotonic() - last_event >= 0.1:
+                        with progress_lock:
+                            seconds = parser.seconds
+                        control.emit("running", seconds)
+                        last_event = time.monotonic()
                 if overflow.is_set():
                     code = "PROCESS_OUTPUT_LIMIT"
                     break

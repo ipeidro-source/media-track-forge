@@ -11,6 +11,7 @@ from mediatrack_forge.application.inspection import InspectionError
 from mediatrack_forge.domain.execution import ValidationCheck, ValidationReport
 from mediatrack_forge.domain.media import Stream
 from mediatrack_forge.domain.planning import OperationPlan
+from mediatrack_forge.infrastructure.srt import validate_srt
 
 
 def _rational(value: str | None) -> float | None:
@@ -178,6 +179,12 @@ class FFprobeOutputValidator:
         ]
         if durations and all(value is not None for value in durations):
             expected_duration = max(value for value in durations if value is not None)
+            for track in plan.external_tracks:
+                if any(s.reference.source == track.source for s in plan.included):
+                    expected_duration = max(
+                        expected_duration,
+                        max(cue.end_ms / 1000 for cue in validate_srt(track.source.path)),
+                    )
             self._duration(
                 checks, expected_duration, observed.format.duration_seconds, budget, None
             )

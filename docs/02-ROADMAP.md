@@ -45,3 +45,11 @@ PR-04 implements confirmed remux execution, staged validation and exclusive
 publication. Its actual hosted evidence belongs in the PR. G3 remains incomplete:
 extraction and full user cancellation are PR-05 responsibilities; GUI/release
 gates are not advanced by this iteration.
+
+## PR-05 iteration
+
+PR-04 is merged at 3bea7ee; main CI 43614579922 passed. D14-D18 approve the
+remaining backend external SRT, exact-matrix extraction, cancellation and progress
+work on this branch. Evidence and review belong in PR-05; G3 remains pending owner
+acceptance. PR-06 implements GUI interaction; PR-07 addresses packaging/Windows
+desktop smoke checks and release gates. Neither is implemented here.

@@ -1,8 +1,9 @@
 # Confirmed remux execution and validation - PR-04
 
-The application API executes the existing compatibility policy and plans only.
-Inspection schema v1 and plan_version 1 are unchanged. There is no new CLI or GUI,
-external subtitle importer, extraction, cancellation UI, transcoding or release work.
+The application API executes the existing compatibility policy and plans.
+Inspection schema v1 and plan_version 1 are unchanged. PR-05 extends the backend
+with external SRT, separate extraction plans/validation, cancellation and progress;
+see document 16. There is no new CLI, GUI, video/audio transcoding or release work.
 
 ## API and explicit confirmation
 
@@ -49,11 +50,12 @@ Before allocating staging or starting FFmpeg, the service:
 Any forged derived fields, altered intent, changed diagnostics or stale content
 fail. A supplied arguments tuple is ignored even if it appears valid. All fresh
 arguments come from the existing PR-03 generator, not a second operation planner.
-ExternalTrack execution/import remains explicitly deferred; supplying external
-records is rejected. Each fresh input must be a video-bearing container; subtitle-
-or audio-only additional files cannot bypass the boundary by omitting an external
-record. Multiple already-inspected video-bearing container inputs can be revalidated
-and mapped; no additional importing workflow is implemented.
+PR-05 replaces the external-import deferral with validated source roles: the primary
+source must contain a selected video, while an additional subtitle-only source must
+match a freshly structurally validated and independently inspected ExternalTrack
+SubRip/SRT record. Unsupported external audio and missing external-record bypasses
+remain rejected. Multiple video-bearing container inputs remain supported. Source
+order, metadata and complete external intent participate in revision binding.
 
 After processing and validation, every source is re-inspected and the plan is
 rebuilt again before publication. A last-moment existing destination is rejected;
@@ -80,7 +82,7 @@ fresh generator arguments only to its staging pathname and changes the fixed `-n
 to `-y` **solely for that exclusively reserved, owned private file**. This permits
 FFmpeg to fill the reserved inode; the final pathname is never passed to FFmpeg.
 All approved input positions, maps, codecs, metadata and dispositions remain intact.
-Video/audio options are copy-only; only approved internal SubRip-to-mov_text may encode.
+Video/audio options are copy-only; only approved subtitle conversion may encode.
 
 After FFmpeg is proven stopped, staged output is independently validated. The
 owned file is checked and fsynced, sources/intent are revalidated, then `os.link`
@@ -131,8 +133,8 @@ The configured process timeout covers FFmpeg plus pipe completion. Termination
 verification can take an additional bounded wait (up to 5 seconds per verification
 stage and reader joins). Each ffprobe call has its own timeout. Filesystem calls,
 uninterruptible OS work and the entire service transaction do not have a single
-hard real-time deadline. PR-05 user cancellation/progress remain deferred; managed
-runner and immutable state boundaries are extension points, not a UI workflow.
+hard real-time deadline. PR-05 adds cancellation/progress through the managed
+runner and immutable state boundaries; document 16 defines the backend API.
 
 ## Independent validation policy
 
@@ -250,3 +252,14 @@ References: [Python hard links](https://docs.python.org/3/library/os.html#os.lin
 [Windows Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects).
 Full extraction, user cancellation, GUI, external-SRT import and release work remain
 outside PR-04. G3 cannot be completed by this remux-only iteration.
+
+## PR-05 extension boundary
+
+Document 16 supersedes historical external-import/extraction/cancellation deferrals
+in this PR-04 contract. The shared orchestrator adds execute(request, control=...),
+per-job cancellation and structured phase/progress events. Successful publication
+is the commitment boundary; cancellation cannot roll back a final output. Known
+remux duration still requires observed timing and a reliable tolerance. Elementary
+extraction uses its separate documented packet-based validation alternative when
+raw duration is unavailable, without weakening the remux policy. Filesystem, cleanup,
+process trust and diagnostic limits above remain. GUI and release work stay deferred.

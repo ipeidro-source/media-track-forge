@@ -4,6 +4,7 @@ import math
 import os
 from pathlib import Path
 
+from mediatrack_forge.application.control import ExecutionControl
 from mediatrack_forge.application.execution_ports import (
     Inspector,
     OutputValidator,
@@ -11,6 +12,7 @@ from mediatrack_forge.application.execution_ports import (
     ProcessRunner,
     StagingStore,
 )
+from mediatrack_forge.application.external_subtitles import ExternalSubtitleService
 from mediatrack_forge.application.inspection import (
     ExecutableError,
     InspectionError,
@@ -29,7 +31,10 @@ from mediatrack_forge.domain.planning import OperationPlan
 from mediatrack_forge.infrastructure.ffmpeg_arguments import build_arguments
 from mediatrack_forge.infrastructure.ffmpeg_process import FFmpegProcessRunner, discover_ffmpeg
 from mediatrack_forge.infrastructure.ffprobe import FFprobeAdapter
-from mediatrack_forge.infrastructure.output_validation import FFprobeOutputValidator
+from mediatrack_forge.infrastructure.output_validation import (
+    FFprobeOutputValidator,
+    stream_duration,
+)
 from mediatrack_forge.infrastructure.staging import PrivateStagingStore
 
 MESSAGES = {
@@ -56,6 +61,8 @@ MESSAGES = {
     "TEMPORARY_CLEANUP_FAILED": "Temporary cleanup is incomplete; inspect staging privately.",
     "CLEANUP_UNSAFE": "Process termination is unverified; active staging was retained for safety.",
     "EXECUTION_FAILED": "Execution failed unexpectedly; no unvalidated output was published.",
+    "PROCESS_CANCELLED": "Cancellation stopped this operation before publication.",
+    "INVALID_EXTERNAL_SRT": "External subtitles require valid UTF-8 SRT and valid cue timing.",
 }
 
 
@@ -83,8 +90,6 @@ class RemuxExecutionService:
             raise ExecutionFailure("UNCONFIRMED_PLAN")
         if supplied.revision != request.reviewed_revision:
             raise ExecutionFailure("INVALID_PLAN")
-        if supplied.external_tracks:
-            raise ExecutionFailure("EXTERNAL_IMPORT_DEFERRED")
         try:
             fresh = tuple(
                 inspector.inspect(
@@ -98,10 +103,27 @@ class RemuxExecutionService:
             raise ExecutionFailure("CHANGED_INPUT") from exc
         if fresh != supplied.sources:
             raise ExecutionFailure("CHANGED_INPUT")
-        if any(not any(stream.kind == "video" for stream in asset.streams) for asset in fresh):
-            # A missing ExternalTrack record must not turn a raw SRT/audio file into
-            # an authorized PR-04 importing workflow. Inputs are video-bearing containers.
-            raise ExecutionFailure("EXTERNAL_IMPORT_DEFERRED")
+        external_sources = {track.source for track in supplied.external_tracks}
+        for track in supplied.external_tracks:
+            imported, validated = ExternalSubtitleService(inspector).import_srt(
+                track.source.path,
+                track.metadata,
+                timeout_seconds=request.configuration.probe_timeout_seconds,
+            )
+            if validated != track or imported not in fresh or imported == fresh[0]:
+                raise ExecutionFailure("INVALID_EXTERNAL_SRT")
+        for asset in fresh:
+            if asset.source not in external_sources and not any(
+                stream.kind == "video" for stream in asset.streams
+            ):
+                raise ExecutionFailure("EXTERNAL_IMPORT_DEFERRED")
+        if not fresh or not any(
+            item.include
+            and item.reference.source == fresh[0].source
+            and any(s.index == item.reference.index and s.kind == "video" for s in fresh[0].streams)
+            for item in supplied.selections
+        ):
+            raise ExecutionFailure("INVALID_PLAN")
         regenerated = OperationPlanningService().plan(
             fresh,
             supplied.selections,
@@ -125,7 +147,17 @@ class RemuxExecutionService:
             raise ExecutionFailure("INVALID_PLAN")
         return regenerated
 
-    def execute(self, request: ExecutionRequest) -> ExecutionResult:
+    @staticmethod
+    def _arguments(plan: OperationPlan) -> tuple[str, ...]:
+        return build_arguments(plan)
+
+    def _validator_for(self, request: ExecutionRequest) -> OutputValidator:
+        return self._validator
+
+    def execute(
+        self, request: ExecutionRequest, *, control: ExecutionControl | None = None
+    ) -> ExecutionResult:
+        control = control if control is not None else ExecutionControl()
         history: list[ExecutionState] = ["planned"]
         diagnostics: list[ExecutionDiagnostic] = []
         stage: OwnedStage | None = None
@@ -135,6 +167,8 @@ class RemuxExecutionService:
         safe_cleanup = True
         cleanup_complete = True
         try:
+            control.emit("preparing")
+            control.cancellation.check()
             config = request.configuration
             if any(
                 not math.isfinite(value) or value <= 0
@@ -147,33 +181,56 @@ class RemuxExecutionService:
                 else InspectionService(FFprobeAdapter(config.ffprobe))
             )
             plan = self._regenerate(request, inspector)
+            durations = [
+                stream_duration(s.source_stream)
+                for s in plan.included
+                if s.source_stream.kind in ("video", "audio")
+            ]
+            control.expected_seconds = (
+                max(d for d in durations if d is not None)
+                if durations and all(d is not None for d in durations)
+                else None
+            )
             destination = plan.destination_path
             if destination is None or not destination.parent.is_dir():
                 raise ExecutionFailure("INVALID_DESTINATION")
             executable = discover_ffmpeg(config.ffmpeg)
+            control.cancellation.check()
             stage = self._staging.allocate(destination)
             stage.verify()
             # Regenerate fresh arguments; never consume supplied plan.arguments.
-            arguments = list(build_arguments(plan))
+            arguments = list(self._arguments(plan))
             if arguments[-1] != str(destination) or arguments[4] != "-n":
                 raise ExecutionFailure("INVALID_PLAN")
             arguments[0] = executable
             arguments[-1] = str(stage.path)
             # Only our exclusively reserved private staging file may be truncated.
             arguments[4] = "-y"
+            control.cancellation.check()
             history.append("running")
+            control.emit("running")
             safe_cleanup = False  # An adapter must prove the process can no longer write.
-            outcome = self._runner.run(tuple(arguments), config.timeout_seconds)
+            if isinstance(self._runner, FFmpegProcessRunner):
+                arguments[5:5] = ["-progress", "pipe:1", "-nostats"]
+                outcome = self._runner.run_controlled(
+                    tuple(arguments), config.timeout_seconds, control
+                )
+            else:
+                outcome = self._runner.run(tuple(arguments), config.timeout_seconds)
             safe_cleanup = outcome.safe_to_cleanup
             if not safe_cleanup:
                 raise ExecutionFailure("PROCESS_TERMINATION_FAILED")
+            control.cancellation.check()
             if outcome.error_code is not None or outcome.return_code != 0:
                 raise ExecutionFailure(outcome.error_code or "FFMPEG_FAILED")
             stage.verify()
             history.append("validating")
-            validation = self._validator.validate(
+            control.emit("validating")
+            control.cancellation.check()
+            validation = self._validator_for(request).validate(
                 plan, stage.path, inspector, config.probe_timeout_seconds
             )
+            control.cancellation.check()
             if not validation.passed:
                 raise ExecutionFailure("OUTPUT_VALIDATION_FAILED")
             stage.verify()
@@ -183,7 +240,8 @@ class RemuxExecutionService:
             if os.path.lexists(destination):
                 raise ExecutionFailure("DESTINATION_COLLISION")
             history.append("publishing")
-            stage.publish(destination)
+            control.emit("publishing")
+            control.cancellation.publish(lambda: stage.publish(destination))
             published = True
         except ExecutionFailure as exc:
             diagnostics.append(
@@ -218,8 +276,19 @@ class RemuxExecutionService:
             history.append("completed")
         elif any(item.code == "PROCESS_TIMEOUT" for item in diagnostics):
             history.append("timed_out")
+        elif safe_cleanup and any(item.code == "PROCESS_CANCELLED" for item in diagnostics):
+            history.extend(("cancelling", "cancelled"))
+            control.emit("cancelling")
         else:
             history.append("failed")
+        control.emit(history[-1])
+        if control.callback_failed:
+            diagnostics.append(
+                ExecutionDiagnostic(
+                    "PROGRESS_LISTENER_FAILED",
+                    "Progress listener failed and was disabled; safety checks continued.",
+                )
+            )
         return ExecutionResult(
             history[-1],
             tuple(history),

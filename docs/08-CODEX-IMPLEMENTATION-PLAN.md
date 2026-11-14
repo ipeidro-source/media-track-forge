@@ -54,3 +54,12 @@ PR-04 remux execution/validation/exclusive publication only. Its final PR descri
 must contain real Windows/Ubuntu service-level E2E and log evidence. PR-05 extraction,
 user cancellation and later GUI/release work remain deferred. G3 is not completed
 by the remux-only iteration.
+
+## PR-05 approved iteration
+
+PR-01..04 are merged; latest verified main is 3bea7ee with passing CI. D14-D18
+approve external SRT, conservative extraction, cancellation and progress on the
+dedicated PR-05 branch. Document 16 defines the backend contract. Preserve existing
+tests and all five required CI jobs and inspect their complete final logs.
+PR-06 GUI and PR-07 packaging remain unimplemented. G3 requires owner acceptance;
+do not merge, tag or release as part of implementation.
