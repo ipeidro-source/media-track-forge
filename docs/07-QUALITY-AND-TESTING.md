@@ -77,3 +77,8 @@ Only the test harness executes generated arguments against temporary files and
 probes expected streams/codecs/metadata. Source hashes and identities are compared.
 The matrix-to-test check prevents enabling an unrepresented codec entry. Existing
 mandatory Windows/Ubuntu Python 3.12 integration jobs run all cases unchanged.
+
+The mixed H.264/AAC chapter fixture permits 50 ms timestamp movement because hosted
+FFmpeg 6.1.1 applied an approximately 21 ms offset. Plans report this as uncertain
+and require acknowledgement. This test tolerance does not implement or preapprove
+the future output validator's general timing policy.

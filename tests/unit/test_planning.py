@@ -304,6 +304,9 @@ def test_attachments_and_chapters_are_explicit(tmp_path: Path, container: str) -
         OutputProfile(container, str(tmp_path / f"out.{container}")),
     )
     if container == "mkv":
+        assert "CHAPTER_TIMESTAMPS_UNCERTAIN" in plan.pending_warnings
+        assert not plan.execution_allowed
+        plan = acknowledged(plan)
         assert plan.chapter_input_index == 0 and plan.execution_allowed
         assert dict(plan.included[1].output_tags) == {
             "filename": "note.txt",

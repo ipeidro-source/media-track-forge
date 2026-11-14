@@ -363,6 +363,18 @@ class OperationPlanningService:
                 continue
             if preserve_chapters and input_index == 0 and output.container == "mkv":
                 chapter_input = 0
+                issue(
+                    "CHAPTER_TIMESTAMPS_UNCERTAIN",
+                    "warning",
+                    "Muxing may shift chapter times; validate output timing before publication.",
+                )
+                preservation.append(
+                    PreservationDecision(
+                        "chapter_timestamps",
+                        "uncertain",
+                        "Request source chapter bounds; muxer timestamp offsets may change them.",
+                    )
+                )
                 if any(key != "title" for chapter in asset.chapters for key, _ in chapter.tags):
                     issue(
                         "CHAPTER_METADATA_EXCLUDED",

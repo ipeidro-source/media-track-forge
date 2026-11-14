@@ -83,6 +83,10 @@ These questions do not prevent initial scaffolding, but the relevant ones must b
   silently normalizing requested intent. MP4 metadata semantics are uncertain.
   Stream/global tags outside the supported policy and nonzero other dispositions
   are disclosed losses. Exact metadata or chapter-ID round-tripping is not promised.
+- Hosted FFmpeg 6.1.1 shifted chapter bounds by roughly 21 ms in the mixed H.264/AAC
+  fixture. Chapter timing is explicitly uncertain and requires acknowledgement;
+  the integration test checks a 50 ms fixture tolerance, not a general product
+  duration-validation guarantee. FFmpeg 9/local builds did not show the same shift.
 - More than one effective default per stream kind blocks. Alternative silent
   default selection was rejected. Missing flags stay absent in domain snapshots;
   command generation disables auto-default but muxers may emit zero-valued flags.

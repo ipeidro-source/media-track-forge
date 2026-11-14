@@ -101,7 +101,10 @@ title and disposition round-tripping is marked uncertain. Matroska may omit an
 explicit und language tag, also warned. Exact tag bytes and player behavior are
 not promised. FFmpeg may generate its own container/encoder tags.
 
-Only primary-source chapter time bounds and titles into MKV are enabled. Chapter
+Only primary-source chapter time bounds and titles into MKV are enabled. Requested
+time bounds are not guaranteed exact: FFmpeg may shift timestamps during muxing,
+so CHAPTER_TIMESTAMPS_UNCERTAIN requires acknowledgement and output validation.
+Chapter
 mapping and per-chapter title metadata are explicit. Other chapter tags are
 excluded with a warning; chapter IDs may change after muxing. Requested MP4 chapter
 preservation blocks until validated (it can introduce extra data streams). Explicit
@@ -159,7 +162,7 @@ Current warning codes:
 FORMAT_METADATA_EXCLUDED STREAM_METADATA_EXCLUDED LANGUAGE_UND_UNCERTAIN
 DISPOSITION_LOSS DISPOSITION_ABSENCE_UNCERTAIN MP4_METADATA_UNCERTAIN
 SUBTITLE_FORMATTING_MAY_CHANGE STREAM_IMPLICITLY_OMITTED CHAPTERS_EXCLUDED
-CHAPTER_METADATA_EXCLUDED
+CHAPTER_METADATA_EXCLUDED CHAPTER_TIMESTAMPS_UNCERTAIN
 ```
 
 Warnings are acknowledged by code, covering all occurrences of that code within
