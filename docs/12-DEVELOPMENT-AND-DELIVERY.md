@@ -198,3 +198,14 @@ Exact tested builds and observed results belong in the PR evidence. No workflow,
 Action version, runner, dependency or release changes are required by PR-03.
 Product media execution and portable packaging remain deferred. See the
 [plan contract](14-OPERATION-PLAN-CONTRACT.md) before consuming proposed arguments.
+
+## PR-04 local and hosted validation
+
+The existing commands and external tool setup remain valid. All offline execution,
+filesystem, validator and Python process-tree tests run in `python -m pytest tests/unit`.
+`python -m pytest tests/integration -m integration -v -s` now includes real product
+execution E2E and prints filesystem evidence. Windows tests use native security/job
+APIs; Linux strict typing can also be checked locally with `python -m mypy --platform linux`.
+No dependencies, Actions, runner labels or release workflows change in PR-04.
+Exact final counts, observed Windows/Ubuntu builds/filesystems and full log review
+belong in the PR. No user-facing remux CLI, GUI or portable Release is introduced.

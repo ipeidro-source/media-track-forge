@@ -82,3 +82,21 @@ The mixed H.264/AAC chapter fixture permits 50 ms timestamp movement because hos
 FFmpeg 6.1.1 applied an approximately 21 ms offset. Plans report this as uncertain
 and require acknowledgement. This test tolerance does not implement or preapprove
 the future output validator's general timing policy.
+
+## PR-04 execution tests
+
+New offline tests inject inspection/process/validation boundaries and exercise
+local staging, collisions, ownership, error cleanup and revision-bound confirmation.
+Python-only managed process tests verify no shell, capture bounds, nonzero exit,
+timeout and ordinary descendant writers. Dangling-link unit checks inject lexists
+for unprivileged Windows portability; they are not falsely reported as real
+symlink-creation evidence. No tests use hidden skips.
+
+Mandatory product-level E2E cases in test_execution_e2e.py use real FFmpeg/ffprobe:
+video-only MP4, multi-audio selection, AVI-to-MKV, internal subtitle conversion,
+chosen video, metadata/chapters/attachments, incompatible/same/existing destinations,
+last-moment publication races, Unicode, injected failures, real managed timeout,
+and incorrect staged-output rejection. Original content hashes are checked;
+selected video-only/AVI cases also compare copied packet hashes. Tool and filesystem
+versions are printed in hosted logs. Neither local tests nor ffprobe metadata alone
+establish full decoding, universal filesystem durability or completed G3 scope.

@@ -1,6 +1,6 @@
 # Codex Agent Instructions — MediaTrack Forge
 
-Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/14` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
+Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/15` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
 
 ## Language policy — mandatory
 
@@ -37,11 +37,15 @@ PR-01 was merged and its main CI passed. Preserve its src layout, dependency pin
 
 Keep unit tests runnable without media tools across the full Python matrix. Integration tests must fail when required tools/fixture codecs are missing; never silently skip mandatory media coverage. Run them on both Python 3.12 CI platforms. Preserve original ffprobe indices and ordering, all stream kinds and unknown metadata values. Changes to the public JSON contract must follow docs/13 compatibility policy.
 
-PR-02 is merged and its main CI passed. Owner-approved PR-03 decisions D4-D8 authorize only a conservative evidence-backed compatibility policy, explicit selection/order, ExternalTrack extension records without importing, metadata/chapters/attachments diagnostics, and immutable plan_version 1 plans. Preserve inspection schema v1 unchanged. Selected unsupported codecs/kinds must block; implicit omissions and metadata loss must be visible. Warnings require explicit acknowledgement, separate from future execution confirmation. Generate explicit argument arrays but never run them in product code.
+PR-02 is merged and its main CI passed. Owner-approved PR-03 decisions D4-D8 authorize only a conservative evidence-backed compatibility policy, explicit selection/order, ExternalTrack extension records without importing, metadata/chapters/attachments diagnostics, and immutable plan_version 1 plans. Preserve inspection schema v1 unchanged. Selected unsupported codecs/kinds must block; implicit omissions and metadata loss must be visible. Warnings require explicit acknowledgement, separate from future execution confirmation. PR-03 generated proposed arrays only; the approved PR-04 execution boundary below governs their use.
 
-FFmpeg may execute only in integration tests to generate fixtures and validate candidate mux/conversion arguments in temporary directories. Every enabled compatibility entry must pass real tests on Windows and Ubuntu Python 3.12; missing tools/encoders must fail, not skip. Unvalidated candidates stay blocked. Do not claim full execution ACs or G2 owner acceptance from planning tests.
+PR-03 test-only muxing remains evidence for every enabled policy combination. PR-04 separately authorizes the confirmed execution service below. Every enabled compatibility entry must pass real tests on Windows and Ubuntu Python 3.12; missing tools/encoders must fail, not skip. Unvalidated candidates stay blocked. Do not claim full execution ACs or G2 owner acceptance from planning tests.
 
-No product execution, remux/extraction engine, output publication, GUI, external subtitle import, video/audio encoding, packaging or release changes are authorized. Do not start PR-04 without separate approval.
+PR-03 is merged at a91493f with passing main CI. D9-D13 explicitly authorize PR-04 only: private same-filesystem staging, independent ffprobe validation, exclusive hard-link publication, trusted plan regeneration with revision-bound final confirmation, automatic safe cleanup and managed timeout. Never trust caller-supplied arguments or execution_allowed. Never pass a requested final destination to FFmpeg. No unsafe publication fallback is permitted. Prove process quiescence before cleanup; report retained artifacts if it cannot be proven. The only staging overwrite permission is our exclusively reserved owned file inside a private directory.
+
+Keep all existing codec/inspection/plan contracts and CI controls. Unit tests run without media tools on the full matrix; product-level E2E tests must run on Windows/Ubuntu Python 3.12 without silent skips. Do not claim power-loss durability, an OS sandbox, universal process-tree containment or full decode integrity from metadata checks.
+
+No extraction, full user cancellation, progress UI, GUI, subtitle import, video/audio encoding, batch, packaging or releases are authorized. G3 also requires deferred PR-05 work. Do not merge, tag or publish without owner authorization.
 
 ## PR reporting template
 

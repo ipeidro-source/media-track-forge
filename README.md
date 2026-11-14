@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status:** PR-01 and PR-02 are merged. PR-03 adds compatibility and declarative planning on this feature branch; G2 remains pending owner review. No product media execution, GUI or executable release is implemented.
+**Status:** PR-01 through PR-03 are merged. PR-04 adds confirmed staged remux execution, independent validation and exclusive publication on this branch. GUI, extraction, cancellation UI, importing and releases remain deferred.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -31,6 +31,12 @@ diagnostics and warning acknowledgements. It creates no output and runs no FFmpe
 See the [plan v1 contract](docs/14-OPERATION-PLAN-CONTRACT.md) for the Python API,
 supported combinations and limits. There is no public planning/editing CLI.
 
+The Python `RemuxExecutionService` consumes an explicitly revision-confirmed plan,
+re-inspects/regenerates it, writes private staging, validates it and publishes by an
+exclusive hard link. Existing final files are never overwritten. There is no
+remux CLI. See [execution and validation](docs/15-EXECUTION-AND-VALIDATION-CONTRACT.md)
+for supported filesystem/process guarantees and timing limitations.
+
 ## Documentation index
 
 - [01 — Vision and scope](docs/01-VISION-AND-SCOPE.md)
@@ -48,6 +54,8 @@ supported combinations and limits. There is no public planning/editing CLI.
 - [13 - Inspection JSON contract](docs/13-INSPECTION-CONTRACT.md)
 
 - [14 - Operation plan contract](docs/14-OPERATION-PLAN-CONTRACT.md)
+
+- [15 - Execution and validation contract](docs/15-EXECUTION-AND-VALIDATION-CONTRACT.md)
 
 ## Guiding principles
 

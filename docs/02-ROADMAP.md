@@ -36,3 +36,12 @@ PR-01 and PR-02 are merged. The PR-02 main baseline is
 PR-03 targets G2 with compatibility policy and declarative plans only. G2 remains
 pending review and acceptance by the owner; no execution, publication or GUI gate
 is completed by planning tests.
+
+## PR-04 iteration evidence boundary
+
+PR-03 is merged at a91493fe67203716300b015ada481140f546de8a, with passing
+[post-merge CI](https://github.com/ipeidro-source/media-track-forge/actions/runs/43608930710).
+PR-04 implements confirmed remux execution, staged validation and exclusive
+publication. Its actual hosted evidence belongs in the PR. G3 remains incomplete:
+extraction and full user cancellation are PR-05 responsibilities; GUI/release
+gates are not advanced by this iteration.
