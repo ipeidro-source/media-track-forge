@@ -37,3 +37,7 @@ Do not publish a Release on every merge. A manual version tag triggers a validat
 ## Definition of done for MVP
 
 All AC-01 through AC-12 pass with evidence; the original files are verified unchanged on failure/cancel; GUI and Windows packaging are smoke-tested; the user approves publishing a release.
+
+## PR-01 implemented foundation
+
+See [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md) for exact setup and check commands, the Windows 3.11/3.12/3.13 and Linux 3.12 matrix, verified Node 24 Actions, explicit runner images, weekly dependency reviews, actionlint and CI log requirements. Media, GUI and executable validation described above remains future work. No release workflow is enabled.

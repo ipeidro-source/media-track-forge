@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status:** project proposal and planning baseline v0.2 — November 14, 2026. No product code has been implemented as part of this documentation kit.
+**Status:** PR-01 development foundation - November 14, 2026. Installable Python scaffold, offline tests and CI; media features and executable releases remain unimplemented.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -10,6 +10,8 @@ A free, open-source, Windows-first desktop application for **inspecting, adding,
 2. Review the [Roadmap](docs/02-ROADMAP.md) and [MVP requirements](docs/03-MVP-REQUIREMENTS.md).
 3. Codex must follow [AGENTS.md](AGENTS.md) and the [Codex implementation plan](docs/08-CODEX-IMPLEMENTATION-PLAN.md).
 4. Record new decisions in the [Architecture Decision Record](docs/06-ARCHITECTURE-DECISIONS.md); do not silently override accepted decisions.
+
+For Python setup, validation commands, CI policy and deferred Windows release gates, see [Development and delivery](docs/12-DEVELOPMENT-AND-DELIVERY.md). The current entry point supports help and `--version` only.
 
 ## Documentation index
 
@@ -24,6 +26,7 @@ A free, open-source, Windows-first desktop application for **inspecting, adding,
 - [09 — GitHub and development environment](docs/09-GITHUB-AND-DEVELOPMENT.md)
 - [10 — Risks and open questions](docs/10-RISKS-AND-OPEN-QUESTIONS.md)
 - [11 — ChatGPT project context](docs/11-CHATGPT-PROJECT-CONTEXT.md)
+- [12 - Development and delivery foundation](docs/12-DEVELOPMENT-AND-DELIVERY.md)
 
 ## Guiding principles
 

@@ -2,7 +2,7 @@
 
 ## Principles
 
-Python 3.11+ and CustomTkinter are **proposed, not permanently mandated**. Design a Windows-first desktop GUI over a UI-independent core. Treat FFmpeg and ffprobe as external executables whose presence and capabilities are checked. The MVP works offline with local files.
+Python 3.11+ is selected for PR-01; CustomTkinter remains **proposed**. Design a Windows-first desktop GUI over a UI-independent core. Treat FFmpeg and ffprobe as external executables whose presence and capabilities are checked. The MVP works offline with local files.
 
 ```text
 Windows Desktop UI (CustomTkinter)
@@ -58,3 +58,7 @@ Phase 1: selective `TranscodePlan` for individual video and audio streams.
 Phase 2: `BatchJob`, resource scheduling, estimated savings, rules-based execution, and GPU-capability discovery.
 
 Optional future: a headless service/CLI or Docker deployment should use the core without importing the GUI.
+
+## PR-01 package boundaries
+
+The `src/mediatrack_forge` scaffold separates `domain`, `application`, `infrastructure`, and `ui`. The proposed specialized modules above remain future responsibilities inside these layers, not implemented adapters. The minimal CLI lives in `ui/cli.py` and supports help/version only. No GUI dependency or media process is introduced. See [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md).
