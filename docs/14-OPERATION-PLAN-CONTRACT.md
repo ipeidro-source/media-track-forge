@@ -26,6 +26,8 @@ compatibility policy and pure argument generator are separate components.
 | Field | JSON type | Meaning |
 | --- | --- | --- |
 | plan_version | integer | Exactly 1; independent of inspection schema version |
+| revision | string | Lowercase SHA-256 fingerprint of the exact plan content described below |
+| acknowledged_revision | string or null | Caller-supplied reviewed revision; missing/stale values grant no acknowledgement |
 | sources | array | Complete, unmodified inspection schema v1 documents in FFmpeg input order |
 | output | object | `container`: string mkv/mp4; `requested_path`: original string; `path`: resolved absolute local string or null on invalid input |
 | selections | array | Requested order of `{reference, include: boolean, metadata}`; includes explicit exclusions and invalid requests for review |
@@ -37,7 +39,7 @@ compatibility policy and pure argument generator are separate components.
 | preservation | array | `{category: string, status, detail: string, reference: object or null}`; per-category explanation |
 | issues | array | `{code, severity, message, suggestion, reference}` described below |
 | intrinsically_valid | boolean | No issue of severity error; independent of acknowledgements |
-| acknowledged_warnings | array of strings | Sorted warning codes explicitly acknowledged for this planning invocation |
+| acknowledged_warnings | array of strings | Effective sorted acknowledged codes; empty when acknowledged_revision does not match revision |
 | pending_warnings | array of strings | Sorted unique unacknowledged warning codes |
 | execution_allowed | boolean | Intrinsically valid, all warnings acknowledged, and arguments generated; eligibility for a future confirmed/revalidated operation, not authorization to run now |
 | confirmation_required | boolean | Always true in PR-03; final execution confirmation workflow is deferred |
@@ -165,11 +167,33 @@ SUBTITLE_FORMATTING_MAY_CHANGE STREAM_IMPLICITLY_OMITTED CHAPTERS_EXCLUDED
 CHAPTER_METADATA_EXCLUDED CHAPTER_TIMESTAMPS_UNCERTAIN
 ```
 
-Warnings are acknowledged by code, covering all occurrences of that code within
-one plan generation. They never override errors. Regenerate using the current
-snapshots and explicit acknowledgements; changes to source identities, selections,
-metadata or output require a new plan and fresh review. No persistent confirmation
-token, GUI acknowledgement workflow, execution authorization or deserializer exists.
+Warnings require both their codes and the exact reviewed `revision`. First generate
+and review a plan with no acknowledgement. Regenerate the same request with
+`acknowledged_warnings=frozenset(reviewed.pending_warnings)` and
+`acknowledged_revision=reviewed.revision`. Codes alone, or codes paired with a
+different revision, grant no acknowledgement and produce no executable arguments.
+A matching revision acknowledges all occurrences of the submitted codes within
+that exact diagnostic set; submitting only some codes leaves the others pending.
+Acknowledgements never override errors. Final execution confirmation remains
+separate (`confirmation_required=true`), with no GUI or execution workflow added.
+
+The revision hashes the domain dataclass content, including plan_version, full
+inspection snapshots, ordered sources/selections/external tracks, metadata intent,
+requested and normalized destination, container, chapter policy, included/excluded
+mappings, preservation decisions, and complete ordered diagnostics (codes, severity,
+references, messages, suggestions and occurrence counts). Thus even a change that
+leaves the same warning codes requires fresh review. Canonical encoding uses
+sorted JSON keys, compact separators, ASCII escapes, finite numbers, native path
+strings, UTF-8 bytes and SHA-256. Only acknowledgement state and generated arguments
+are excluded, so applying acknowledgement does not change the revision or create
+a hash cycle. Identical intent/snapshots/diagnostics produce the same revision.
+
+The public revision is opaque: obtain it from the planner rather than hash the
+presentation JSON. It is an equality binding, not a secret or authorization token,
+not a file-content hash, and not persisted execution confirmation. Plans with no
+warnings need no acknowledgement. Immutable replacements cannot retain arguments
+if errors or unacknowledged warnings result. Source/path races still require future
+execution-time revalidation.
 
 ## Proposed arguments and destination safety
 
@@ -200,7 +224,10 @@ numbers are rejected. Missing scalars are null; absent collections are empty.
 Additive fields/codes may be introduced compatibly; consumers must ignore unknown
 fields/codes and honor severity. Removing/renaming fields, changing types/units,
 reference, mapping, action or acknowledgement semantics requires a new plan_version.
-Inspection schema v1 is unaffected.
+Inspection schema v1 is unaffected. This acknowledgement correction is part of
+the unmerged PR-03 review, establishing the initial plan_version 1 semantics;
+it is not a change to an accepted/released contract. The example revision below
+is illustrative and must not be used to acknowledge a real request.
 
 The complete example below contains one explicitly selected H.264 video stream,
 no audio/subtitles/chapters, no source metadata to lose and no warnings. Paths and
@@ -210,6 +237,8 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
 ```json
 {
   "plan_version": 1,
+  "revision": "0000000000000000000000000000000000000000000000000000000000000000",
+  "acknowledged_revision": null,
   "sources": [
     {
       "schema_version": 1,

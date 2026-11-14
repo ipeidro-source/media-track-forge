@@ -82,5 +82,14 @@ CI media checks. Inspection does not settle output compatibility or editing desi
   blocked/unacknowledged plans. Alternative mutable vendor-command dictionaries
   would hide intent and invalidate source identities.
 
+  PR-03 D8 review correction: warning codes must be paired with the SHA-256
+  revision of the exact reviewed immutable intent and diagnostic occurrences.
+  Source/order/metadata/output/chapter/external or diagnostic changes invalidate
+  prior acknowledgement even if codes are unchanged. Acknowledgement state and
+  generated arguments do not affect the revision. Intrinsic validity, warning
+  acknowledgement and future final confirmation remain distinct. Unbound code
+  sets are ineffective; blocked/unacknowledged plans expose no arguments. This
+  establishes the initial unmerged plan v1 contract without altering inspection v1.
+
 See [contract v1](14-OPERATION-PLAN-CONTRACT.md) for detailed choices and limitations.
 These decisions authorize planning and test-harness muxing only, not PR-04 execution.

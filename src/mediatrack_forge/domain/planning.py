@@ -1,6 +1,8 @@
 """Immutable, versioned planning intent; no process execution or filesystem writes."""
 
-from dataclasses import dataclass
+import hashlib
+import json
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -100,9 +102,38 @@ class OperationPlan:
     preservation: tuple[PreservationDecision, ...]
     issues: tuple[CompatibilityIssue, ...]
     acknowledged_warnings: frozenset[str]
+    acknowledged_revision: str | None = None
     arguments: tuple[str, ...] | None = None
     plan_version: int = 1
     confirmation_required: bool = True
+
+    def __post_init__(self) -> None:
+        # Also keep dataclasses.replace() from retaining a stale proposed command.
+        if self.arguments is not None and (not self.intrinsically_valid or self.pending_warnings):
+            object.__setattr__(self, "arguments", None)
+
+    @property
+    def revision(self) -> str:
+        """Fingerprint all intent, snapshots and diagnostics, excluding review state."""
+        content = asdict(self)
+        for key in ("acknowledged_warnings", "acknowledged_revision", "arguments"):
+            del content[key]
+        encoded = json.dumps(
+            content,
+            default=str,
+            sort_keys=True,
+            ensure_ascii=True,
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
+
+    @property
+    def effective_acknowledged_warnings(self) -> frozenset[str]:
+        """Codes alone, or codes bound to another revision, grant no acknowledgement."""
+        if not self.acknowledged_warnings or self.acknowledged_revision != self.revision:
+            return frozenset()
+        return self.acknowledged_warnings
 
     @property
     def intrinsically_valid(self) -> bool:
@@ -110,12 +141,13 @@ class OperationPlan:
 
     @property
     def pending_warnings(self) -> tuple[str, ...]:
+        acknowledged = self.effective_acknowledged_warnings
         return tuple(
             sorted(
                 {
                     issue.code
                     for issue in self.issues
-                    if issue.severity == "warning" and issue.code not in self.acknowledged_warnings
+                    if issue.severity == "warning" and issue.code not in acknowledged
                 }
             )
         )

@@ -90,8 +90,8 @@ These questions do not prevent initial scaffolding, but the relevant ones must b
 - More than one effective default per stream kind blocks. Alternative silent
   default selection was rejected. Missing flags stay absent in domain snapshots;
   command generation disables auto-default but muxers may emit zero-valued flags.
-- Warning acknowledgement is code-based within a regenerated plan, not a persisted
-  authorization. Caller-supplied inspection/external-validation provenance is trusted;
+- Warning acknowledgement is bound to the exact immutable plan/diagnostic revision
+  and submitted codes, not a persisted authorization. Caller-supplied inspection/external-validation provenance is trusted;
   the planner is not a sandbox for forged in-memory domain objects.
 - Source/destination checks are read-only and subject to races, mounted-network
   limitations and noncryptographic size/mtime identities. Missing output parents

@@ -70,6 +70,7 @@ def execute_test_plan(
         output,
         preserve_chapters=preserve_chapters,
         acknowledged_warnings=frozenset(plan.pending_warnings),
+        acknowledged_revision=plan.revision,
     )
     assert plan.execution_allowed and plan.arguments is not None
     assert [plan.arguments[i + 1] for i, arg in enumerate(plan.arguments) if arg == "-map"] == [

@@ -68,6 +68,7 @@ def acknowledged(plan: OperationPlan) -> OperationPlan:
         plan.output,
         external_tracks=plan.external_tracks,
         preserve_chapters=plan.preserve_chapters,
+        acknowledged_revision=plan.revision,
         acknowledged_warnings=frozenset(
             item.code for item in plan.issues if item.severity == "warning"
         ),
@@ -451,6 +452,8 @@ def test_public_contract_deterministic_and_command_policy(tmp_path: Path) -> Non
     document = plan_document(plan)
     assert set(document) == {
         "plan_version",
+        "revision",
+        "acknowledged_revision",
         "sources",
         "output",
         "selections",
@@ -534,6 +537,7 @@ def test_complete_documented_example_is_stable_contract(tmp_path: Path) -> None:
             decision["reference"]["source"] = source_data
     expected["output"]["path"] = str(plan.destination_path)
     expected["output"]["requested_path"] = plan.output.path
+    expected["revision"] = plan.revision
     expected["arguments"] = [
         arg.replace("/examples/source.mkv", str(source.source.path)).replace(
             "/examples/output.mkv", str(plan.destination_path)

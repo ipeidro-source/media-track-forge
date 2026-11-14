@@ -35,6 +35,7 @@ class OperationPlanningService:
         external_tracks: tuple[ExternalTrack, ...] = (),
         preserve_chapters: bool = True,
         acknowledged_warnings: frozenset[str] = frozenset(),
+        acknowledged_revision: str | None = None,
     ) -> OperationPlan:
         issues: list[CompatibilityIssue] = []
         preservation: list[PreservationDecision] = []
@@ -432,6 +433,7 @@ class OperationPlanningService:
             tuple(preservation),
             tuple(issues),
             acknowledged_warnings,
+            acknowledged_revision,
         )
         if plan.intrinsically_valid and not plan.pending_warnings:
             plan = replace(plan, arguments=build_arguments(plan))

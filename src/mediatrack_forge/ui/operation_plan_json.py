@@ -26,6 +26,8 @@ def _reference(reference: StreamReference) -> dict[str, object]:
 def plan_document(plan: OperationPlan) -> dict[str, object]:
     return {
         "plan_version": plan.plan_version,
+        "revision": plan.revision,
+        "acknowledged_revision": plan.acknowledged_revision,
         "sources": [inspection_document(asset) for asset in plan.sources],
         "output": {
             "container": plan.output.container,
@@ -96,7 +98,7 @@ def plan_document(plan: OperationPlan) -> dict[str, object]:
             for item in plan.issues
         ],
         "intrinsically_valid": plan.intrinsically_valid,
-        "acknowledged_warnings": sorted(plan.acknowledged_warnings),
+        "acknowledged_warnings": sorted(plan.effective_acknowledged_warnings),
         "pending_warnings": list(plan.pending_warnings),
         "execution_allowed": plan.execution_allowed,
         "confirmation_required": plan.confirmation_required,
