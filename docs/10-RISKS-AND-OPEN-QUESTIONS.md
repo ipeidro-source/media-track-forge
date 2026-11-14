@@ -128,3 +128,21 @@ These questions do not prevent initial scaffolding, but the relevant ones must b
   state; it never rolls back by deleting a valid final file. Recovery should inspect
   only the reported destination parent's .mediatrack-* artifacts privately and
   confirm no process writes before manual deletion. Never delete unknown contents.
+
+## PR-05 bounded choices and residual risks
+
+D14-D18 resolve SRT encoding/structure, initial extraction and backend cancellation/
+progress within document 16. Older importer/extraction deferrals are historical.
+Strict UTF-8/BOM avoids guessing encodings; unsupported legacy files need conversion
+outside the product. Cue timing supports 0..999 hours, 8 MiB and 100,000 cues.
+Extraction enables only six exact source/codec/format combinations; AC-3, MKV video/
+audio extraction and other profiles stay blocked. Positive equal full packet counts
+provide elementary truncation evidence when timing is absent, not full decoding or
+content identity. MP4 AAC edit-list priming/padding is not representable in ADTS.
+Mov_text empty/clear sample layouts that change packet count fail conservatively.
+Trusted synchronous listeners must return promptly or they can delay cancellation/
+timeout observation; the backend owns no unbounded event queue. GUI integration must
+use bounded latest-value delivery. Source snapshot/noncryptographic identity, trusted
+filesystem namespace, process containment gaps, private final permissions and lack
+of power-loss durability remain unchanged. Release/license/desktop risks remain open.
+No G3 acceptance is implied until independent review and owner acceptance.

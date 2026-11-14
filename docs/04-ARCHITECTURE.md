@@ -110,3 +110,17 @@ argument generator; stored supplied arguments are never trusted. Native filesyst
 process groups/Windows jobs, pipe draining, output validation and private staging
 remain infrastructure-owned in focused modules. No GUI or background scheduler
 is introduced. See [execution contract](15-EXECUTION-AND-VALIDATION-CONTRACT.md).
+
+## PR-05 shared backend extension
+
+ExternalSubtitleService composes bounded structural SRT validation and the existing
+Inspector. Domain SubtitleCue and ExtractionPlan retain immutable intent/evidence.
+ExtractionPlanningService owns the separate exact source/codec/format/filter policy.
+ExtractionExecutionService specializes the shared RemuxExecutionService through
+regeneration, argument and validator hooks. Process runner, native containment,
+private staging, exclusive publication and cleanup are shared, with no second
+execution stack. Elementary validation uses independent packet completeness checks.
+ExecutionControl coordinates per-job cancellation and synchronous bounded progress;
+ProgressEvent is a domain value. Existing four layers and dependency pins remain.
+Document 16 supersedes historical deferred-import/extraction statements above.
+No GUI, scheduler, batch processing or public writing CLI is added.

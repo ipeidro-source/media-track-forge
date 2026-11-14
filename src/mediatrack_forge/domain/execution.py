@@ -8,7 +8,16 @@ from mediatrack_forge.domain.media import MediaAsset
 from mediatrack_forge.domain.planning import OperationPlan
 
 ExecutionState = Literal[
-    "planned", "running", "validating", "publishing", "completed", "failed", "timed_out"
+    "planned",
+    "preparing",
+    "running",
+    "validating",
+    "publishing",
+    "completed",
+    "failed",
+    "timed_out",
+    "cancelling",
+    "cancelled",
 ]
 
 
@@ -32,6 +41,15 @@ class ExecutionRequest:
 class ExecutionDiagnostic:
     code: str
     message: str
+
+
+@dataclass(frozen=True)
+class ProgressEvent:
+    phase: ExecutionState
+    determinate: bool
+    percent: float | None = None
+    processed_seconds: float | None = None
+    terminal: bool = False
 
 
 @dataclass(frozen=True)

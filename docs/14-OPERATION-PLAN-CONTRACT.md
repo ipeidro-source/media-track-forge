@@ -454,3 +454,14 @@ authorization, including immutable copies retaining a stale tuple. Proposed dire
 destination arguments are not executed: a controlled infrastructure boundary
 binds fresh mappings to an exclusive owned staging file, validates it and publishes
 exclusively. See [execution contract](15-EXECUTION-AND-VALIDATION-CONTRACT.md).
+
+## PR-05 compatible external execution
+
+The plan v1 schema and revision semantics are unchanged. ExternalSubtitleService
+now supplies genuinely structurally validated and independently inspected SRT source/
+ExternalTrack pairs. Planning remains read-only and still verifies matching snapshot
+claims and explicit selections. Execution independently revalidates their provenance
+before processing/publication; caller validated=true alone never authorizes import.
+Multiple sources retain exact source ordering and original indices. Separate
+extraction_version 1 serialization does not overload this remux JSON contract.
+See document 16 for APIs, external source roles and cancellation/confirmation rules.

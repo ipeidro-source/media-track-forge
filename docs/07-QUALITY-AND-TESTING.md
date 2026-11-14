@@ -100,3 +100,17 @@ and incorrect staged-output rejection. Original content hashes are checked;
 selected video-only/AVI cases also compare copied packet hashes. Tool and filesystem
 versions are printed in hosted logs. Neither local tests nor ffprobe metadata alone
 establish full decoding, universal filesystem durability or completed G3 scope.
+
+## PR-05 regression and real-media evidence
+
+test_pr05.py covers bounded SRT parsing, exact extraction policies/maps, stale review,
+invalid output, cancellation phases/linearization/descendants and progress handling.
+test_pr05_e2e.py adds real product external-SRT remux, all enabled extraction pairs,
+changed subtitle rejection, remux/extraction cancellation, destination races and
+progress/commitment evidence. It uses synthetic fixtures, hashes originals, compares
+normalized packet hashes and checks final format/layout/cleanup. Indeterminate
+progress injects missing source timing while running real media, explicitly.
+All prior suites remain mandatory; unit cases run across the complete matrix and
+real media on both Python 3.12 platforms, without hidden skips. Exact counts, tools,
+filesystems, run URLs and complete-log findings belong in the PR. No GUI acceptance
+or complete decoding guarantee is inferred from these tests.

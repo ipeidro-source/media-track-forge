@@ -1,6 +1,6 @@
 # Codex Agent Instructions — MediaTrack Forge
 
-Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/15` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
+Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/16` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
 
 ## Language policy — mandatory
 
@@ -45,7 +45,9 @@ PR-03 is merged at a91493f with passing main CI. D9-D13 explicitly authorize PR-
 
 Keep all existing codec/inspection/plan contracts and CI controls. Unit tests run without media tools on the full matrix; product-level E2E tests must run on Windows/Ubuntu Python 3.12 without silent skips. Do not claim power-loss durability, an OS sandbox, universal process-tree containment or full decode integrity from metadata checks.
 
-No extraction, full user cancellation, progress UI, GUI, subtitle import, video/audio encoding, batch, packaging or releases are authorized. G3 also requires deferred PR-05 work. Do not merge, tag or publish without owner authorization.
+PR-04 is merged at 3bea7ee with successful main CI. Owner-approved D14-D18 authorize PR-05 external UTF-8 SRT import, exact-matrix single-stream extraction, thread-safe cancellation and backend progress. Preserve the shared execution stack, fresh source-role validation, revision binding, private staging and exclusive publication. Cancellation must linearize against the successful exclusive link; never roll back a published result. Never claim cancelled without proven process quiescence. Progress uses bounded structured FFmpeg output, stays indeterminate without selected timing, and reaches 100% only after completion. Extraction has a separate versioned contract and validator; never broaden general remux compatibility from its matrix. Every enabled extraction pair requires real Windows/Ubuntu evidence. See document 16 and ADR-029..033.
+
+GUI, progress UI, packaging and release work remain PR-06/PR-07. No external audio, batch or video/audio transcoding is authorized. G3 requires independent owner acceptance after PR-05 review. Do not merge, tag or publish without owner authorization.
 
 ## PR reporting template
 

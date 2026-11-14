@@ -129,3 +129,44 @@ Alternatives rejected: direct final writes, check-then-rename, copying placehold
 finals, trusting a supplied command tuple, universal fixed 50 ms duration tolerance,
 unbounded logs and silently weakening unsupported publication/termination behavior.
 See document 15 for exact guarantees, observed evidence boundaries and limitations.
+
+## November 14, 2026 - approved PR-05 D14-D18
+
+- ADR-029 / D14 (accepted): bounded strict UTF-8/BOM local SRT structural validation
+  plus independent ffprobe inspection, explicit external source roles and repeated
+  validation before execution/publication. Alternatives: extension-derived codec,
+  ffprobe-only validation or arbitrary codepage guessing; rejected for ambiguous
+  timing/identity. Accept harmless cue-label/line-ending/overlap variations. Existing
+  ExternalTrack v1 fields remain; audio imports stay blocked. Supersedes ADR-021's
+  importer deferral only for this approved SRT scope.
+- ADR-030 / D15 (accepted): separate one-stream extraction matrix and declarative
+  version 1 contract, explicit MP4 Annex B filters/ADTS packaging and approved text
+  conversion. Alternatives: generic transcode framework or broad codec recognition;
+  rejected. Only document 16's six combinations are enabled with required real tests.
+  AC-3 and all other candidates remain unsupported. Elementary validation checks
+  layout/properties and full positive equal selected packet counts, including when
+  elementary timing is absent. This independent truncation check is extraction-only,
+  not a remux duration waiver or full decode/content proof. AAC LC priming/padding
+  has a sample-derived allowance; no arbitrary universal tolerance is used.
+- ADR-031 / D16 (accepted): per-job thread-safe cooperative cancellation with a short
+  lock linearizing cancellation against exclusive publication. Alternatives: global
+  flags, deleting final output on cancellation or holding a lock throughout processing;
+  rejected. Successful publication commits; later cancellation cannot undo it. Process
+  quiescence precedes cancelled/cleanup. Blocking probes reach their existing bounds;
+  pending cancellation still prevents publication. Trusted process/namespace limits
+  from PR-04 remain. No scheduler or GUI cancellation control is introduced.
+- ADR-032 / D17 (accepted): structured FFmpeg progress pipe, bounded incremental lines,
+  one latest time and synchronous worker observer delivery. Alternatives: parsing
+  human stderr, unbounded event queues or invented percentages; rejected. Selected
+  timing only, indeterminate fallback, monotonic processing capped at 99 and final
+  100 only after completion. Observer exceptions disable/report the observer; trusted
+  callbacks must return promptly. Blocking callbacks can delay observation.
+- ADR-033 / D18 (accepted): reuse the existing execution orchestrator with small
+  operation-specific regeneration/argument/validation hooks. Alternatives: a second
+  extraction process stack or a generic job framework; rejected. Distinct extraction
+  serialization avoids changing inspection schema v1/remux plan v1 meanings. Existing
+  diagnostics and remux allowlist remain stable; no new production dependencies.
+
+Context, exact matrix, alternatives' consequences, timing/packet limitations, API
+contracts and test boundaries are detailed in document 16. These decisions authorize
+backend implementation, not G3 acceptance, GUI, packaging or release publication.

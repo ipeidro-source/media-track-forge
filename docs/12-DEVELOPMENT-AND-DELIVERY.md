@@ -209,3 +209,15 @@ APIs; Linux strict typing can also be checked locally with `python -m mypy --pla
 No dependencies, Actions, runner labels or release workflows change in PR-04.
 Exact final counts, observed Windows/Ubuntu builds/filesystems and full log review
 belong in the PR. No user-facing remux CLI, GUI or portable Release is introduced.
+
+## PR-05 development and CI
+
+The existing setup/check commands and five job names remain unchanged. New SRT,
+extraction, cancellation and progress tests need no Python dependencies. Unit tests
+remain offline and tool-independent; Python-only native process tests run across the
+matrix. Integration requires all existing encoders plus the enabled extraction tools/
+filters; missing capabilities fail. Run the entire tests/integration directory on
+Windows and Ubuntu Python 3.12. Source/wheel builds, pip check, YAML and actionlint
+remain required. No Action, runner, dependency or release workflow changes are made.
+Document 16 describes the new backend APIs and limitations. Final counts/platform
+versions, actual CI run and complete log review are recorded in PR-05.

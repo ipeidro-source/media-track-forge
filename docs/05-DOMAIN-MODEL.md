@@ -97,3 +97,17 @@ These values provide the ExecutionJob/ValidationReport responsibilities without
 introducing a mutable job scheduler. Completed requires validation, publication
 and normal cleanup. Failed and timed_out are explicit; future cancellation is not
 implemented. Existing inspection and operation-plan field semantics are unchanged.
+
+## Implemented PR-05 values
+
+SubtitleCue carries immutable structural timing/text evidence without changing
+inspection entities. ExtractionPlan specializes the immutable operation primitives
+with extraction_version and bitstream_filters, serialized separately from remux v1.
+ProgressEvent is immutable phase/determinate/percent/processed-time/terminal evidence.
+Execution states additionally include preparing, cancelling and cancelled; successful
+result histories retain the prior sequence while observers receive preparation.
+CancellationToken/ExecutionControl are per-job application coordination objects,
+not mutable media intent or global scheduler state. The exclusive publication link
+is the commitment boundary; cancellation never removes a published result.
+Audio-only/subtitle-only extraction is valid within its matrix, while main remux
+still requires selected primary video. See document 16 for fields and API semantics.
