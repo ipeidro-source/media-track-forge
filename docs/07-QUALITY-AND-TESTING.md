@@ -40,4 +40,25 @@ All AC-01 through AC-12 pass with evidence; the original files are verified unch
 
 ## PR-01 implemented foundation
 
-See [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md) for exact setup and check commands, the Windows 3.11/3.12/3.13 and Linux 3.12 matrix, verified Node 24 Actions, explicit runner images, weekly dependency reviews, actionlint and CI log requirements. Media, GUI and executable validation described above remains future work. No release workflow is enabled.
+See [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md) for setup, the Python
+matrix, verified Node 24 Actions, runner images and CI log requirements. No release
+workflow is enabled. GUI, output operation and executable validation remain deferred.
+
+## PR-02 inspection tests
+
+Unit tests run separately without media tools on all four matrix combinations.
+They cover stream identities/order/kinds, missing and Unicode metadata, the full
+JSON schema, frozen snapshots, malformed/invalid responses, path validation,
+CLI stdout/exit codes, safe arguments, process errors/timeouts and capture limits.
+
+Real integration runs on Windows 2025 and Ubuntu 24.04 / Python 3.12. Subsecond
+fixtures cover MP4 with audio, video-only MP4, AVI, MOV and MKV with two audio
+tracks, subtitle, attachment, chapter and Unicode metadata. Dimensions, codecs,
+sample rates, formats, indices, dispositions, module CLI and unchanged source
+identity/content are checked. A local HLS playlist verifies HTTP is rejected by
+the file-only whitelist without a network request. Missing tools or required
+fixture encoders fail the suite, and no media cases use skip/xfail.
+
+Fixture encoders are checked before use: native mpeg4, aac, pcm_s16le, ffv1 and srt.
+This validates specific inspection samples, not arbitrary codec/container output
+compatibility. No AC-01 through AC-12 media-editing scenario is claimed complete.

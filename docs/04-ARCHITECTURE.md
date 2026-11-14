@@ -61,4 +61,28 @@ Optional future: a headless service/CLI or Docker deployment should use the core
 
 ## PR-01 package boundaries
 
-The `src/mediatrack_forge` scaffold separates `domain`, `application`, `infrastructure`, and `ui`. The proposed specialized modules above remain future responsibilities inside these layers, not implemented adapters. The minimal CLI lives in `ui/cli.py` and supports help/version only. No GUI dependency or media process is introduced. See [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md).
+The `src/mediatrack_forge` scaffold separates `domain`, `application`, `infrastructure`, and `ui`. PR-01 introduced help/version without a GUI or media dependency. Specialized processing modules above remain future responsibilities inside those layers.
+
+## PR-02 implemented inspection path
+
+`ui/cli.py` composes `InspectionService` with `FFprobeAdapter`. The service validates
+and snapshots a regular local file and calls an application-owned `MediaProbe`
+Protocol. `infrastructure/ffprobe.py` discovers the external executable and runs
+it with bounded pipes, timeout and file-only protocol whitelist; `ffprobe_json.py`
+normalizes the response. Both depend on application error types and domain
+snapshots, never presentation. `domain/media.py` contains frozen dataclasses and
+immutable tuples with no subprocess, CLI or infrastructure imports.
+
+`ui/inspection_json.py` defines explicit public serialization, separate from the
+ffprobe parser. The application service can be used without either UI or GUI:
+
+```python
+from mediatrack_forge.application.inspection import InspectionService
+from mediatrack_forge.infrastructure.ffprobe import FFprobeAdapter
+
+asset = InspectionService(FFprobeAdapter()).inspect("example.mkv")
+```
+
+Only inspection is operational. Planning, execution, cancellation of processing
+jobs, output validation and publication in the broader workflow remain deferred.
+See [contract and safety limits](13-INSPECTION-CONTRACT.md).

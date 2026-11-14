@@ -1,1 +1,1 @@
-"""GUI-independent domain entities and policies; media implementation is deferred."""
+"""GUI-independent immutable media inspection entities."""

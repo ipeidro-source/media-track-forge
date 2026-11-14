@@ -32,4 +32,10 @@ Goal; linked requirements/acceptance criteria; changed files; validation steps a
 
 Prefer small PRs. Do not edit `main` from a second session while Codex is implementing in another branch without reconciling the latest remote changes.
 
-PR-01 implementation and deferred delivery gates are documented in [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md). PR-02 remains a separate PR after PR-01 review and merge; no functional media acceptance criterion is claimed by foundation tests.
+PR-01 is merged; its main CI passed at d0ca69b8078694adf307acf8209696077d7ba07f
+([baseline run](https://github.com/ipeidro-source/media-track-forge/actions/runs/43596665120)).
+PR-02 implements the external ffprobe adapter, immutable inspection domain, service,
+JSON CLI and synthetic-media integration coverage for inspection-only FR-01/FR-02.
+Its review and hosted CI evidence belong in the PR description. G1 must only be
+accepted after all required inspection checks and owner review; later G2-G5 work
+remains deferred. No media-editing acceptance criterion is claimed by these tests.

@@ -33,3 +33,25 @@ All ADRs, technical notes, source comments, issues, commits, PR descriptions, UI
 ADR-014 (accepted for PR-01): setuptools src layout, a single literal package version, no runtime dependencies, exact development dependency pins and four layer namespaces. Alternatives were a GUI-bound scaffold or premature media interfaces; both add scope without testable product behavior.
 
 ADR-015 (accepted for PR-01): Node 24 Actions with exact stable tags, explicit supported Windows 2025 / Ubuntu 24.04 images, weekly reviewed Dependabot PRs, actionlint and actual CI log review. Tags favor readable maintenance over SHA immutability; runner labels still receive image updates. Release automation remains disabled until meaningful executable tests and licensing gates exist. Details and evidence: [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md).
+
+## November 14, 2026 - approved PR-02 D1-D3
+
+- ADR-016 / D1 (owner approved): public schema_version 1 with explicit normalized
+  source/container/streams/chapters, null missing scalars, preserved source indices
+  and stream order including data/attachments/unknown kinds. Frozen dataclasses
+  with tuple fields keep snapshots independent of presentation. Raw ffprobe JSON
+  is not the public API; breaking changes require a schema version bump.
+- ADR-017 / D2 (owner approved): external PATH-discovered ffprobe, explicit trusted
+  executable override, default 30-second configurable timeout, shell-free arrays
+  and file-only protocol whitelist. No bundled FFmpeg and no product FFmpeg call.
+  Capture caps are 8 MiB stdout / 64 KiB stderr; overflow is a controlled response
+  error. OS filesystem sandboxing is outside this adapter's guarantees.
+- ADR-018 / D3 (owner approved): real FFmpeg-generated synthetic fixtures, mandatory
+  Windows 2025 and Ubuntu 24.04 Python 3.12 integration, unit tests across the full
+  matrix. Missing tools/codecs fail, never skip. Supported package managers install
+  CI tools without adding Actions. Versions are recorded rather than guessing an
+  exact cross-platform codec build.
+
+Alternatives rejected for this scope: exposing raw vendor JSON, renumbering streams,
+shipping binaries, network probing, adding a parsing/CLI framework, or optional
+CI media checks. Inspection does not settle output compatibility or editing design.
