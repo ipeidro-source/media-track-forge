@@ -15,13 +15,13 @@ The repository is the source of truth for approved requirements, architecture, d
 
 | Location | Purpose | Maintenance |
 | --- | --- | --- |
-| `CHATGPT_INSTRUCTIONS.md` | Canonical, version-controlled text to copy into the ChatGPT project's *Project instructions* field | Update in GitHub and manually apply the revised instructions in ChatGPT |
+| `CHATGPT-PROJECT-INSTRUCTIONS.md` | Canonical, version-controlled text to copy into the ChatGPT project's *Project instructions* field | Update in GitHub and manually apply the revised instructions in ChatGPT |
 | `AGENTS.md` | Repository-level development instructions for Codex and other coding agents | Read and follow in coding sessions; update by reviewed PR |
 | `docs/11-CHATGPT-PROJECT-CONTEXT.md` | Knowledge hierarchy, context recovery, synchronization, and continuity procedures | Update when the collaboration workflow changes |
 | `README.md`, `docs/01`–`docs/10` | Product and engineering specifications, decisions, requirements, and implementation plans | Update with approved design or delivery changes |
 | Source code, tests, commits, and merged PRs | Evidence of what is actually implemented | Validate against the current repository state |
 
-`CHATGPT_INSTRUCTIONS.md` is a project file **and** a template for the ChatGPT instruction field. Editing the GitHub file does not update the ChatGPT UI automatically. Similarly, adding a GitHub URL to an instruction does not itself grant repository access.
+`CHATGPT-PROJECT-INSTRUCTIONS.md` is a project file **and** a template for the ChatGPT instruction field. Editing the GitHub file does not update the ChatGPT UI automatically. Similarly, adding a GitHub URL to an instruction does not itself grant repository access.
 
 ## 3. Repository and source hierarchy
 
@@ -80,7 +80,7 @@ The project owner and ChatGPT may converse in Spanish. Approved outcomes discuss
 
 ## 7. Starting a new ChatGPT conversation
 
-1. Read the project's active instructions (maintained from `CHATGPT_INSTRUCTIONS.md`).
+1. Read the project's active instructions (maintained from `CHATGPT-PROJECT-INSTRUCTIONS.md`).
 2. Identify the user task and the relevant documents in Section 4.
 3. For questions about recent progress, PRs, code, CI, or current decisions, inspect the connected GitHub repository first where access is available.
 4. Distinguish **implemented**, **approved**, **proposed**, and **deferred** items.
@@ -94,7 +94,7 @@ After an approved product or architecture decision:
 1. Update the relevant spec/ADR/roadmap Markdown files **in English**, normally in a dedicated branch/PR.
 2. Record the rationale, effect on scope and tests, and any newly created risk or open question.
 3. Merge only with the owner's approval; do not treat an unmerged PR as authoritative.
-4. If the decision changes how ChatGPT must operate, update `CHATGPT_INSTRUCTIONS.md` **and manually update the Project instructions field**.
+4. If the decision changes how ChatGPT must operate, update `CHATGPT-PROJECT-INSTRUCTIONS.md` **and manually update the Project instructions field**.
 5. If a ChatGPT project source contains an older uploaded file, replace or refresh it manually, or make a fresh repository retrieval when needed. Uploaded snapshots do not update automatically when GitHub changes.
 6. Update the project baseline in Section 5 only when materially necessary; keep it concise and date-stamped.
 

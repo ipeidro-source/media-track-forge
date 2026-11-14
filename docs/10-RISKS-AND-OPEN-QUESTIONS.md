@@ -30,3 +30,15 @@
 - Re-estimate effort after PR-02 and PR-03.
 
 These questions do not prevent initial scaffolding, but the relevant ones must be closed before the MVP is declared complete.
+
+## PR-01 assumptions and contradictions - November 14, 2026
+
+- The request approves Python 3.11+, the tooling stack and PyInstaller portable artifact targets; older proposed/deferred ADR wording is updated. CustomTkinter and the application license remain undecided.
+- Initial package version is `0.1.0`; it identifies the scaffold and does not represent a published product. Exact `v<version>` tags are the future policy.
+- The older architecture lists specialized modules, while PR-01 requests layers. Use four empty layer namespaces and add specialized modules only when their behavior is implemented. Alternative: a flat package of adapters; rejected because it obscures dependency direction.
+- The reference project's floating Windows runners are not reused. Both selected Actions were independently checked for Node 24, release existence and major-version changes. See document 12 for sources.
+- Exact development pins are a reproducible resolution baseline, not a hash lock. Cross-platform compatibility requires all CI matrix jobs. Dependabot proposals may require coordinated transitive pin updates.
+- Stable Action tags are mutable. SHA pinning is a possible later hardening change; do not claim supply-chain immutability.
+- The final application license and dependency notices remain release blockers. Do not invent a LICENSE or bundle FFmpeg/PyInstaller executables now.
+- Release infrastructure means a tested version/tag validator plus documented future gates in PR-01. Alternative: runnable placeholder packaging workflow; rejected because executable-specific acceptance cannot yet be meaningful. No release workflow exists.
+- Windows Server CI is not evidence of Windows 10/11 GUI compatibility. Native desktop and executable smoke checks remain deferred.

@@ -41,7 +41,7 @@ code .
 
 ## Dependencies and media fixtures
 
-After PR-01, create a project-local `.venv`. Install or configure external FFmpeg and ffprobe and check:
+For PR-01, create a project-local `.venv` using the setup below. FFmpeg and ffprobe are not required yet. Starting with PR-02, install or configure the external tools and check:
 
 ```powershell
 ffmpeg -version
@@ -55,3 +55,7 @@ Use synthetic files (typically under 10 seconds) for automated tests. Do not com
 Use `feat/...`, `fix/...`, and `docs/...` branches; submit PRs to `main`; require green CI before merging. Never force-push `main`.
 
 When working in parallel with Codex, fetch remote changes before editing or rebasing, and use separate worktrees for separate agent sessions.
+
+## PR-01 implemented foundation
+
+See [development and delivery](12-DEVELOPMENT-AND-DELIVERY.md) for exact setup and check commands, the Windows 3.11/3.12/3.13 and Linux 3.12 matrix, verified Node 24 Actions, explicit runner images, weekly dependency reviews, actionlint and CI log requirements. Media, GUI and executable validation described above remains future work. No release workflow is enabled.

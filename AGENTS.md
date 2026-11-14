@@ -22,6 +22,15 @@ Use **English exclusively** for repository files, code identifiers, comments, do
 12. Never claim an acceptance criterion has passed without concrete test evidence.
 13. Keep related changes focused. If parallel agents are introduced, use separate branches and `git worktree` directories. Never let two agents modify the same working tree concurrently.
 
+## GitHub Actions maintenance - mandatory
+
+- Verify that every selected Action tag or SHA exists; inspect `runs.using` and release notes. Require supported Node.js 24 runtimes for JavaScript Actions; never rely on setup-node to change another Action's runtime or suppress deprecation warnings.
+- Use explicitly versioned, currently supported runner labels (`windows-2025` and `ubuntu-24.04` for this foundation). No floating `*-latest` runners. Verify official support before changes and review quarterly and before release.
+- Run YAML validation and actionlint for workflow changes. Use a verified official actionlint binary; review version and checksum updates.
+- Keep weekly Dependabot updates enabled for GitHub Actions and Python manifests. Updates require review and the same mandatory CI as other changes.
+- After pushing, inspect all actual CI job results and full logs, including setup and cleanup, for Node.js deprecation, runner-image migration/retirement, unsupported Actions and dependency compatibility warnings. Correct avoidable warnings before marking a PR ready. Record run URLs, skipped checks and any unavailable evidence; syntax validation alone is insufficient.
+- Keep default workflow permissions minimal and publication gated by explicit owner authorization. A merge into main must never publish a Release.
+
 ## Initial task
 
 Implement only the first small engineering PR: an installable Python project skeleton (`src/mediatrack_forge/`), `pyproject.toml`, Windows CI, pytest/Ruff/mypy configuration, and unit tests. A minimal CLI `inspect` command backed by `ffprobe` is the next separate PR, unless the user explicitly changes the plan. Do not build the full GUI or introduce transcoding in the initial PR.
