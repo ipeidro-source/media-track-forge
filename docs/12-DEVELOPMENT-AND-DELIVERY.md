@@ -82,7 +82,7 @@ for command options, fields, errors and limitations.
 `domain` holds frozen inspection entities; `application` orchestrates inspection
 through its `MediaProbe` Protocol; `infrastructure` implements external ffprobe
 execution/normalization; `ui` holds CLI and JSON presentation. PR-03 adds the
-declarative planning API; media execution, validation and publication remain unimplemented. The CLI does
+declarative planning API; PR-04/05 add confirmed media execution, validation and publication. The CLI does
 not import a GUI. The four boundaries and zero Python runtime dependencies remain
 unchanged from PR-01.
 

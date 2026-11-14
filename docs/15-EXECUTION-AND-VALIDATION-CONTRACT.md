@@ -133,8 +133,8 @@ The configured process timeout covers FFmpeg plus pipe completion. Termination
 verification can take an additional bounded wait (up to 5 seconds per verification
 stage and reader joins). Each ffprobe call has its own timeout. Filesystem calls,
 uninterruptible OS work and the entire service transaction do not have a single
-hard real-time deadline. PR-05 user cancellation/progress remain deferred; managed
-runner and immutable state boundaries are extension points, not a UI workflow.
+hard real-time deadline. PR-05 adds cancellation/progress through the managed
+runner and immutable state boundaries; document 16 defines the backend API.
 
 ## Independent validation policy
 

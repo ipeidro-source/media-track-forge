@@ -27,7 +27,7 @@ def validate_srt(path: Path, *, require_suffix: bool = True) -> tuple[SubtitleCu
         if "\x00" in text:
             raise ValueError
         cues: list[SubtitleCue] = []
-        for block in re.split(r"\n[ \t]*\n", text.strip()):
+        for block in re.split(r"\n(?:[ \t]*\n)+", text.strip()):
             lines = block.splitlines()
             if lines and lines[0].strip().isdigit():
                 lines = lines[1:]

@@ -87,6 +87,15 @@ def test_srt_resource_limit_and_source_change(
         validate_srt(path)
 
 
+def test_srt_multiple_blank_separators_and_markup(tmp_path: Path) -> None:
+    path = tmp_path / "sub.srt"
+    path.write_text(
+        VALID + "\n \n\n2\n00:00:00,300 --> 00:00:00,600\n<i>Text</i>\n", encoding="utf-8"
+    )
+    cues = validate_srt(path)
+    assert len(cues) == 2 and cues[1].text == "<i>Text</i>"
+
+
 @pytest.mark.parametrize("kind,codec,index", [("subtitle", "subrip", 7), ("audio", "aac", 0)])
 def test_import_requires_genuine_inspected_stream(
     tmp_path: Path, kind: str, codec: str, index: int
