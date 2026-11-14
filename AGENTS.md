@@ -1,6 +1,6 @@
 # Codex Agent Instructions — MediaTrack Forge
 
-Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/13` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
+Read `README.md`, `CHATGPT-PROJECT-INSTRUCTIONS.md` and `docs/01` through `docs/14` before implementation. The repository is the source of truth. Never infer implementation status solely from the roadmap.
 
 ## Language policy — mandatory
 
@@ -37,7 +37,11 @@ PR-01 was merged and its main CI passed. Preserve its src layout, dependency pin
 
 Keep unit tests runnable without media tools across the full Python matrix. Integration tests must fail when required tools/fixture codecs are missing; never silently skip mandatory media coverage. Run them on both Python 3.12 CI platforms. Preserve original ffprobe indices and ordering, all stream kinds and unknown metadata values. Changes to the public JSON contract must follow docs/13 compatibility policy.
 
-No GUI, track planning/editing, external subtitle import, remuxing, extraction, transcoding, output publication, packaging or release automation is authorized by PR-02. FFmpeg may generate local synthetic fixtures only. Do not start PR-03 before separate authorization.
+PR-02 is merged and its main CI passed. Owner-approved PR-03 decisions D4-D8 authorize only a conservative evidence-backed compatibility policy, explicit selection/order, ExternalTrack extension records without importing, metadata/chapters/attachments diagnostics, and immutable plan_version 1 plans. Preserve inspection schema v1 unchanged. Selected unsupported codecs/kinds must block; implicit omissions and metadata loss must be visible. Warnings require explicit acknowledgement, separate from future execution confirmation. Generate explicit argument arrays but never run them in product code.
+
+FFmpeg may execute only in integration tests to generate fixtures and validate candidate mux/conversion arguments in temporary directories. Every enabled compatibility entry must pass real tests on Windows and Ubuntu Python 3.12; missing tools/encoders must fail, not skip. Unvalidated candidates stay blocked. Do not claim full execution ACs or G2 owner acceptance from planning tests.
+
+No product execution, remux/extraction engine, output publication, GUI, external subtitle import, video/audio encoding, packaging or release changes are authorized. Do not start PR-04 without separate approval.
 
 ## PR reporting template
 

@@ -39,3 +39,10 @@ JSON CLI and synthetic-media integration coverage for inspection-only FR-01/FR-0
 Its review and hosted CI evidence belong in the PR description. G1 must only be
 accepted after all required inspection checks and owner review; later G2-G5 work
 remains deferred. No media-editing acceptance criterion is claimed by these tests.
+
+## PR-03 iteration state
+
+PR-02 is merged at 392ce94 with successful main CI. PR-03 implements D4-D8 planning
+on its own feature branch. Test evidence and actual hosted results are recorded
+in the PR. G2 requires owner review/acceptance. PR-04 execution and all subsequent
+features remain separately authorized work, not part of this iteration.

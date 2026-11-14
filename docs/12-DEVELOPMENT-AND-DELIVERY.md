@@ -81,8 +81,8 @@ for command options, fields, errors and limitations.
 
 `domain` holds frozen inspection entities; `application` orchestrates inspection
 through its `MediaProbe` Protocol; `infrastructure` implements external ffprobe
-execution/normalization; `ui` holds CLI and JSON presentation. Future planning,
-media execution, validation and publication remain unimplemented. The CLI does
+execution/normalization; `ui` holds CLI and JSON presentation. PR-03 adds the
+declarative planning API; media execution, validation and publication remain unimplemented. The CLI does
 not import a GUI. The four boundaries and zero Python runtime dependencies remain
 unchanged from PR-01.
 
@@ -185,3 +185,16 @@ All executable, PyInstaller, metadata, ancestry automation, startup, packaging,
 checksum and publication steps above are **deferred and untested** in PR-01.
 No code signing is authorized. Reproducible dependency selection is established;
 bit-identical Windows executables are not promised and need a later investigation.
+
+## PR-03 validation and current delivery scope
+
+Planning requires no new dependencies, executable discovery or product process.
+The existing test commands apply unchanged. `python -m pytest tests/unit` includes
+all offline planning cases; `python -m pytest tests/integration -m integration -v -s`
+also validates the conservative compatibility matrix using temporary test outputs.
+The test-only encoders libx264/libx265/libmp3lame/mov_text must be available on both
+required CI builds. Missing capabilities fail instead of hiding unsupported entries.
+Exact tested builds and observed results belong in the PR evidence. No workflow,
+Action version, runner, dependency or release changes are required by PR-03.
+Product media execution and portable packaging remain deferred. See the
+[plan contract](14-OPERATION-PLAN-CONTRACT.md) before consuming proposed arguments.
