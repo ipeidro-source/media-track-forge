@@ -10,7 +10,7 @@ Statuses: **Accepted baseline**, **Proposed / pending**, or **Deferred**. These 
 | ADR-004 | Accepted baseline | No video/audio transcoding in the MVP | Bounded scope; preserve media quality |
 | ADR-005 | Accepted baseline | MKV/MP4 outputs; AVI accepted as input; verify compatibility | Useful formats without false codec guarantees |
 | ADR-006 | Accepted baseline | Immutable original, staged output and post-run validation | Reduce risk of data loss |
-| ADR-007 | Accepted for PR-01; GUI deferred | Python 3.11+, pytest, Ruff, mypy; CustomTkinter remains proposed | Explicit PR-01 scope approval; no GUI dependency |
+| ADR-007 | Accepted for PR-01; GUI deferred | Python 3.11+, pytest, Ruff, mypy; CustomTkinter approved for PR-06 (ADR-034) | Explicit PR-01 scope approval; no GUI dependency |
 | ADR-008 | Proposed / pending | MIT for application code | Easy contributions; review redistribution constraints |
 | ADR-009 | Accepted target; implementation deferred | PyInstaller Windows `.exe`, versioned portable ZIP and SHA256SUMS.txt | Explicit PR-01 delivery direction; no executable or release yet |
 | ADR-010 | Deferred | GPU acceleration and specialized codecs | Phase 2; requires capability/licensing assessment |
@@ -170,3 +170,47 @@ See document 15 for exact guarantees, observed evidence boundaries and limitatio
 Context, exact matrix, alternatives' consequences, timing/packet limitations, API
 contracts and test boundaries are detailed in document 16. These decisions authorize
 backend implementation, not G3 acceptance, GUI, packaging or release publication.
+
+## November 14, 2026 - approved PR-06 D19-D23
+
+- ADR-034 / D19 (accepted): desktop controls need a native Python toolkit while the
+  backend remains display-independent. Choose pinned CustomTkinter 6.0.0 with ttk
+  Treeview and native dialogs; preserve lazy GUI imports and the inspection CLI.
+  Alternatives were Electron/web server or a custom table framework; rejected for
+  dependencies and maintenance. The trade-off is Tk accessibility and untyped toolkit
+  boundaries; native tests and a scoped mypy import override cover the adapter.
+  Runtime CLI installations now also install GUI libraries; no display is initialized.
+  This resolves ADR-007's GUI proposal without changing tooling decisions.
+- ADR-035 / D20 (accepted): users need direct inspection/edit/review/results without
+  a wizard. Choose one window with Media/Operation/Execution tabs, original immutable
+  references, explicit keep/set/clear metadata and within-kind order. Alternative
+  auto-resolving defaults/omitting incompatible tracks was rejected. Initially include
+  all detected tracks so unsupported selections stay visible as blockers; this can
+  require correction before a valid plan. Source replacement clears external state.
+  Only backend-supported extraction extensions are offered; no second codec policy.
+- ADR-036 / D21 (accepted): review cannot authorize another intent. Use generation-
+  invalidated immutable plans, all-occurrence warning presentation and explicit
+  revision-bound acknowledgement rebuild, followed by a distinct default-No execution
+  confirmation. Alternatives: auto-acknowledgement or execution_allowed alone; rejected
+  as unsafe. Any edit, including pending metadata, clears review. Worker results cannot
+  restore stale authority. The cost is repeated review after edits; backend regeneration
+  remains mandatory and public contracts 13-16 are unchanged.
+- ADR-037 / D22 (accepted): blocking media/filesystem work must not freeze Tk. Choose
+  one non-daemon worker with bounded discrete reply/latest progress and main-thread
+  polling. Alternatives: widget process management, unbounded queue or abrupt close;
+  rejected. Disable conflicting edits, use the existing job cancellation token and
+  wait for safe terminal cleanup before closing. Unverified cleanup keeps recovery
+  visible and blocks new operations; published results are never rolled back. Probe
+  cancellation still waits for existing timeout bounds. No scheduler/database is added.
+- ADR-038 / D23 (accepted): choose system-following theme, matching ttk colors,
+  resizable/scrollable layout, toolkit DPI support and explicit keyboard adapters.
+  Alternatives: fixed light-only styling or packaging in this PR; rejected. Native
+  smoke uses one root per isolated process after local repeated-root Tcl failures;
+  exact display/widget evidence is reported separately from manual Windows 10/11
+  acceptance. Widget scaling tests do not certify actual OS DPI or screen readers.
+  Accessibility limitations remain documented. PR-07 owns executable/ZIP/installer
+  and release gates; no packaging or release is authorized here.
+
+Document 17 records context, APIs, consequences, test procedure and residual limits.
+These owner-approved choices authorize PR-06 implementation, not automatic G4/MVP
+acceptance, branch merging, tags or releases.

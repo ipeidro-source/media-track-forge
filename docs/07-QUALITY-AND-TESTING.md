@@ -114,3 +114,16 @@ All prior suites remain mandatory; unit cases run across the complete matrix and
 real media on both Python 3.12 platforms, without hidden skips. Exact counts, tools,
 filesystems, run URLs and complete-log findings belong in the PR. No GUI acceptance
 or complete decoding guarantee is inferred from these tests.
+
+## PR-06 desktop test layers
+
+Headless controller/worker tests require neither Tk nor FFmpeg and run on the full
+matrix. Real-service desktop orchestration runs with the existing synthetic media
+integration suite on both Python 3.12 platforms. Native Windows GUI tests are
+explicitly invoked with `python -m pytest tests/gui -v -s` in Windows 3.12 CI.
+Default pytest discovery covers unit/integration only, with no Linux display.
+Each native scenario runs in an isolated process with one root; failures are not
+silently skipped. Controlled widget cases and a real GUI-to-backend video-only
+operation are identified separately. Actual tests, counts and full CI log review
+belong in the PR. Manual Windows 10/11 OS-DPI, keyboard and screen-reader acceptance
+is still required; see document 17. A native Tk test is not desktop certification.

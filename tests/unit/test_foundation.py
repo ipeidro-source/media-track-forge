@@ -22,8 +22,8 @@ def test_installed_version_matches_package() -> None:
     assert importlib.metadata.version("mediatrack-forge") == __version__
 
 
-def test_no_runtime_dependencies() -> None:
-    assert not importlib.metadata.requires("mediatrack-forge")
+def test_only_approved_desktop_runtime_dependency() -> None:
+    assert importlib.metadata.requires("mediatrack-forge") == ["customtkinter==6.0.0"]
 
 
 def test_default_entry_point_shows_scope(capsys: pytest.CaptureFixture[str]) -> None:

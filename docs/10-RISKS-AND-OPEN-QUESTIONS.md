@@ -146,3 +146,20 @@ use bounded latest-value delivery. Source snapshot/noncryptographic identity, tr
 filesystem namespace, process containment gaps, private final permissions and lack
 of power-loss durability remain unchanged. Release/license/desktop risks remain open.
 No G3 acceptance is implied until independent review and owner acceptance.
+
+## PR-06 desktop risks and choices
+
+D19-D23 resolve the GUI toolkit/workflow/threading scope (ADRs 034-038). Initial
+all-included intent avoids silent omissions but may require explicit correction
+for incompatible streams/default conflicts. No recent-files/history is persisted.
+CustomTkinter 6.0.0 and its pinned development dependencies install for CLI users
+without initializing a display. Toolkit keyboard focus uses a small canvas adapter
+that must be retested on upgrades. Screen-reader/UI Automation/high-contrast support
+is limited; actual Windows 10/11 OS-DPI/manual acceptance remains open. Repeated local
+Tk roots caused Tcl initialization errors, so native test scenarios run in isolated
+processes. Local screen capture was unavailable; screenshots are not fabricated.
+Hosted Server 2025 widget tests are not interactive consumer desktop certification.
+Unverified termination/cleanup blocks further work and keeps recovery details visible;
+the GUI provides no unsafe force-close/kill/delete shortcut. Existing filesystem,
+process containment and source identity limits remain. PR-07 license/notices,
+packaging, executable validation and owner release approval remain separate work.

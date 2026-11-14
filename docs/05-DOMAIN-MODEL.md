@@ -111,3 +111,14 @@ not mutable media intent or global scheduler state. The exclusive publication li
 is the commitment boundary; cancellation never removes a published result.
 Audio-only/subtitle-only extraction is valid within its matrix, while main remux
 still requires selected primary video. See document 16 for fields and API semantics.
+
+## PR-06 presentation state
+
+EditingIntent belongs to ui, not the domain: it holds immutable inspected sources,
+ordered explicit selections, external records, mode/container/destination/chapter
+intent and one extraction reference. DesktopController tracks request generation,
+reviewed/confirmed revision, current plan, progress/result and safe-close state.
+StreamReference retains its full backend identity through table sorting/navigation.
+No domain/media snapshot or public schema changes. Presentation lifecycle values do
+not replace backend execution states or publication authority. Document 17 defines
+the GUI behavior and bounded worker ownership.

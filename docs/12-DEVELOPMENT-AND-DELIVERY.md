@@ -221,3 +221,22 @@ Windows and Ubuntu Python 3.12. Source/wheel builds, pip check, YAML and actionl
 remain required. No Action, runner, dependency or release workflow changes are made.
 Document 16 describes the new backend APIs and limitations. Final counts/platform
 versions, actual CI run and complete log review are recorded in PR-05.
+
+## PR-06 desktop development
+
+Install the updated exact requirements-dev.txt snapshot and editable project, then
+launch `python -m mediatrack_forge.ui.desktop` or `mediatrack-forge-desktop`.
+CustomTkinter 6.0.0 is the sole direct runtime dependency; darkdetect 0.8.0 and the
+existing packaging pin complete the development GUI resolution. Tk comes from the
+native Python installation. Backend imports/CLI require no display initialization.
+The inspection entry point and contracts 13-16 are unchanged. Document 17 provides
+full setup, keyboard/metadata/review semantics and the manual Windows checklist.
+
+Default `python -m pytest` runs headless unit plus real integration tests. Run native
+Windows tests explicitly with `python -m pytest tests/gui -v -s`; each uses a fresh
+process and one Tk root. CI adds that mandatory step only to Windows Python 3.12,
+retaining all five stable check names, runner images, Node 24 Action references,
+permissions, actionlint, builds, dependency checks and weekly Dependabot. No new
+Actions or release workflow. Record exact hosted native GUI/media counts and log
+findings in the PR; missing display evidence must not be claimed as passed.
+PR-07 packaging/release gates and manual Windows 10/11 acceptance remain deferred.

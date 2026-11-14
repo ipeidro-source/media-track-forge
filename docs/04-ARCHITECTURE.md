@@ -2,7 +2,7 @@
 
 ## Principles
 
-Python 3.11+ is selected for PR-01; CustomTkinter remains **proposed**. Design a Windows-first desktop GUI over a UI-independent core. Treat FFmpeg and ffprobe as external executables whose presence and capabilities are checked. The MVP works offline with local files.
+Python 3.11+ was selected in PR-01; CustomTkinter is approved for PR-06. Design a Windows-first desktop GUI over a UI-independent core. Treat FFmpeg and ffprobe as external executables whose presence and capabilities are checked. The MVP works offline with local files.
 
 ```text
 Windows Desktop UI (CustomTkinter)
@@ -124,3 +124,15 @@ ExecutionControl coordinates per-job cancellation and synchronous bounded progre
 ProgressEvent is a domain value. Existing four layers and dependency pins remain.
 Document 16 supersedes historical deferred-import/extraction statements above.
 No GUI, scheduler, batch processing or public writing CLI is added.
+
+## PR-06 desktop boundary
+
+ui/desktop.py lazily composes DesktopWindow. ui/window.py renders CustomTkinter/ttk
+on the main thread. ui/presentation_model.py adapts immutable backend entities into
+EditingIntent and DesktopController, with generation-safe review/confirmation and
+DesktopBackend composition of existing services. ui/worker.py contains one task
+thread, bounded reply and latest-value progress. No widgets call media processes.
+Pure presentation/backend imports require no display. Extraction extension discovery
+is application-owned, not a second GUI compatibility matrix. Existing inspection,
+planning/execution/extraction contracts and four-layer direction remain unchanged.
+See document 17 for lifecycle, source identity, acknowledgement and testing limits.

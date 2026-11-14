@@ -55,6 +55,24 @@ def extraction_arguments(plan: ExtractionPlan) -> tuple[str, ...]:
 
 
 class ExtractionPlanningService:
+    @staticmethod
+    def supported_extensions(source: MediaAsset, reference: StreamReference) -> tuple[str, ...]:
+        """Read-only policy discovery for callers; no GUI maintains a second matrix."""
+        stream = next(
+            (s for s in source.streams if StreamReference(source.source, s.index) == reference),
+            None,
+        )
+        if stream is None or dict(source.format.tags).get("major_brand") == "qt  ":
+            return ()
+        family = "mp4" if "mp4" in (source.format.name or "").split(",") else source.format.name
+        if family == "matroska,webm":
+            family = "matroska"
+        if stream.codec == "aac" and stream.properties.profile != "LC":
+            return ()
+        return tuple(
+            row[2] for row in EXTRACTION_MATRIX if row[0] == stream.codec and row[1] == family
+        )
+
     def plan(
         self,
         source: MediaAsset,

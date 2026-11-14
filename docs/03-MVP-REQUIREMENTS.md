@@ -80,3 +80,12 @@ retain original hashes, inspect actual outputs and check cleanup/collisions.
 Exact enabled combinations, evidence boundaries and diagnostics are in document 16.
 No GUI interaction, full FR-15, packaging, complete MVP or owner G3 acceptance is
 claimed. Exact final test counts and platform results belong in the PR.
+
+## PR-06 user-interface coverage
+
+The desktop exposes FR-01..05/08..11/15 and the existing FR-06/07/12..14 backend.
+Display-independent real-service journeys cover AC-01..12 plus extraction; native
+Tk tests separately cover controls/review/confirmation/progress/cancel/close and one
+real video-only operation. Controlled GUI fakes are not FFmpeg evidence. Exact
+counts/platform runs belong in the PR. Manual Windows 10/11 keyboard/accessibility/
+OS-DPI checks and packaging remain acceptance requirements; no full MVP is claimed.
