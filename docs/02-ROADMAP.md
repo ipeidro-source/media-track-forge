@@ -12,7 +12,7 @@ This document owns **planning, sequencing and approval gates**. Current implemen
 | Usability validation | UX-01–UX-10 and real SMB **read** test | Approved protocol, not yet executed |
 | UX/UI refinement | Simplify workflows without weakening backend invariants | Planned from findings; code not authorized |
 | Network destination support | Write to trusted UNC/mapped NAS while preserving safe publication | Owner-approved **requirement**, design and implementation pending |
-| Windows packaging | Portable PyInstaller `onedir` executable/ZIP, no installer, FFmpeg external and mandatory | Planned after UI maturity, no executable or release yet |
+| Windows packaging | Two downloadable artifacts: PyInstaller `onefile` `.exe` and `onedir` portable ZIP; no installer, FFmpeg external and mandatory | Planned after UI maturity, no executable or release yet |
 | MVP acceptance/release | Owner-reviewed AC, consumer Windows and real-share evidence where applicable | Pending; explicit Release authorization required |
 | Phase 1 | Selective H.264/H.265 video and AAC audio transcoding, quality presets | Deferred |
 | Phase 2 | Batch automation, subtitle matching, GPU if justified, resource/size planning | Deferred |
@@ -36,7 +36,7 @@ Original early estimates (MVP 25–40 h, selective transcoding +30–50 h, batch
 2. Execute UX scenarios individually and record P0–P3 human findings in [18](18-UX-VALIDATION.md).
 3. Define GUI refinements from evidence, independently approve Codex specification, preserve immutable inputs, warning/confirmation revision binding, safe staging, validation and cancellation.
 4. Evaluate NAS output safety separately (provisional ADR-040): local validated staging and safe remote publication versus controlled private remote staging; demand evidence for atomic visibility, no overwrite, cleanup, ACL, disconnect and durability. **Do not simply allow UNC destinations under D24.**
-5. After GUI maturity prepare portable Windows ZIP, startup FFmpeg/ffprobe compatibility checks, winget guidance and optional updates; no silent installs. Validate license notices, checksums and Windows 10/11.
+5. After GUI maturity prepare both standalone Windows `.exe` and portable `onedir` ZIP, startup FFmpeg/ffprobe compatibility checks, winget guidance and optional updates; no silent installs. Validate license notices, checksums and Windows 10/11.
 6. Owner decides whether all G4/G5 evidence suffices; tagging/publication requires separate explicit authorization.
 
 The historical label “PR-07 packaging” is superseded by the owner-approved sequence: a documentation PR first, then UI refinement and packaging after UX. GitHub allocates actual PR numbers; NAS implementation can change numbering. Requirements live in [03](03-MVP-REQUIREMENTS.md), approved decisions in [06](06-ARCHITECTURE-DECISIONS.md), open risks in [10](10-RISKS-AND-OPEN-QUESTIONS.md).
