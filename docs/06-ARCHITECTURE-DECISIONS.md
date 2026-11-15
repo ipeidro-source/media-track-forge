@@ -10,8 +10,8 @@ Statuses: **Accepted baseline**, **Proposed / pending**, or **Deferred**. These 
 | ADR-004 | Accepted baseline | No video/audio transcoding in the MVP | Bounded scope; preserve media quality |
 | ADR-005 | Accepted baseline | MKV/MP4 outputs; AVI accepted as input; verify compatibility | Useful formats without false codec guarantees |
 | ADR-006 | Accepted baseline | Immutable original, staged output and post-run validation | Reduce risk of data loss |
-| ADR-007 | Accepted for PR-01; GUI deferred | Python 3.11+, pytest, Ruff, mypy; CustomTkinter approved for PR-06 (ADR-034) | Explicit PR-01 scope approval; no GUI dependency |
-| ADR-008 | Proposed / pending | MIT for application code | Easy contributions; review redistribution constraints |
+| ADR-007 | Accepted; GUI implemented under ADR-034 | Python 3.11+, pytest, Ruff, mypy and CustomTkinter desktop | Preserve core independence |
+| ADR-008 | Accepted November 15, 2026 | MIT for application-owned code | Permissive license; third-party notices and redistribution obligations remain separate |
 | ADR-009 | Accepted target; implementation deferred | PyInstaller Windows `.exe`, versioned portable ZIP and SHA256SUMS.txt | Explicit PR-01 delivery direction; no executable or release yet |
 | ADR-010 | Deferred | GPU acceleration and specialized codecs | Phase 2; requires capability/licensing assessment |
 | ADR-011 | Accepted baseline | **English-only project artifacts and English-first UI** | International consistency; avoid mixed-language documentation |
@@ -265,3 +265,13 @@ real tools and local output when synthetic shares are supplied; Get-SmbConnectio
 evidence establishes transport/dialect separately. No real SMB share was available
 for validation in the current agent environment (no mapping; enumeration unavailable).
 Document 17 records the manual evidence procedure and remaining limits.
+
+## November 15, 2026 — owner-approved decisions after audit
+
+**ADR-008 (accepted):** License application-owned source under MIT. This does not relicense FFmpeg, PyInstaller, Python, GUI dependencies or any third-party components; inventory redistributed dependencies and notices before shipping. MIT selection does not authorize a Release.
+
+**ADR-003 and ADR-009 clarified (approved direction, not implementation):** FFmpeg/ffprobe remain mandatory external tools. A future startup check should validate executable presence, compatibility and necessary capabilities, with actionable winget `Gyan.FFmpeg` installation guidance (verify package identifier at implementation). Compatible older builds may operate. Update notices must be optional, nonblocking and never silently install or upgrade. Distribution target is PyInstaller `onedir` executable in versioned ZIP without installer initially; Windows 10/11 acceptance, checksums and notices remain gates.
+
+**Provisional ADR-040 — OPEN architectural design (not an accepted solution):** Owner approves the future requirement to write output to trusted mapped/UNC NAS destinations. ADR-039's current local-only output safety restriction remains active until a separately reviewed design and real SMB safety tests exist. Compare local validated staging plus safe remote publishing with private remote-share staging; consider exclusive no-overwrite semantics, incomplete transfer visibility, permissions/ACL, remapping and path races, disconnections, cancellation, cleanup and durability. Never implement by merely disabling the network-output prohibition.
+
+Video/audio transcoding, conditional GPU and automation remain later phases, without implementation authorization.
