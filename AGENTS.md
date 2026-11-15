@@ -35,7 +35,7 @@ Use **English exclusively** for repository files, code identifiers, comments, do
 
 PR-01–PR-06 are merged on main at `9298fd46` with passing CI run 43630367616. PR-06 includes D24/ADR-039 read-only UNC/mapped inputs; real SMB evidence remains pending. **Network destinations are currently blocked**; new NAS output capability is an approved requirement, not an implemented safety design. Use [document 00](docs/00-CURRENT-STATUS.md) for live status.
 
-Next work is documentation consolidation, then owner-led UX-01–UX-10, separately approved GUI refinements and portable packaging after GUI maturity. MIT for application code is approved. FFmpeg/ffprobe remain required external tools; startup checks, winget guidance and optional update checks are **planned**, not built. Future network output requires a separate security ADR and real SMB tests. Transcoding, GPU and batch remain deferred. Do not initiate Codex work without scoped owner approval, and never merge, tag or release without authorization.
+Next work is documentation consolidation, then owner-led UX-01–UX-10, separately approved GUI refinements and portable PyInstaller `onefile` `.exe` and `onedir` ZIP packaging after GUI maturity. MIT for application code is approved. FFmpeg/ffprobe remain required external tools; startup checks, winget guidance and optional update checks are **planned**, not built. Future network output requires a separate security ADR and real SMB tests. Transcoding, GPU and batch remain deferred. Do not initiate Codex work without scoped owner approval, and never merge, tag or release without authorization.
 
 ## PR reporting template
 
