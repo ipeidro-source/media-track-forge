@@ -31,7 +31,7 @@
 - Specify behavior for multiple video streams, MKV attachments and chapters, forced/default subtitle flags, and metadata loss when changing containers.
 - Determine codec-specific file extensions and bitstream-filter requirements for track extraction.
 - Confirm final English UI wording and accessibility expectations.
-- **Resolved direction:** portable executable ZIP without installer; external FFmpeg/ffprobe mandatory. Startup and winget guidance are planned.
+- **Resolved direction:** standalone `onefile` `.exe` plus portable `onedir` ZIP without installer; external FFmpeg/ffprobe mandatory. Startup and winget guidance are planned.
 - Define end-user positioning: general local tool versus library optimization specialist.
 - Agree CI/CD versioning and tag/release policy.
 - Re-estimate effort after PR-02 and PR-03.
