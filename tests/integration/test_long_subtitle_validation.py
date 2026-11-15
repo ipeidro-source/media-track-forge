@@ -70,16 +70,39 @@ def test_two_hour_subrip_validation_and_failure_publication_boundary(
             + ("4" if failed_side == "timing" else "0"),
             "-c:a",
             "eac3",
+            # Keep encoder priming away from zero across FFmpeg versions, so the
+            # video/subtitle clock, rather than unselected audio delay, sets origin.
+            "-af",
+            "asetpts=PTS+1/TB",
             "-c:s",
             "srt",
             "-avoid_negative_ts",
-            "make_zero",
+            "disabled",
             *(["-output_ts_offset", "1"] if failed_side == "timing" else []),
         ],
         source,
     )
     inspector = InspectionService(FFprobeAdapter(planning_tools[1]))
     asset = inspector.inspect(source)
+    origin = json.loads(
+        run_bounded(
+            [
+                planning_tools[1],
+                "-v",
+                "error",
+                "-protocol_whitelist",
+                "file",
+                "-show_entries",
+                "format=start_time",
+                "-of",
+                "json",
+                "-i",
+                str(source),
+            ],
+            30,
+        )
+    )["format"]["start_time"]
+    assert float(origin) == (1 if failed_side == "timing" else 0)
     assert [s.codec for s in asset.streams] == [
         "hevc",
         "eac3",
