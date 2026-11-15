@@ -2,7 +2,7 @@
 
 **Project:** MediaTrack Forge  
 **Repository:** https://github.com/ipeidro-source/media-track-forge  
-**Document status:** Context-management policy — v0.3, November 14, 2026  
+**Document status:** Context-management policy — v0.4, November 15, 2026  
 **Language:** English for all versioned project artifacts
 
 ## 1. Purpose
@@ -42,6 +42,7 @@ If two sources conflict, identify the conflict and the relevant versions/commits
 | File | Primary content |
 | --- | --- |
 | `README.md` | Product overview and documentation index |
+| `docs/00-CURRENT-STATUS.md` | Single current implementation/gates snapshot |
 | `docs/01-VISION-AND-SCOPE.md` | Product vision, target users, differentiators, scope |
 | `docs/02-ROADMAP.md` | Phases, effort estimates, approval gates |
 | `docs/03-MVP-REQUIREMENTS.md` | Functional requirements and acceptance criteria |
@@ -56,29 +57,18 @@ If two sources conflict, identify the conflict and the relevant versions/commits
 | `docs/12-DEVELOPMENT-AND-DELIVERY.md` | Implemented development/CI foundation, local media tools and deferred delivery gates |
 | `docs/13-INSPECTION-CONTRACT.md` | Versioned public inspection JSON, exit codes and security limitations |
 | `docs/14-OPERATION-PLAN-CONTRACT.md` | Separate versioned planning JSON, compatibility policy and proposed commands |
+| `docs/15-EXECUTION-AND-VALIDATION-CONTRACT.md` | Execution and validation safety |
+| `docs/16-EXTERNAL-TRACKS-EXTRACTION-AND-CANCELLATION.md` | SRT, extraction, cancellation/progress |
+| `docs/17-WINDOWS-DESKTOP-UI.md` | GUI contract |
+| `docs/18-UX-VALIDATION.md` | UX protocol and findings |
 
 Read only the documents relevant to a question when possible, but review related ADRs and requirements before recommending material architectural or scope changes.
 
-## 5. Project baseline — November 14, 2026
+## 5. Current baseline
 
-**Current status:** PR-01 foundation merged, with passing main CI at d0ca69b. PR-02 is merged at 392ce94 with passing main CI. PR-03 implements
-compatibility/planning on its feature branch, pending its CI evidence and review. Confirm actual repository state whenever discussing
-progress; unmerged implementation is not accepted main behavior.
+PR-01–PR-06 merged at main commit `9298fd46`, with passing main CI 43630367616. PR-06 includes D24 mapped/UNC read-only file input, while UNC/mapped outputs remain forbidden. Real SMB and Windows 10/11 owner acceptance remain open. Use [document 00](00-CURRENT-STATUS.md) for live implementation and gates; do not duplicate large per-PR snapshots here.
 
-- **Product:** independent Windows-first application for local media track management; not part of YouTube Smart Downloader.
-- **MVP:** inspect media using ffprobe, select/add/remove/reorder/extract streams, remux compatible inputs into MKV or MP4, including **video-only outputs**, without video or audio transcoding.
-- **Input expectations:** AVI, MP4, and MKV, subject to codec and output-container compatibility; no guarantee that every codec can be copied to every container.
-- **Subtitle processing:** SRT as a required MVP input; MP4 text subtitles may need an explicit conversion to `mov_text`.
-- **Phase 1:** selective video/audio transcoding and quality profiles, subject to a separate approval gate.
-- **Phase 2:** batch processing, rules, GPU-aware options, and size estimates, subject to a separate approval gate.
-- **Architecture:** Python 3.11+ selected; four-layer src package and GUI-independent core. CustomTkinter remains proposed. PR-02 adds external ffprobe inspection, frozen media entities, an application service and versioned JSON CLI; no GUI or media-writing operations.
-- **Safety:** preserve original media, require explicit track selection, disallow silent video/audio transcoding, validate staged outputs before publication.
-- **Delivery model:** ChatGPT supports specification and review; Codex implements in small PRs; the project owner approves scope changes, merges, tags, and Releases.
-
-Product capabilities beyond read-only inspection and declarative planning remain decisions, not
-implemented features. PR-02 D1-D3 approval covers schema v1, configurable external
-local-only ffprobe and mandatory real synthetic integration; see ADR-016 through
-ADR-018. Consult its PR for actual validation results and review status.
+MIT is approved for own code; future mandatory-external FFmpeg startup checking/winget assistance, portable ZIP packaging and safe NAS output are approved directions **not implemented**. Transcoding/GPU/batch remain deferred. No Release is authorized.
 
 ## 6. Language policy
 
