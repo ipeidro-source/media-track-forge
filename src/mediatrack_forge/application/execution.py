@@ -151,7 +151,9 @@ class RemuxExecutionService:
     def _arguments(plan: OperationPlan) -> tuple[str, ...]:
         return build_arguments(plan)
 
-    def _validator_for(self, request: ExecutionRequest) -> OutputValidator:
+    def _validator_for(
+        self, request: ExecutionRequest, control: ExecutionControl | None = None
+    ) -> OutputValidator:
         return self._validator
 
     def execute(
@@ -172,7 +174,11 @@ class RemuxExecutionService:
             config = request.configuration
             if any(
                 not math.isfinite(value) or value <= 0
-                for value in (config.timeout_seconds, config.probe_timeout_seconds)
+                for value in (
+                    config.timeout_seconds,
+                    config.probe_timeout_seconds,
+                    config.packet_scan_timeout_seconds,
+                )
             ):
                 raise ExecutionFailure("INVALID_TIMEOUT")
             inspector = (
@@ -227,7 +233,7 @@ class RemuxExecutionService:
             history.append("validating")
             control.emit("validating")
             control.cancellation.check()
-            validation = self._validator_for(request).validate(
+            validation = self._validator_for(request, control).validate(
                 plan, stage.path, inspector, config.probe_timeout_seconds
             )
             control.cancellation.check()

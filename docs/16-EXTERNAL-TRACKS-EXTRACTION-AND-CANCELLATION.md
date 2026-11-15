@@ -164,7 +164,8 @@ synchronous service can run on a caller worker thread; no GUI/scheduler is impor
 
 Cancellation is checked before staging/launch, during managed processing, after
 processing, around validation and before publication. Blocking probing finishes
-or reaches its configured timeout; the pending cancellation prevents publication.
+or reaches its configured timeout for metadata probes; extraction packet probes now
+observe the token actively as described below. Pending cancellation prevents publication.
 Managed FFmpeg uses Windows Job Objects or Ubuntu process groups, then verifies
 termination, reaps the root and joins pipe readers. Existing five-second termination
 verification bounds and trust limitations remain. Cancelling/cancelled are distinct
@@ -213,6 +214,100 @@ not permission to publish. Callback failure/indeterminate status does not fabric
 duration or waive validation.
 
 ## Diagnostics, evidence and limitations
+
+### PR-08 packet-scan investigation and read-only diagnosis
+
+The owner reproduced the original UNC MKV/index-5 failure at head `59408c0` with
+`EXTRACTION_PACKET_SCAN`, unpublished output and complete cleanup. That old label
+covered **both** source and staged-output counts, including executable discovery,
+bounded subprocess execution, JSON decoding and count validation. It cannot identify
+which operation failed. It also occurs before subtitle text/timing comparison;
+the earlier MP4 clear-sample mismatch does not establish this MKV's cause.
+
+The focused follow-up separates `EXTRACTION_SOURCE_PACKET_SCAN` from
+`EXTRACTION_OUTPUT_PACKET_SCAN`. A successful count is recorded before advancing.
+Failures additionally carry a controlled suffix: `TIMEOUT`, `STDOUT_LIMIT`,
+`STDERR_LIMIT`, `EXECUTABLE`, `PROBE_FAILED`, `IO`, `JSON_INVALID`, `STREAM_LAYOUT`,
+`COUNT_UNAVAILABLE`, `COUNT_INVALID` or `COUNT_EMPTY`. Errors keep the contextual
+invariant and `EXTRACTION_INVALID`; none authorize publication. No raw exception,
+vendor stderr, path or subtitle text is added to these diagnostic details.
+
+The owner's read-only measurement identifies the reproduced failure: **source**
+packet counting timed out at **30.078 seconds**, with a configured 30-second limit
+on a 1,660,724,038-byte UNC file. In that path the staged-output count is never
+reached; JSON/count parsing has not completed. This establishes the subprocess
+deadline failure, not an unhealthy SMB connection, corruption or a measured scan
+completion time. A larger-budget measurement and full application retest remain useful.
+
+The correction separates complete scans from metadata probes. Additive execution
+configuration `packet_scan_timeout_seconds` defaults to **300 seconds per packet
+probe** (source count, output count and independent source cue scan). Metadata-only
+inspection/reinspection retains `probe_timeout_seconds=30`; FFmpeg execution retains
+its separate `timeout_seconds=300`. All three configuration values must be finite
+and positive before staging. These are per-process limits, not an aggregate job
+deadline. No retries, sampling, content-validation waivers or larger capture buffers
+are introduced. Counts, all cue text and strict timing checks must still pass.
+
+Packet probes check the existing per-job cancellation token before launch and in
+the bounded wait loop, then kill/reap the trusted native probe and join readers
+before propagating cancellation. The execution service handles that as cancelled,
+without publication; longer scan limits do not require waiting for their expiration
+to observe Cancel. OS file-provider/termination limitations below still apply.
+
+Packet counting still uses explicit original indices and file-only argument arrays
+and scans to EOF. Selecting a stream controls reporting; it is not a promise that
+a large container can be scanned in the old 30-second metadata budget. The
+[official ffprobe options](https://ffmpeg.org/ffprobe.html#Main-options) describe
+counting and interval selection. Do not sample as a substitute for complete validation.
+
+From the repository folder, in the **same Windows user/session as the GUI**, run:
+
+```powershell
+$media = Read-Host 'Original UNC MKV path (kept local)'
+.\.venv\Scripts\python.exe scripts/diagnose_extraction_packets.py `
+  --source $media --stream-index 5 --timeout-seconds 30
+```
+
+Share only the single JSON result. The script reads the source and runs native
+ffprobe, prints role/index, count or failure category, byte size and elapsed/limit
+seconds, and never prints filenames, subtitle payloads or vendor logs. It writes no
+media, staging, credentials or mappings. Capture limits remain 8 MiB stdout/64 KiB
+stderr internally; printed output is fixed structured metadata, not that capture.
+Exit 0 means counts obtained, 1 means diagnosis failed, 2 means invalid arguments;
+this is not an extraction-validity or publication result.
+
+If the result is `TIMEOUT`, an **owner-selected** bounded second measurement can
+distinguish a short scan budget from persistent failure:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/diagnose_extraction_packets.py `
+  --source $media --stream-index 5 --timeout-seconds 120
+```
+
+There are no automatic retries; the diagnostic accepts limits up to 300 seconds.
+If source counting succeeds, retest with the instrumented application to obtain
+the output-side or later invariant; the old cleaned staging file no longer exists.
+Optionally `--output $existingLocalSrt` counts an **already existing local SRT** at
+index 0 independently; it never creates or recovers a staged file.
+
+`TIMEOUT` alone does not prove corruption or an SMB fault; `PROBE_FAILED` alone
+cannot separate demuxing, availability and permission failures. If available, inspect
+the corresponding connection locally with
+`Get-SmbConnection -ServerName $server | Select-Object Dialect, NumOpens`
+(set `$server` privately to the source server name);
+correlate the actual share/session/dialect rather than interpreting UNC spelling as
+transport proof. No shares or credentials are created. Existing OS file-provider
+resolution/stat/open/read and process-termination waits may outlast a subprocess
+deadline; the reported limit is not an end-to-end Windows I/O guarantee.
+
+Local regressions use 2,400 cues spanning two hours in a sub-2-MiB Matroska fixture
+with short synthetic HEVC/E-AC-3 video/audio and subtitle index 5. They verify complete
+counts, successful extraction and blocked publication on controlled source/output
+timeouts. This is not a two-hour high-bitrate file or an SMB throughput test. A separate
+reordered-HEVC clock-origin case passes both counts but fails subtitle timing safely;
+that later failure is distinct from the owner's `EXTRACTION_PACKET_SCAN` report.
+The old source-count timeout is confirmed by direct owner evidence. Successful
+complete extraction of that original file under the correction is not yet claimed.
 
 Existing stable codes keep their meaning. New codes include INVALID_EXTERNAL_SRT,
 UNSUPPORTED_EXTRACTION, UNSUPPORTED_AAC_PROFILE, EXTRACTION_METADATA_EXCLUDED,

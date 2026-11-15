@@ -18,10 +18,23 @@
 
 ## Current open risks and decisions (November 15, 2026)
 
-- PR-08: synthetic MP4 gaps reproduce clear-sample packet mismatch. The local MKV
-  SubRip index-5 fixture passes; the exact owner UNC MKV failure is not reproduced
-  and must not be attributed to MP4 clear samples. New invariant diagnostics enable
-  further diagnosis without vendor logs. No owner media or real SMB evidence exists here.
+- Original MKV retest at `59408c0` failed inside the old combined packet-scan stage.
+  That code alone could not identify the operation. The owner's direct read-only
+  result confirms a source-count timeout at 30.078 seconds on a 1,660,724,038-byte
+  UNC file. Complete scans had incorrectly shared the 30-second metadata budget.
+  The correction separates an explicit default 300-second packet-scan limit, observes
+  cancellation, and keeps every completeness check (contract 16). A source timeout
+  does not prove an SMB fault or guarantee success within 300 seconds. No sampling,
+  retries or larger capture bounds are introduced; original-file retesting is pending.
+- The long synthetic HEVC/E-AC-3/SubRip fixture also exposes a separate nonzero
+  clock-origin/rebasing mismatch after both counts pass. Timing rejection remains
+  intact; this does not explain a failure still inside packet scanning. Any timestamp
+  correction must preserve independently verified cue timing rather than widen tolerance.
+
+- PR-08: synthetic MP4 gaps reproduce clear-sample packet mismatch. The owner's MKV
+  source-count timeout is a distinct failure, confirmed by direct read-only diagnosis
+  rather than attributed to MP4 clear samples. Original-file extraction after correction
+  and complete SMB transport/failure acceptance remain unverified.
 - PR-08 proposes plan version 2 for metadata preservation (ADR-042), requiring fresh
   review for v1 callers. Compatible known tags are explicitly mapped and validated;
   arbitrary tags, casing and FFmpeg-generated tags cannot be guaranteed byte-identical.

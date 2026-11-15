@@ -22,7 +22,7 @@ they do not establish complete UX-01–UX-10 acceptance or exact source-file dia
 | Finding | Scenario | Reproduction/expected/actual | Severity | Proposal | Status |
 | --- | --- | --- | --- | --- | --- |
 | Extraction A | UX-07 | MP4 mov_text, Spanish original index 3 → local SRT: OUTPUT_VALIDATION_FAILED / EXTRACTION_INVALID, unpublished, cleanup complete | P1 | Independent cue validation and specific diagnostics | Synthetic gap reproduction; owner file unverified |
-| Extraction B | UX-07/08 | UNC MKV with HEVC/E-AC-3/SubRip, original index 5 → local SRT: same generic error twice | P1 | Diagnose independently of A | Local synthetic MKV passes; exact cause unresolved |
+| Extraction B | UX-07/08 | UNC MKV with HEVC/E-AC-3/SubRip, original index 5 → local SRT: same generic error twice | P1 | Diagnose independently of A | Source-count timeout confirmed; retest original with corrected application pending |
 | Replacement | UX-08 | Failed replacement inspection clears valid editing session | P1 | Inspect before replacing session | Implemented on PR-08 branch; regression tests |
 | Metadata | UX-04 | Unchanged compatible tags discarded under conservative policy | P1 | Explicit preservation and validation, versioned contract | ADR-042 proposed |
 | Navigation/editing | UX-01–05/10 | Oversized initial workspace, confusing metadata keep/set and extraction button, raw technical review, duplicated import feedback | P2 | Approved U1–U7/U10 refinement | Implemented on PR-08 branch; native regressions |
@@ -38,5 +38,20 @@ investigations; no UX-06 pass is claimed. Keep exact owner-file rechecks separat
 from local synthetic regressions and real SMB transport verification.
 
 **D24 verification:** real synthetic media and SRT on mapped and UNC trusted SMB shares, identity, account/session, read-only inputs, local-only output, failures and disconnections. Simulated CI coverage does not prove SMB operation.
+
+**Owner MKV retest:** original trusted UNC MKV, HEVC/E-AC-3/SubRip, original index 5
+to a new local SRT at PR-08 head `59408c0`: `OUTPUT_VALIDATION_FAILED`,
+`EXTRACTION_PACKET_SCAN`, `EXTRACTION_INVALID`, unpublished, cleanup complete.
+This is a reproducible owner observation, not simulated evidence. The old combined
+scan code does not identify source versus staged output or classify the probe failure.
+Read-only diagnosis and the focused diagnostic correction are specified in contract 16;
+the original generic code alone could not identify a cause.
+
+**Owner read-only diagnosis:** source packet count, index 5, `TIMEOUT`, limit 30.0
+seconds, elapsed 30.078 seconds, 1,660,724,038 bytes, UNC spelling. This confirms
+the reproduced source probe deadline failure before output counting. It does not
+establish a network transport fault or successful extraction after correction.
+The follow-up separates scan/metadata limits while retaining validation and cancellation;
+full original-file and SMB transport/failure acceptance remain pending.
 
 PR-08 GUI refinement is owner-authorized from these findings; backend reinspection, revision-bound acknowledgements, separate confirmation, staging, validation, no overwrite and cancellation must remain intact. Network **output** requires separate safety architecture and real SMB tests.

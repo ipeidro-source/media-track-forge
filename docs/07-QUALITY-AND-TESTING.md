@@ -166,3 +166,25 @@ remain mandatory. Final head test counts and CI URL belong in PR #8.
 Native resize coverage includes a 620-pixel logical workspace and scrolling focused
 metadata controls into view. Toolkit canvas, text-label and scrolling adapters use
 the pinned CustomTkinter boundary and require rerunning native tests on upgrades.
+
+## PR-08 packet-scan follow-up
+
+Local verification: 445 unit/integration cases and 11 native GUI scenarios passed,
+along with Ruff lint/format, mypy, YAML, verified actionlint 1.7.12, pip check and
+source/wheel build checks. New cases distinguish source/output failures, classify
+timeouts/nonzero exits/pipe limits/JSON/count failures, enforce diagnostic argument
+limits and privacy, and count/extract a two-hour 2,400-cue local subtitle timeline.
+Controlled scan-cost modeling verifies that full scans use the new 300-second budget
+while metadata retains 30; it is not measured SMB latency. Forced source/output
+timeouts still block publication and verify cleanup/source hashes. Real bounded-runner
+tests verify cancellation kills/reaps a stalled reader before its long deadline,
+pre-cancelled probes never launch, and both pipe-limit channels remain bounded.
+Invalid execution/metadata/scan deadlines are rejected before staging.
+A distinct reordered-HEVC clock-origin case passes both counts and safely rejects
+later timing changes. These are local media/process tests, not SMB evidence.
+
+Hosted validation for the final follow-up head is tracked in PR #8; the earlier
+green run at `59408c0` is baseline evidence and cannot validate a later commit.
+The owner-provided 30-second source timeout is direct live-input evidence, separate
+from these local tests. Keep the PR Draft until original-file extraction and required
+manual consumer Windows/SMB acceptance are reviewed.

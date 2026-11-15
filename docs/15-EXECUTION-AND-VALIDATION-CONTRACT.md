@@ -36,6 +36,14 @@ different revision. `ProcessConfiguration` also accepts trusted `ffmpeg`/`ffprob
 executable overrides; otherwise PATH is used. Timeouts must be finite and positive.
 There are no arbitrary command fragments or user-supplied FFmpeg option strings.
 
+PR-08 packet-scan correction adds optional `packet_scan_timeout_seconds=300` to
+ProcessConfiguration for each extraction completeness probe. Metadata inspection
+remains at `probe_timeout_seconds=30`; FFmpeg execution has its own timeout. All
+configured limits are finite positive values checked before staging. Remux validation
+retains its existing metadata timeout. Extraction scans observe per-job cancellation
+without changing OutputValidator's metadata timeout argument or publication authority.
+Contract 16 records the confirmed source timeout, diagnostics and per-process bounds.
+
 `RemuxExecutionService` is synchronous and GUI-independent, suitable for a caller's
 worker thread. Inspection, managed process, output validation and staging ports
 are injectable for deterministic failure tests. No scheduler/queue is introduced.

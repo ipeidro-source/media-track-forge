@@ -1,10 +1,12 @@
 """Elementary output validation with independent selected-packet completeness evidence."""
 
 import json
+import math
 import os
 import shutil
 from pathlib import Path
 
+from mediatrack_forge.application.control import CancellationToken
 from mediatrack_forge.application.execution_ports import Inspector
 from mediatrack_forge.application.inspection import InspectionError
 from mediatrack_forge.domain.execution import ExecutionFailure, ValidationCheck, ValidationReport
@@ -16,46 +18,115 @@ from mediatrack_forge.infrastructure.output_validation import (
     stream_duration,
     timing_budget,
 )
+from mediatrack_forge.infrastructure.packet_probe import PacketScanError, probe_failure
 from mediatrack_forge.infrastructure.srt import validate_srt
 from mediatrack_forge.infrastructure.subtitle_packets import plain_text, subtitle_cues
 
 
-def packet_count(path: Path, index: int, executable: str | None, timeout: float) -> int:
-    binary = shutil.which(executable or "ffprobe")
+def packet_count(
+    path: Path,
+    index: int,
+    executable: str | None,
+    timeout: float,
+    *,
+    cancellation: CancellationToken | None = None,
+) -> int:
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise PacketScanError("INVALID_TIMEOUT", "Packet scan requires a finite positive timeout.")
+    if isinstance(index, bool) or index < 0:
+        raise PacketScanError("INVALID_INDEX", "Select a nonnegative original stream index.")
+    try:
+        binary = shutil.which(executable or "ffprobe")
+    except (OSError, ValueError) as exc:
+        raise PacketScanError(
+            "EXECUTABLE", "Cannot resolve the native ffprobe executable."
+        ) from exc
     if binary is None or (os.name == "nt" and Path(binary).suffix.lower() not in (".exe", ".com")):
-        raise ValueError("Native ffprobe required")
-    raw = run_bounded(
-        [
-            binary,
-            "-v",
-            "error",
-            "-protocol_whitelist",
-            "file",
-            "-select_streams",
-            str(index),
-            "-count_packets",
-            "-show_entries",
-            "stream=nb_read_packets",
-            "-of",
-            "json",
-            "-i",
-            str(path),
-        ],
-        timeout,
-    )
-    data = json.loads(raw)
-    streams = data["streams"]
-    if len(streams) != 1:
-        raise ValueError("Exactly one counted stream required")
-    count = int(streams[0]["nb_read_packets"])
-    if count <= 0:
-        raise ValueError("Nonempty packets required")
+        raise PacketScanError("EXECUTABLE", "Select an available native ffprobe executable.")
+    arguments = [
+        binary,
+        "-v",
+        "error",
+        "-protocol_whitelist",
+        "file",
+        "-select_streams",
+        str(index),
+        "-count_packets",
+        "-show_entries",
+        "stream=nb_read_packets",
+        "-of",
+        "json",
+        "-i",
+        str(path),
+    ]
+    try:
+        raw = (
+            run_bounded(arguments, timeout, cancellation=cancellation)
+            if cancellation is not None
+            else run_bounded(arguments, timeout)
+        )
+    except InspectionError as exc:
+        raise probe_failure(exc) from exc
+    except OSError as exc:
+        raise PacketScanError(
+            "IO", "Packet probe I/O failed; check file and tool availability."
+        ) from exc
+    try:
+        data = json.loads(raw)
+    except ValueError as exc:
+        raise PacketScanError(
+            "JSON_INVALID", "Packet probe returned invalid JSON; check ffprobe."
+        ) from exc
+    if not isinstance(data, dict):
+        raise PacketScanError(
+            "STREAM_LAYOUT", "Packet probe response must contain one selected stream."
+        )
+    streams = data.get("streams")
+    if not isinstance(streams, list) or len(streams) != 1 or not isinstance(streams[0], dict):
+        raise PacketScanError(
+            "STREAM_LAYOUT", "Packet probe did not return exactly one selected stream."
+        )
+    value = streams[0].get("nb_read_packets")
+    if value is None or value == "N/A":
+        raise PacketScanError(
+            "COUNT_UNAVAILABLE", "ffprobe did not provide a packet count for the selected stream."
+        )
+    if isinstance(value, bool) or not isinstance(value, (str, int)):
+        raise PacketScanError(
+            "COUNT_INVALID", "Packet count must be a nonnegative decimal integer."
+        )
+    if isinstance(value, str) and (not value.isascii() or not value.isdecimal()):
+        raise PacketScanError(
+            "COUNT_INVALID", "Packet count must be a nonnegative decimal integer."
+        )
+    try:
+        count = int(value)
+    except ValueError as exc:
+        raise PacketScanError(
+            "COUNT_INVALID", "Packet count cannot be represented safely."
+        ) from exc
+    if not 0 <= count <= 2**63 - 1:
+        raise PacketScanError(
+            "COUNT_INVALID", "Packet count is outside the supported integer range."
+        )
+    if count == 0:
+        raise PacketScanError(
+            "COUNT_EMPTY", "No packets were counted for the selected stream; inspect that track."
+        )
     return count
 
 
 class ExtractionValidator:
-    def __init__(self, ffprobe: str | None = None) -> None:
+    def __init__(
+        self,
+        ffprobe: str | None = None,
+        *,
+        packet_scan_timeout_seconds: float = 300.0,
+        cancellation: CancellationToken | None = None,
+    ) -> None:
         self._ffprobe = ffprobe
+        self._scan_timeout = packet_scan_timeout_seconds
+        self._cancellation = cancellation
 
     def validate(
         self, plan: OperationPlan, path: Path, inspector: Inspector, timeout_seconds: float
@@ -64,6 +135,7 @@ class ExtractionValidator:
         expected = tuple((s.source_stream.kind, s.target_codec) for s in plan.included)
         observed = None
         invariant = "EXTRACTION_PLAN"
+        limit = timeout_seconds
         try:
             if not isinstance(plan, ExtractionPlan) or len(plan.included) != 1:
                 raise ValueError
@@ -89,14 +161,29 @@ class ExtractionValidator:
                 value = getattr(selected.source_stream.properties, field)
                 if value is not None and value != getattr(actual.properties, field):
                     raise ValueError
-            invariant = "EXTRACTION_PACKET_SCAN"
+            invariant = "EXTRACTION_SOURCE_PACKET_SCAN"
+            limit = self._scan_timeout
             before = packet_count(
                 selected.reference.source.path,
                 selected.reference.index,
                 self._ffprobe,
-                timeout_seconds,
+                self._scan_timeout,
+                cancellation=self._cancellation,
             )
-            after = packet_count(path, actual.index, self._ffprobe, timeout_seconds)
+            checks.append(
+                ValidationCheck(invariant, "passed", f"Selected source packet count: {before}.")
+            )
+            invariant = "EXTRACTION_OUTPUT_PACKET_SCAN"
+            after = packet_count(
+                path,
+                actual.index,
+                self._ffprobe,
+                self._scan_timeout,
+                cancellation=self._cancellation,
+            )
+            checks.append(
+                ValidationCheck(invariant, "passed", f"Staged output packet count: {after}.")
+            )
             if actual.kind == "subtitle":
                 invariant = "EXTRACTION_SRT_STRUCTURE"
                 cues = validate_srt(path, require_suffix=False)
@@ -109,7 +196,8 @@ class ExtractionValidator:
                     selected.reference.index,
                     selected.source_stream.codec or "",
                     self._ffprobe,
-                    timeout_seconds,
+                    self._scan_timeout,
+                    cancellation=self._cancellation,
                 )
                 invariant = "EXTRACTION_SUBTITLE_CUE_COUNT"
                 if len(source_cues) != len(cues):
@@ -178,7 +266,24 @@ class ExtractionValidator:
                     "Actual elementary format, single codec and technical properties matched.",
                 )
             )
-        except (OSError, ValueError, KeyError, TypeError, InspectionError, ExecutionFailure):
+        except (OSError, ValueError, KeyError, TypeError, InspectionError, ExecutionFailure) as exc:
+            if isinstance(exc, ExecutionFailure) and exc.code == "PROCESS_CANCELLED":
+                raise
+            failure = (
+                exc
+                if isinstance(exc, PacketScanError)
+                else probe_failure(exc)
+                if isinstance(exc, InspectionError)
+                else None
+            )
+            if failure is not None:
+                checks.append(
+                    ValidationCheck(
+                        f"{invariant}_{failure.code}",
+                        "error",
+                        f"{failure.detail} Probe limit: {limit:g} seconds.",
+                    )
+                )
             checks.append(
                 ValidationCheck(invariant, "error", f"Independent validation failed: {invariant}.")
             )

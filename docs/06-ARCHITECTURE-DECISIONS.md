@@ -286,7 +286,25 @@ checks carry specific invariant codes as well as EXTRACTION_INVALID. Reject malf
 oversized, unprobeable or unmatched output; never waive independent validation.
 Alternatives: suppress validation or count only nonempty output; rejected because
 neither verifies retained source cues. Bounded packet dumps trade capacity for
-auditable evidence; overflow fails safely. Exact owner MKV failure is unresolved.
+auditable evidence; overflow fails safely. The owner MKV timeout is recorded below.
+
+PR-08 owner retest clarification: the original MKV's `EXTRACTION_PACKET_SCAN`
+label at `59408c0` spans two probes and JSON/count parsing, so it cannot establish
+which operation failed. The focused correction records source/output context and
+fixed failure categories, retaining bounded probes, validation and publication
+boundaries. Typed stdout/stderr overflow remains an InspectionError with exit code 6;
+existing consumers remain compatible. A read-only bounded-output utility gathers
+direct evidence without printing media or raw exceptions. Alternative guessing an SMB
+fault, silently raising limits or accepting missing counts is rejected. The owner's
+read-only result then confirmed the source full scan timed out at 30.078 seconds
+under the old 30-second metadata budget. Add an explicit, documented execution
+configuration packet_scan_timeout_seconds (default 300 per complete probe), leaving
+metadata inspection at 30. Observe the per-job token during packet subprocesses so
+cancellation need not wait for the larger deadline. Reject all nonfinite/nonpositive
+limits before staging. Alternatives: unbounded waits, automatic retries, sampling or
+waiving source evidence; rejected. Capture caps, strict validation and publication
+semantics remain. This is an additive runtime setting, not a plan/schema change.
+Contract 16 owns evidence and cancellation/OS limitations; original-file success is pending.
 
 ADR-042 (proposed implementation of approved metadata direction, supersedes the
 blanket tag exclusion in ADR-022): explicitly preserve tested compatible primary

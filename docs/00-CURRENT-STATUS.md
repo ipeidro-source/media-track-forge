@@ -13,7 +13,16 @@ before GUI edits began. Final-head local/hosted evidence is recorded in
 [PR #8](https://github.com/ipeidro-source/media-track-forge/pull/8); that final run is
 distinct from the backend checkpoint and must pass before readiness.
 See [owner audit findings](18-UX-VALIDATION.md), ADRs 041–043 and contracts 14–16.
-No exact owner MKV fix, genuine SMB verification or consumer Windows acceptance is claimed.
+No successful corrected extraction of the original owner MKV, genuine SMB transport
+verification or consumer Windows acceptance is claimed.
+
+Owner retest at `59408c0` reproduced `EXTRACTION_PACKET_SCAN` on the original UNC
+MKV/index 5. The owner's read-only result confirms the **source count** exceeded
+its 30-second deadline (30.078 seconds; 1,660,724,038-byte UNC file), before the
+staged-output count. A focused follow-up separates finite complete-scan limits
+(default 300 seconds) from metadata probes (30), adds cancellable scans and controlled
+source/output diagnostics. See contract 16 and PR #8 for final-head verification.
+This is not proof of an SMB fault; original-file success remains pending. PR stays Draft.
 
 ## Status terminology
 

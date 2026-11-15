@@ -7,36 +7,45 @@ import re
 import shutil
 from pathlib import Path
 
+from mediatrack_forge.application.control import CancellationToken
 from mediatrack_forge.domain.subtitles import SubtitleCue
 from mediatrack_forge.infrastructure.ffprobe import run_bounded
 from mediatrack_forge.infrastructure.srt import MAX_CUES
 
 
 def subtitle_cues(
-    path: Path, index: int, codec: str, executable: str | None, timeout: float
+    path: Path,
+    index: int,
+    codec: str,
+    executable: str | None,
+    timeout: float,
+    *,
+    cancellation: CancellationToken | None = None,
 ) -> tuple[SubtitleCue, ...]:
     binary = shutil.which(executable or "ffprobe")
     if binary is None or (os.name == "nt" and Path(binary).suffix.lower() not in (".exe", ".com")):
         raise ValueError("Packet probe unavailable")
-    raw = run_bounded(
-        [
-            binary,
-            "-v",
-            "error",
-            "-protocol_whitelist",
-            "file",
-            "-select_streams",
-            str(index),
-            "-show_packets",
-            "-show_data",
-            "-show_entries",
-            "packet=pts_time,duration_time,data,size",
-            "-of",
-            "json",
-            "-i",
-            str(path),
-        ],
-        timeout,
+    arguments = [
+        binary,
+        "-v",
+        "error",
+        "-protocol_whitelist",
+        "file",
+        "-select_streams",
+        str(index),
+        "-show_packets",
+        "-show_data",
+        "-show_entries",
+        "packet=pts_time,duration_time,data,size",
+        "-of",
+        "json",
+        "-i",
+        str(path),
+    ]
+    raw = (
+        run_bounded(arguments, timeout, cancellation=cancellation)
+        if cancellation is not None
+        else run_bounded(arguments, timeout)
     )
     cues: list[SubtitleCue] = []
     for packet in json.loads(raw)["packets"]:
