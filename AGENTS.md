@@ -37,6 +37,15 @@ PR-01–PR-06 are merged on main at `9298fd46` with passing CI run 43630367616. 
 
 Next work is documentation consolidation, then owner-led UX-01–UX-10, separately approved GUI refinements and portable PyInstaller `onefile` `.exe` and `onedir` ZIP packaging after GUI maturity. MIT for application code is approved. FFmpeg/ffprobe remain required external tools; startup checks, winget guidance and optional update checks are **planned**, not built. Future network output requires a separate security ADR and real SMB tests. Transcoding, GPU and batch remain deferred. Do not initiate Codex work without scoped owner approval, and never merge, tag or release without authorization.
 
+## Git and CI discipline — mandatory
+
+- Prepare a coherent complete change set **before pushing**. Perform local/static/documentation checks first; GitHub and hosted CI are review/verification gates, **not** a trial-and-error workspace.
+- Prefer **one commit per coherent scope**; use at most two when a meaningful independent boundary justifies it. Avoid per-file commits, repetitive small fixes and unnecessary PR pushes. If a correction is necessary, batch related corrections before publishing.
+- Read the existing document and current branch state before editing. Prefer a single atomic tree/commit update for multi-file documentation changes; review the diff and references before pushing.
+- Do not repeatedly push while PR CI is running unless a real blocker requires intervention. Allow the final checks to finish, and distinguish cancelled/superseded CI from actual failures.
+- No history rewrite, force push or destructive cleanup without explicit owner authorization. Do not use a large series of commits as a substitute for proper preparation.
+- Report exactly which local checks ran and which hosted CI run validates the **final head commit**. A previously green run does not validate a later commit.
+
 ## PR reporting template
 
 Describe the goal and linked acceptance criteria; list files changed; summarize architectural decisions; report executed checks and results; state residual risks and open questions. Never report a test as passed unless it was actually run.
