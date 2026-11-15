@@ -25,7 +25,7 @@
   The correction separates an explicit default 300-second packet-scan limit, observes
   cancellation, and keeps every completeness check (contract 16). A source timeout
   does not prove an SMB fault or guarantee success within 300 seconds. No sampling,
-  retries or larger capture bounds are introduced; original-file retesting is pending.
+  retries or larger capture bounds are introduced; owner-reported original-file success is recorded in document 18.
 - The long synthetic HEVC/E-AC-3/SubRip fixture also exposes a separate nonzero
   clock-origin/rebasing mismatch after both counts pass. Timing rejection remains
   intact; this does not explain a failure still inside packet scanning. Any timestamp
@@ -34,7 +34,7 @@
 - PR-08: synthetic MP4 gaps reproduce clear-sample packet mismatch. The owner's MKV
   source-count timeout is a distinct failure, confirmed by direct read-only diagnosis
   rather than attributed to MP4 clear samples. Original-file extraction after correction
-  and complete SMB transport/failure acceptance remain unverified.
+  is now owner-reported successful; complete SMB transport/failure acceptance remains pending.
 - PR-08 proposes plan version 2 for metadata preservation (ADR-042), requiring fresh
   review for v1 callers. Compatible known tags are explicitly mapped and validated;
   arbitrary tags, casing and FFmpeg-generated tags cannot be guaranteed byte-identical.
@@ -43,8 +43,9 @@
 - Subtitle packet evidence uses the existing 8 MiB probe cap and 100,000 cue limit;
   large dumps, unavailable durations or unsupported text layouts block safely.
 - Multi-primary media composition remains future product scope, not PR-08 functionality.
-- PR-08 direct metadata language editing validates lowercase three-letter syntax; it
-  does not infer or rewrite unknown source codes or certify a complete language registry.
+- PR-08 language selection uses a local searchable ISO 639-2 catalog; the backend
+  retains validation authority. It does not rewrite original unknown codes or claim
+  a complete language registry.
   Native scaling tests do not certify OS DPI, screen readers, multiple monitors or
   consumer Windows ergonomics. Final owner review of the revised workflow is pending.
 
@@ -216,3 +217,19 @@ is unavailable in this environment (no mapping; enumeration unavailable); offlin
 simulation and actual local tests must not be presented as proof of remote access.
 The explicit real-share utility/manual procedure is in document 17. Network output
 requires a separate capability/safety decision. No credentials or shares are created.
+
+## Owner-approved wizard assumptions and residual risks
+
+The five-step design supersedes the compact tab workflow. One explicit final click
+represents both the user's warning decision and execution confirmation, but internal
+acknowledgement regeneration and exact revision confirmation remain separate. An
+unmatched/failed acknowledgement never continues automatically; backend checks remain.
+A local catalog of more than 70 terminology codes avoids a network/framework dependency;
+it is not the complete ISO registry. Existing unknown/bibliographic codes remain exact,
+including when another field is edited; explicitly choosing Unspecified clears them.
+Imported tracks reuse the same Metadata step through a contextual action. These are
+reversible presentation choices; alternatives and rationale are in ADR-044.
+Primary work-area startup sizing does not prove multi-monitor or real OS-DPI ergonomics.
+The owner must review the new workflow, keyboard/screen-reader limitations, small-screen
+layouts and safe recovery presentation. A successful original UNC extraction does not
+certify SMB dialect, disconnection recovery, ACL failures or network output safety.

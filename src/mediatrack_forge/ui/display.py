@@ -55,7 +55,7 @@ def review_summary(plan: OperationPlan) -> str:
     state = (
         "Cannot execute"
         if not plan.intrinsically_valid
-        else "Requires acknowledgement"
+        else "Warnings require acceptance"
         if plan.pending_warnings
         else "Ready to execute"
     )

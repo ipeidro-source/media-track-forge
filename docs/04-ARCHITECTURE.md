@@ -141,3 +141,15 @@ Pure presentation/backend imports require no display. Extraction extension disco
 is application-owned, not a second GUI compatibility matrix. Existing inspection,
 planning/execution/extraction contracts and four-layer direction remain unchanged.
 See document 17 for lifecycle, source identity, acknowledgement and testing limits.
+
+## PR-08 wizard presentation refinement
+
+`ui/wizard.py` owns five sequential navigation states independently of media policy.
+`ui/window.py` renders one shared header/content/navigation window; `ui/languages.py`
+and `language_dialog.py` provide a bounded local searchable code/name picker. The same
+DesktopController owns intent, worker generations and a captured explicit execution
+decision. It separately acknowledges warnings and confirms the same reviewed revision;
+only the matching acknowledgement reply can continue that decision. Invalidations,
+cancellation and close revoke continuation. Start over requires verified safe terminal
+cleanup, resets intent/authority and invalidates late replies without deleting media.
+No application/domain/infrastructure behavior or public schema changes are introduced.

@@ -22,7 +22,7 @@ they do not establish complete UX-01–UX-10 acceptance or exact source-file dia
 | Finding | Scenario | Reproduction/expected/actual | Severity | Proposal | Status |
 | --- | --- | --- | --- | --- | --- |
 | Extraction A | UX-07 | MP4 mov_text, Spanish original index 3 → local SRT: OUTPUT_VALIDATION_FAILED / EXTRACTION_INVALID, unpublished, cleanup complete | P1 | Independent cue validation and specific diagnostics | Synthetic gap reproduction; owner file unverified |
-| Extraction B | UX-07/08 | UNC MKV with HEVC/E-AC-3/SubRip, original index 5 → local SRT: same generic error twice | P1 | Diagnose independently of A | Source-count timeout confirmed; retest original with corrected application pending |
+| Extraction B | UX-07/08 | UNC MKV with HEVC/E-AC-3/SubRip, original index 5 → local SRT: same generic error twice | P1 | Diagnose independently of A | Owner confirms corrected extraction at cc592045; separate SMB fault/recovery acceptance pending |
 | Replacement | UX-08 | Failed replacement inspection clears valid editing session | P1 | Inspect before replacing session | Implemented on PR-08 branch; regression tests |
 | Metadata | UX-04 | Unchanged compatible tags discarded under conservative policy | P1 | Explicit preservation and validation, versioned contract | ADR-042 proposed |
 | Navigation/editing | UX-01–05/10 | Oversized initial workspace, confusing metadata keep/set and extraction button, raw technical review, duplicated import feedback | P2 | Approved U1–U7/U10 refinement | Implemented on PR-08 branch; native regressions |
@@ -52,6 +52,34 @@ seconds, elapsed 30.078 seconds, 1,660,724,038 bytes, UNC spelling. This confirm
 the reproduced source probe deadline failure before output counting. It does not
 establish a network transport fault or successful extraction after correction.
 The follow-up separates scan/metadata limits while retaining validation and cancellation;
-full original-file and SMB transport/failure acceptance remain pending.
+at that checkpoint original-file retesting remained pending. The subsequent owner
+success below resolves extraction; complete SMB transport/failure acceptance remains pending.
 
 PR-08 GUI refinement is owner-authorized from these findings; backend reinspection, revision-bound acknowledgements, separate confirmation, staging, validation, no overwrite and cancellation must remain intact. Network **output** requires separate safety architecture and real SMB tests.
+
+## Owner backend acceptance at cc592045 and final wizard approval
+
+The owner reports these real Windows results (supplied with the final redesign request):
+
+- Original trusted UNC MKV, original subtitle index 5 → new local SRT completed;
+  1,006 source/output packets and subtitle cues validated, published, cleanup complete.
+- MKV → MKV retained visible track structure; title/default/forced metadata edits worked.
+- MP4 VP9/Opus/AAC/mov_text → MKV retained all five tracks and converted subtitles
+  to SubRip. MKV MP3 extraction succeeded.
+- Failed replacement retained the previous editing session.
+
+These are owner manual observations, not simulated fixtures or new agent media tests.
+They resolve the original reported extraction blocker after the separate packet-scan
+budget correction. The preceding read-only 120-second measurement counted 1,006 packets
+in 109.797 seconds; the earlier 30-second scan timed out at 30.078 seconds. They do not
+certify arbitrary SMB dialect, faults, permissions, disconnection recovery or remote outputs.
+Formal original AVI UX-06 and complete Windows usability acceptance remain distinct.
+
+The owner now approves the final five-step wizard, large stable startup size,
+UX-F37 searchable languages, UX-F38 one inspection-failure modal, automatic Review,
+one explicit final warning/execution decision preserving internal authorization,
+and safe Start over/Close. This supersedes the earlier compact tab proposal.
+Implementation on the PR-08 review branch and automated evidence do not establish
+owner acceptance of the new wizard. Recheck all five steps, keyboard, real OS-DPI,
+small-screen ergonomics, warning visibility, exact extraction selection, imported
+metadata, failed replacement, cancellation, reset and unsafe-cleanup recovery.

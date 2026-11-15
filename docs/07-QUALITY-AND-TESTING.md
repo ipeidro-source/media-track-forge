@@ -186,5 +186,23 @@ later timing changes. These are local media/process tests, not SMB evidence.
 Hosted validation for the final follow-up head is tracked in PR #8; the earlier
 green run at `59408c0` is baseline evidence and cannot validate a later commit.
 The owner-provided 30-second source timeout is direct live-input evidence, separate
-from these local tests. Keep the PR Draft until original-file extraction and required
-manual consumer Windows/SMB acceptance are reviewed.
+from these local tests. Keep the PR Draft for owner review of the wizard and required consumer Windows/SMB
+failure acceptance; selected backend owner results are recorded in document 18.
+
+## PR-08 five-step wizard regression strategy
+
+Display-free tests cover guarded sequential navigation, exact-revision warning and
+warning-free decisions, complete issue/code matching, failed/rejected/changed/stale
+acknowledgement, duplicate decisions, unrelated replies, cancellation/close during
+acknowledgement, safe terminal reset and retained source/published files. Catalog tests
+separate preserved original codes from explicitly cleared language.
+
+Native isolated-process scenarios exercise stable large startup/user geometry,
+Media/Metadata/Operation/automatic Review/Execution, Back/edit retention, inline invalid
+metadata, contextual imported metadata, exact extraction selection, disabled/invalid
+operations, full warning display and explicit decision, cancellation, reset/recovery,
+one failed-inspection modal with retained intent, keyboard language search and
+light/dark/widget scaling/focus/teardown. One real GUI-to-backend remux retains actual
+FFmpeg evidence; controller fakes are never counted as media verification. Existing
+real-media suites are retained. Final counts/checks/full CI logs belong in PR #8.
+Owner Windows 10/11 OS-DPI/screen-reader/ergonomics acceptance remains separate.

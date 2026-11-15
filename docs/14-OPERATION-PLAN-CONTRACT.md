@@ -504,3 +504,11 @@ Additional tested candidates: VP9 video and Opus audio copied from MP4 to MKV;
 mov_text to MKV explicitly encodes SubRip and requires formatting acknowledgement.
 No audio/video encoder is generated. Hosted evidence is required before readiness.
 DTS, AC-3/E-AC-3, ASS/SSA, bitmap subtitles and arbitrary combinations stay blocked.
+
+## PR-08 wizard interaction adapter
+
+Public plan schemas, revisions and all-occurrence code acknowledgements are unchanged.
+One explicit final GUI decision may request acknowledgement and then confirmation,
+provided the regenerated plan, complete issues, intent, generation and revision still
+match the reviewed evidence and no pending warnings/errors remain. Merely displaying
+Review never supplies either authority. See ADR-036 and document 17.

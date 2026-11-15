@@ -29,3 +29,12 @@ PR-01 foundation, PR-02 inspection, PR-03 planning, PR-04 safe remux, PR-05 SRT/
 ## Expected future PR reports
 
 Record linked requirements/ADR, scope, changed files, unit/integration/native Windows tests with actual evidence, CI checks, security compatibility, risks and explicit separation of implemented, verified, owner-accepted and released. No tags, merges or Releases without express owner authorization.
+
+## Approved PR-08 final wizard scope
+
+Continue from cc592045 on the same topic branch and Draft PR. Prepare one coherent
+follow-up commit for the five-step wizard, local language picker, inspection modal,
+revision-safe single execution decision and safe reset. Preserve all backend reliability
+and real-media suites; run full local/static/native/build checks before a single hosted
+verification push. No main modification, merge, tag, release or history rewrite.
+Owner backend manual results are recorded separately from new wizard acceptance.

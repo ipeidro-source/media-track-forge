@@ -20,6 +20,9 @@ import pytest
         "test_refined_metadata_extraction_destination_and_recovery",
         "test_refined_progress_repeated_execution_and_variable_teardown",
         "test_refined_external_subtitle_group_and_duplicate_feedback",
+        "test_native_language_search_clear_unknown_and_keyboard",
+        "test_native_invalid_plan_blocks_explicit_execute",
+        "test_native_keyboard_navigation_and_exact_selected_extraction",
     ],
 )
 def test_native_desktop_smoke(case: str) -> None:

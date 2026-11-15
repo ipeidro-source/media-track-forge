@@ -168,8 +168,10 @@ class DesktopController:
         self.recovery_required = False
         self.destination_feedback = ""
         self.inspection_revision = 0
+        self._authorization: tuple[int, EditingIntent, OperationPlan, frozenset[str]] | None = None
 
     def invalidate(self) -> None:
+        self._authorization = None
         self.generation += 1
         self.plan = None
         self.reviewed_revision = None
@@ -309,6 +311,48 @@ class DesktopController:
         )
 
     @property
+    def can_authorize(self) -> bool:
+        return (
+            not self.worker.busy
+            and not self.closed
+            and not self.recovery_required
+            and self.plan is not None
+            and self.plan.intrinsically_valid
+            and (bool(self.plan.pending_warnings) or self.plan.execution_allowed)
+            and self.reviewed_revision == self.plan.revision
+            and self._authorization is None
+        )
+
+    def accept_and_execute(self) -> None:
+        """One explicit user decision; acknowledgement and confirmation stay separate."""
+        if not self.can_authorize or self.plan is None:
+            raise ValueError("Review the current valid plan before executing.")
+        plan = self.plan
+        if not plan.pending_warnings:
+            self.execute(plan.revision)
+            return
+        codes = frozenset(plan.pending_warnings)
+        self._authorization = (self.generation, self.intent, plan, codes)
+        try:
+            self.acknowledge(plan.effective_acknowledged_warnings | codes, plan.revision)
+        except Exception:
+            self._authorization = None
+            raise
+
+    def start_over(self) -> None:
+        self._editable()
+        if (
+            self.result is None
+            or not self.result.cleanup_complete
+            or self.result.state not in ("completed", "cancelled", "failed", "timed_out")
+        ):
+            raise ValueError("Wait for a verified terminal result before starting over.")
+        self.invalidate()
+        self.intent = EditingIntent()
+        self.close_pending = False
+        self.status = "Open a media file to begin."
+
+    @property
     def can_execute(self) -> bool:
         return (
             not self.worker.busy
@@ -337,6 +381,7 @@ class DesktopController:
         self._start("execute", lambda: self.backend.execute(request, control), control=control)
 
     def cancel(self) -> None:
+        self._authorization = None
         if self.worker.cancel():
             self.status = "Cancelling; waiting for safe backend termination..."
         elif self.worker.busy:
@@ -346,6 +391,7 @@ class DesktopController:
         if self.closed or reply.generation != self.generation:
             return
         if reply.error is not None:
+            self._authorization = None
             if reply.kind == "execute":
                 self.recovery_required = True
             self.error = reply.error
@@ -408,6 +454,34 @@ class DesktopController:
                 )
         elif reply.kind in ("plan", "acknowledge"):
             plan = cast(OperationPlan, reply.value)
+            authorization, self._authorization = self._authorization, None
+            if reply.kind == "acknowledge" and authorization is not None:
+                generation, intent, reviewed, codes = authorization
+                if (
+                    generation != self.generation
+                    or intent != self.intent
+                    or self.plan != reviewed
+                    or self.reviewed_revision != reviewed.revision
+                    or plan.revision != reviewed.revision
+                    or plan.issues != reviewed.issues
+                    or not plan.intrinsically_valid
+                    or not plan.execution_allowed
+                    or plan.pending_warnings
+                    or plan.effective_acknowledged_warnings
+                    != reviewed.effective_acknowledged_warnings | codes
+                ):
+                    self.invalidate()
+                    self.plan = plan
+                    self.reviewed_revision = plan.revision
+                    self.error = (
+                        "The reviewed plan or warnings changed. Review and choose Execute again."
+                    )
+                    self.status = self.error
+                    return
+                self.plan = plan
+                self.reviewed_revision = plan.revision
+                self.execute(reviewed.revision)
+                return
             if reply.kind == "acknowledge" and self.reviewed_revision != plan.revision:
                 self.invalidate()
                 self.error = (

@@ -181,7 +181,7 @@ backend implementation, not G3 acceptance, GUI, packaging or release publication
   boundaries; native tests and a scoped mypy import override cover the adapter.
   Runtime CLI installations now also install GUI libraries; no display is initialized.
   This resolves ADR-007's GUI proposal without changing tooling decisions.
-- ADR-035 / D20 (accepted): users need direct inspection/edit/review/results without
+- ADR-035 / D20 (historical interaction, superseded by the November 15 wizard revision below): users needed direct inspection/edit/review/results without
   a wizard. Choose one window with Media/Operation/Execution tabs, original immutable
   references, explicit keep/set/clear metadata and within-kind order. Alternative
   auto-resolving defaults/omitting incompatible tracks was rejected. Initially include
@@ -190,8 +190,9 @@ backend implementation, not G3 acceptance, GUI, packaging or release publication
   Only backend-supported extraction extensions are offered; no second codec policy.
 - ADR-036 / D21 (accepted): review cannot authorize another intent. Use generation-
   invalidated immutable plans, all-occurrence warning presentation and explicit
-  revision-bound acknowledgement rebuild, followed by a distinct default-No execution
-  confirmation. Alternatives: auto-acknowledgement or execution_allowed alone; rejected
+  revision-bound acknowledgement rebuild and logically separate revision confirmation.
+  The November 15 owner-approved revision below replaces the old default-No popup
+  with one explicit decision that performs both steps internally. Alternatives: auto-acknowledgement or execution_allowed alone; rejected
   as unsafe. Any edit, including pending metadata, clears review. Worker results cannot
   restore stale authority. The cost is repeated review after edits; backend regeneration
   remains mandatory and public contracts 13-16 are unchanged.
@@ -323,16 +324,43 @@ Inspect replacement media before replacing session intent; failure retains edits
 but invalidates review authority and rejects stale asynchronous results. Inspection
 remains content-based; video eligibility is a separate planning condition.
 
-ADR-044 (proposed implementation of approved U1–U10; refines ADR-035/038): use
-numbered freely navigable tabs, compact initial/once-expanded scrollable workspace,
-grouped immutable track references, changed-value text markers and direct effective
-metadata fields with reset. Keep explicit clearing internally and revision invalidation
-for pending edits. Operation owns exact extraction selection using backend discovery;
-primary review shows sources, changes and destination, while complete diagnostics
-remain optional. Alternatives: another compatibility matrix, automatic warning
-acknowledgement, an overwrite option or fabricated progress; rejected. Early local
-destination checks/suggestions run in the existing worker. Progress modes transition
-only when necessary; terminal results and critical recovery evidence remain stable.
-Detach destroyed warning-control variables on the main thread to prevent later
-worker-thread Tk finalizers. Native tests treat warnings as errors; manual consumer
-Windows accessibility/OS-DPI and owner-file acceptance remain separate requirements.
+ADR-044 (owner-approved revision, November 15, 2026; supersedes the earlier U1–U10
+three-tab/compact-start interaction and refines ADR-035/038): use one large resizable
+window with sequential Media, Metadata, Operation, Review and Execution steps. Start
+near 1100 × 800 logical pixels bounded by available work area/scaling; opening media,
+Back/Next and Start over never change user geometry. Separate navigation in WizardState
+from immutable editing intent, backend planning/authorization and Tk rendering. Reuse
+DesktopController and its bounded worker; no second planner, policy or process runner.
+Metadata has the one effective-value editor, including a local searchable ISO 639-2
+picker and exact preservation of unknown/bibliographic codes. Operation owns selection,
+include/order/import and contextual access to that same editor for imported SRT.
+No hidden extraction target, automatic replacement target or silent exclusion is allowed.
+Review plans automatically, presents all material occurrences and optional technical
+details. Execution preserves progress, cancellation and recovery; safe Start over clears
+session/authority without deleting media or resetting geometry. Unverified termination
+or cleanup blocks restart and close. UX-F37/F38 add searchable languages and a single
+controlled inspection-failure modal while preserving a failed replacement session.
+Alternatives: a second window/controller, nested wizard, large GUI dependency, automatic
+geometry changes or duplicated metadata editors; rejected for complexity and confusion.
+The trade-off is explicit step navigation and a bounded language catalog. Native tests
+cover transitions/scaling/teardown; consumer Windows DPI, accessibility, ergonomics and
+new workflow acceptance remain owner checks. No packaging or release is authorized.
+
+### ADR-036 / D21 interaction revision — accepted by owner, November 15, 2026
+
+The original backend authorization invariants remain. Replace individual warning
+checkboxes, Acknowledge selected and the extra confirmation popup with a single explicit
+**Accept warnings & execute** decision (or **Execute operation** without warnings).
+The GUI captures exact generation, immutable intent, reviewed plan/revision and pending
+warning codes, with all affected occurrences presented. It separately rebuilds through
+the existing acknowledgement mechanism, requires the same revision/issues/intent and
+expected effective acknowledgements with no errors/pending warnings, then separately
+constructs the revision-confirmed request. Only the reply belonging to that explicit
+pending decision may continue; stale/changed/rejected replies, edits or cancellation
+revoke it. An unrelated callback cannot execute, duplicate clicks are blocked, and
+opening Review grants no authority. Backend independent reinspection/regeneration,
+source identity, staging, validation, no-overwrite publication and cancellation remain.
+Alternative retaining two explicit UI clicks was rejected by the owner as redundant;
+automatic acceptance on page entry or weakening backend checks remains rejected.
+A changed acknowledgement requires renewed review/action. Tests cover both decision
+paths, exact revisions/warnings, rejected/stale replies, duplicate clicks and safe close.

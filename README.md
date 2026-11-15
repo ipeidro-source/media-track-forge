@@ -85,9 +85,10 @@ python -m pip install --no-build-isolation --no-deps -e .
 python -m mediatrack_forge.ui.desktop
 ```
 
-CustomTkinter 6.0.0 provides numbered Media, Operation and Execution tabs.
-Inspect local media, edit explicit track intent, add SRT, review remux/extraction,
-acknowledge warnings and separately confirm execution. Backend staging/validation/
+PR-08 uses CustomTkinter 6.0.0 for a guided Media → Metadata → Operation → Review →
+Execution wizard. Inspect media, edit metadata, manage tracks/add SRT and configure
+remux/extraction. Review is automatic; the final explicit execution decision performs
+revision-bound warning acknowledgement and confirmation internally without a second popup. Backend staging/validation/
 publication and cancellation remain authoritative. The installed alternative entry
 point is `mediatrack-forge-desktop`; the inspection CLI is unchanged.
 See [Windows desktop workflow and smoke procedure](docs/17-WINDOWS-DESKTOP-UI.md).

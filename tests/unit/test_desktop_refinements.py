@@ -21,7 +21,7 @@ def test_review_is_changed_values_and_final_order_without_technical_authority(
     settle(model)
     assert model.plan is not None
     text = review_summary(model.plan)
-    assert "Requires acknowledgement" in text
+    assert "Warnings require acceptance" in text
     assert "Spanish (spa)" in text and "Main" in text
     assert text.index("Source") < text.index("Changes") < text.index("Destination")
     assert "MetadataIntent(" not in text and model.plan.revision not in text

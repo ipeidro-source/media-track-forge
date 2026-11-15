@@ -293,3 +293,14 @@ network filesystem operations can outwait subprocess deadlines; the GUI waits fo
 safe worker completion and never force-publishes or deletes potentially active data.
 POSIX mounted-network identification remains outside existing guarantees; this
 Windows input change does not certify remote output filesystems.
+
+## PR-08 explicit wizard decision
+
+The final GUI button replaces the old extra confirmation popup, not the backend
+confirmation requirement. DesktopController separately acknowledges captured pending
+warning codes for the exact reviewed revision, verifies unchanged evidence, then sets
+reviewed_revision and confirmed_revision to that same revision in ExecutionRequest.
+Without warnings the explicit click is still mandatory. A changed/failed/stale reply,
+cancellation or superseding intent cannot auto-launch. Independent backend regeneration,
+validation, cancellation and publication are unchanged. Safe Start over is UI state
+reset only after verified terminal cleanup and never removes sources or published files.
