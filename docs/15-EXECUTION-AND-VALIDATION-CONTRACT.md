@@ -9,6 +9,11 @@ see document 16. There is no new CLI, GUI, video/audio transcoding or release wo
 
 ## API and explicit confirmation
 
+PR-08 uses regenerated remux plan version 2 (contract 14) for explicit compatible
+container/stream metadata preservation. Independently validate promised container
+tags against output; existing layout/timing/publication/cancellation protections
+remain. Old plan revisions cannot authorize the new policy.
+
 ```python
 from mediatrack_forge.application.execution import RemuxExecutionService
 from mediatrack_forge.domain.execution import ExecutionRequest, ProcessConfiguration

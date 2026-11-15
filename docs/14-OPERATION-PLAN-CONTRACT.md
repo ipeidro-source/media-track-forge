@@ -1,6 +1,6 @@
-# OperationPlan contract - plan_version 1
+# OperationPlan contract - plan_version 2
 
-> **Evolution note:** This PR-03 contract remains version 1 and is unchanged. References to *future* execution refer to the original PR-03 planning boundary; PR-04–PR-06 subsequently implemented execution, SRT, GUI and network inputs. Use [document 00](00-CURRENT-STATUS.md) for current state. Network outputs remain forbidden by ADR-039.
+> **Evolution note:** PR-08 introduces plan version 2 for explicit compatible metadata preservation. The older PR-03 sections below are historical except where updated by the PR-08 section. References to *future* execution refer to the original PR-03 planning boundary; PR-04–PR-06 subsequently implemented execution, SRT, GUI and network inputs. Use [document 00](00-CURRENT-STATUS.md) for current state. Network outputs remain forbidden by ADR-039.
 
 PR-03 implements planning only. This contract is separate from inspection
 `schema_version: 1`, whose fields and meaning remain unchanged. Domain snapshots
@@ -238,7 +238,8 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
 
 ```json
 {
-  "plan_version": 1,
+  "plan_version": 2,
+  "output_format_tags": {},
   "revision": "0000000000000000000000000000000000000000000000000000000000000000",
   "acknowledged_revision": null,
   "sources": [
@@ -341,8 +342,8 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
   "preservation": [
     {
       "category": "format_tags:0",
-      "status": "exclude",
-      "detail": "Global metadata auto-copy is disabled.",
+      "status": "preserve",
+      "detail": "Compatible primary tags are preserved; other input tags are disclosed.",
       "reference": null
     },
     {
@@ -374,7 +375,7 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
     {
       "category": "other_tags",
       "status": "preserve",
-      "detail": "Only language/title and validated attachment filename/MIME tags are copied.",
+      "detail": "Compatible tags survive edits; unsupported tags are disclosed by name.",
       "reference": {
         "source": {
           "path": "/examples/source.mkv",
@@ -477,3 +478,27 @@ snapshots require fresh review; drive aliases cannot redirect confirmed canonica
 inputs. Output paths remain local-only: UNC and native Windows remote/unknown
 volumes block before staging and are checked again before publication. File-share
 input support does not broaden codecs, extraction formats or publication semantics.
+
+## PR-08 version 2 metadata and compatibility policy
+
+Plan version 2 adds `output_format_tags` (string-to-string object), included in the
+revision. The planner explicitly preserves compatible primary container tags:
+title, artist, album, comment, genre, date, copyright and description. Other input
+container tags are not merged. Known names match case-insensitively across muxers;
+unknown names are never silently normalized. Stream tags preserve language/title,
+plus MKV comment/description or MP4 handler_name; validated attachment tags remain.
+Overrides preserve unrelated tags; null retains, empty text clears, false clears a
+flag. Unsupported tag names are disclosed individually in acknowledgement warnings.
+Generated encoder/duration/brand metadata is not a user-tag preservation guarantee.
+
+Independent output validation compares promised tags to source values; MP4's
+previous language/title uncertainty remains explicitly acknowledged. No byte-identical
+metadata or arbitrary tag round trip is promised. Version 1 plans require regeneration
+and fresh review; old revisions and confirmations cannot authorize version 2.
+Inspection schema and extraction presentation version remain 1; extraction still
+explicitly excludes metadata. Existing mappings and acknowledgement rules are unchanged.
+
+Additional tested candidates: VP9 video and Opus audio copied from MP4 to MKV;
+mov_text to MKV explicitly encodes SubRip and requires formatting acknowledgement.
+No audio/video encoder is generated. Hosted evidence is required before readiness.
+DTS, AC-3/E-AC-3, ASS/SSA, bitmap subtitles and arbitrary combinations stay blocked.

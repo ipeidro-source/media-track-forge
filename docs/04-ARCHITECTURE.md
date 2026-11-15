@@ -2,6 +2,11 @@
 
 ## Principles
 
+PR-08 backend proposal: independent subtitle text/timing evidence replaces subtitle
+packet equality; audio/video packet checks remain. Explicit compatible metadata
+mapping and source/output validation use the shared domain metadata policy and plan
+version 2. ADRs 041–043 and contracts 14–16 define migration and evidence limits.
+
 Python 3.11+ and a GUI-independent core were selected in PR-01; the CustomTkinter/ttk desktop was implemented by PR-06. FFmpeg and ffprobe remain required external executables. Mapped/UNC trusted inputs are supported under D24 (real SMB testing pending); output remains local-only. Startup winget guidance/updates and safe network publication are planned, not implemented. See [current status](00-CURRENT-STATUS.md).
 
 ```text

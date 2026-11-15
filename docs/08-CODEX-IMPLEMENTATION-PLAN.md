@@ -16,7 +16,11 @@ Owner approves requirements, merges and Releases; ChatGPT reviews product/archit
 | G5 acceptance | All FR/AC/user acceptance and release gates | Explicit separate Release decision |
 | Future phases | Selective transcoding, conditional GPU, batch and library automation | New approved requirements/ADRs |
 
-Actual GitHub PR numbers cannot be reserved and may differ as further work is interleaved. **Do not start Codex yet.**
+Actual GitHub PR numbers cannot be reserved and may differ as further work is interleaved.
+The owner has now authorized PR-08 backend B1–B4 and UI U1–U10 in two coherent
+commits on one feature branch/PR. Complete backend checks, commit and hosted CI
+before modifying GUI widgets. Complete final local/native/hosted verification before
+review readiness. No merge, tags, packaging or Release is authorized.
 
 ## Historical completion
 

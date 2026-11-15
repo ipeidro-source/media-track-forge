@@ -10,6 +10,7 @@ from mediatrack_forge.application.execution_ports import Inspector
 from mediatrack_forge.application.inspection import InspectionError
 from mediatrack_forge.domain.execution import ValidationCheck, ValidationReport
 from mediatrack_forge.domain.media import Stream
+from mediatrack_forge.domain.metadata import metadata_value
 from mediatrack_forge.domain.planning import OperationPlan
 from mediatrack_forge.infrastructure.srt import validate_srt
 
@@ -109,6 +110,12 @@ class FFprobeOutputValidator:
             len(observed.streams) == len(expected),
             "No mapped stream may be missing or unexpected.",
         )
+        for key, value in plan.output_format_tags:
+            check(
+                "FORMAT_METADATA",
+                metadata_value(observed.format.tags, key) == value,
+                f"Preserved container tag {key} must match the source.",
+            )
         for planned, actual in zip(plan.included, observed.streams, strict=False):
             source = planned.source_stream
             index = planned.output_index
@@ -134,16 +141,16 @@ class FFprobeOutputValidator:
                         index,
                     )
             tags = dict(planned.output_tags)
-            actual_tags = dict(actual.tags)
             uncertain_mp4 = plan.output.container == "mp4" and "MP4_METADATA_UNCERTAIN" in {
                 issue.code for issue in plan.issues if issue.reference == planned.reference
             }
             for key, value in tags.items():
                 und = plan.output.container == "mkv" and key == "language" and value == "und"
+                observed_value = metadata_value(actual.tags, key)
                 matches = (
-                    actual_tags.get(key) == value
-                    or (not value and not actual_tags.get(key))
-                    or (und and actual_tags.get(key) is None)
+                    observed_value == value
+                    or (not value and not observed_value)
+                    or (und and observed_value is None)
                 )
                 check(
                     "STREAM_METADATA",

@@ -9,8 +9,8 @@ This document owns **planning, sequencing and approval gates**. Current implemen
 | Backend MVP | Inspection, track planning, SRT import, safe remux/extraction, progress/cancellation | Implemented PR-01–PR-05; owner acceptance separate |
 | Windows desktop GUI | CustomTkinter/ttk, review/confirmation and progress | Implemented PR-06; human UX and Win10/11 checks pending |
 | Documentation consolidation | Live status, traceability, cleanup, roadmap, UX protocol and MIT | Approved documentary PR |
-| Usability validation | UX-01–UX-10 and real SMB **read** test | Approved protocol, not yet executed |
-| UX/UI refinement | Simplify workflows without weakening backend invariants | Planned from findings; code not authorized |
+| Usability validation | UX-01–UX-10 and real SMB **read** test | Owner audit findings recorded in document 18; full protocol and SMB acceptance pending |
+| PR-08 reliability and UX | Backend B1–B4, then U1–U10 behind passing backend CI | Owner-authorized scope; implementation in progress, acceptance separate |
 | Network destination support | Write to trusted UNC/mapped NAS while preserving safe publication | Owner-approved **requirement**, design and implementation pending |
 | Windows packaging | Two downloadable artifacts: PyInstaller `onefile` `.exe` and `onedir` portable ZIP; no installer, FFmpeg external and mandatory | Planned after UI maturity, no executable or release yet |
 | MVP acceptance/release | Owner-reviewed AC, consumer Windows and real-share evidence where applicable | Pending; explicit Release authorization required |

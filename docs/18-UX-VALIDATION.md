@@ -1,6 +1,8 @@
 # 18 — Interactive UX Validation
 
-**State:** ten owner-approved scenarios; no human sessions run yet. Test the merged PR-06 GUI. Gather evidence one scenario at a time and do not fabricate results.
+**State:** the owner performed an interactive Windows usability audit of the PR-06
+GUI, supplied as the PR-08 implementation request. Findings below are owner-reported;
+they do not establish complete UX-01–UX-10 acceptance or exact source-file diagnosis.
 
 | ID | Scenario | State |
 | --- | --- | --- |
@@ -19,7 +21,20 @@
 
 | Finding | Scenario | Reproduction/expected/actual | Severity | Proposal | Status |
 | --- | --- | --- | --- | --- | --- |
-| — | — | Not tested | — | — | Pending |
+| Extraction A | UX-07 | MP4 mov_text, Spanish original index 3 → local SRT: OUTPUT_VALIDATION_FAILED / EXTRACTION_INVALID, unpublished, cleanup complete | P1 | Independent cue validation and specific diagnostics | Synthetic gap reproduction; owner file unverified |
+| Extraction B | UX-07/08 | UNC MKV with HEVC/E-AC-3/SubRip, original index 5 → local SRT: same generic error twice | P1 | Diagnose independently of A | Local synthetic MKV passes; exact cause unresolved |
+| Replacement | UX-08 | Failed replacement inspection clears valid editing session | P1 | Inspect before replacing session | Backend regression work |
+| Metadata | UX-04 | Unchanged compatible tags discarded under conservative policy | P1 | Explicit preservation and validation, versioned contract | ADR-042 proposed |
+| Navigation/editing | UX-01–05/10 | Oversized initial workspace, confusing metadata keep/set and extraction button, raw technical review, duplicated import feedback | P2 | Approved U1–U7/U10 refinement | Pending backend CI checkpoint |
+| Destination | UX-08 | Native overwrite prompt conflicts with no-overwrite backend | P2 | Early inline validation and new-name suggestion | Pending U8 |
+| Progress | UX-09 | Stale/duplicated results, terminal indeterminate label, raw seconds, animation and cancel reflow | P2 | Stable phase/progress/terminal presentation | Pending U9 |
+| Cancellation | UX-09 | Owner reports successful cancellation during the audit | — | Preserve safe termination and cleanup behavior | Owner observation; full scenario acceptance not asserted |
+
+The scenario table retains **Not run** for formal protocol completion: the supplied
+audit does not provide individually completed protocol records. In particular UX-06
+is the original **AVI → MKV stream-copy** scenario, not the subtitle extraction
+investigations; no UX-06 pass is claimed. Keep exact owner-file rechecks separate
+from local synthetic regressions and real SMB transport verification.
 
 **D24 verification:** real synthetic media and SRT on mapped and UNC trusted SMB shares, identity, account/session, read-only inputs, local-only output, failures and disconnections. Simulated CI coverage does not prove SMB operation.
 

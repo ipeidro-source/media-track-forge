@@ -4,6 +4,11 @@ Current evidence, acceptance gaps and gate statuses: [document 00](00-CURRENT-ST
 
 ## Test pyramid
 
+PR-08 adds local synthetic index-3 MP4 and index-5 MKV gapped subtitle extraction,
+independent cue evidence, metadata keep/edit/clear round trips and VP9/Opus copy
+coverage. These do not establish exact owner-file or SMB acceptance. Specific failed
+validation invariants must remain observable without exposing raw vendor output.
+
 1. **Unit tests:** ffprobe parsing, languages, stream mapping, compatibility policy, destination collisions, and job state transitions.
 2. **Local integration:** create tiny synthetic fixtures with FFmpeg (`lavfi` test sources, tones, sample SRT files) and verify them with ffprobe; no network calls.
 3. **Windows E2E:** real FFmpeg/ffprobe, subprocess cancellation, Unicode and spaced paths, temporary-output safety.

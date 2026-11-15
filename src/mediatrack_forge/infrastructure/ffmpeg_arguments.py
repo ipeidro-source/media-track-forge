@@ -27,17 +27,19 @@ def build_arguments(plan: OperationPlan) -> tuple[str, ...]:
             for key, value in chapter.tags:
                 if key == "title":
                     args += [f"-metadata:c:{chapter_index}", f"{key}={value}"]
+    for key, value in plan.output_format_tags:
+        args += ["-metadata", f"{key}={value}"]
     for stream in plan.included:
         index = stream.output_index
-        codec = "copy" if stream.action == "copy" else "mov_text"
+        codec = "copy" if stream.action == "copy" else stream.target_codec
         if stream.action != "copy" and not (
             stream.action == "convert_subtitle"
             and stream.source_stream.kind == "subtitle"
-            and stream.source_stream.codec == "subrip"
-            and plan.output.container == "mp4"
+            and (stream.source_stream.codec, plan.output.container, stream.target_codec)
+            in (("subrip", "mp4", "mov_text"), ("mov_text", "mkv", "subrip"))
         ):
             raise ValueError("Only validated subtitle conversion is permitted.")
-        args += [f"-c:{index}", codec]
+        args += [f"-c:{index}", codec or "copy"]
         for key, value in stream.output_tags:
             args += [f"-metadata:s:{index}", f"{key}={value}"]
         flags = "+".join(key for key, value in stream.output_disposition if value)

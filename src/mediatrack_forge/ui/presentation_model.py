@@ -162,7 +162,6 @@ class DesktopController:
 
     def open_media(self, path: str) -> None:
         self._editable()
-        self.intent = EditingIntent()
         self.invalidate()
         self._start("inspect", lambda: self.backend.inspect(path))
 

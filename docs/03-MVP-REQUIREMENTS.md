@@ -11,6 +11,11 @@
 
 ## Stream editing and output
 
+PR-08 approved refinement: preserve compatible existing metadata across unrelated
+edits, disclose concrete unsupported tags and validate promised values independently.
+Explicit metadata clearing remains distinct from retaining the source value. Tested
+mov_text-to-SubRip conversion into MKV requires formatting-loss acknowledgement.
+
 - **FR-05:** Explicitly retain/remove tracks, reorder tracks within their types, and set supported language, title, and default metadata.
 - **FR-06:** Remux without re-encoding video or audio when the output container supports the codecs. MKV and MP4 are output formats; AVI is initially input-only.
 - **FR-07:** For MP4, convert supported text subtitles to `mov_text` after warning that styling may change. For MKV, copy compatible SRT subtitle streams. Never silently convert bitmap subtitle images to text.

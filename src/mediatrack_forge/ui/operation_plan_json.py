@@ -1,4 +1,4 @@
-"""Explicit public plan_version 1 serialization, separate from inspection schema v1."""
+"""Explicit public plan serialization, separate from inspection schema v1."""
 
 import json
 from dataclasses import asdict
@@ -26,6 +26,7 @@ def _reference(reference: StreamReference) -> dict[str, object]:
 def plan_document(plan: OperationPlan) -> dict[str, object]:
     return {
         "plan_version": plan.plan_version,
+        "output_format_tags": dict(plan.output_format_tags),
         "revision": plan.revision,
         "acknowledged_revision": plan.acknowledged_revision,
         "sources": [inspection_document(asset) for asset in plan.sources],

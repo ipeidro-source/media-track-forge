@@ -18,6 +18,19 @@
 
 ## Current open risks and decisions (November 15, 2026)
 
+- PR-08: synthetic MP4 gaps reproduce clear-sample packet mismatch. The local MKV
+  SubRip index-5 fixture passes; the exact owner UNC MKV failure is not reproduced
+  and must not be attributed to MP4 clear samples. New invariant diagnostics enable
+  further diagnosis without vendor logs. No owner media or real SMB evidence exists here.
+- PR-08 proposes plan version 2 for metadata preservation (ADR-042), requiring fresh
+  review for v1 callers. Compatible known tags are explicitly mapped and validated;
+  arbitrary tags, casing and FFmpeg-generated tags cannot be guaranteed byte-identical.
+  Unsupported names require acknowledgement. Alternative implicit metadata copying
+  was rejected as unverifiable. Owner approval of the migration is pending review.
+- Subtitle packet evidence uses the existing 8 MiB probe cap and 100,000 cue limit;
+  large dumps, unavailable durations or unsupported text layouts block safely.
+- Multi-primary media composition remains future product scope, not PR-08 functionality.
+
 - NAS/SMB output is an owner-approved **new requirement**, not implemented; choose validated secure staging, exclusive no-overwrite publication and recovery under disconnect/ACL/race conditions. Real share tests required.
 - D24 mapped/UNC read support is implemented, but genuine SMB transport acceptance is still pending.
 - Windows 10/11 manual UI, accessibility, OS DPI and portable executable acceptance are pending.

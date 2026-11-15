@@ -113,6 +113,15 @@ plans expose no executable arguments, and changed intent invalidates review.
 
 ## Shared execution and elementary validation
 
+PR-08 supersedes subtitle packet equality below: bounded independent packet payload
+scans decode SubRip or mov_text text and timing. Only mov_text zero-length text
+samples are excluded as screen clears. Every nonempty source cue must match output
+text and timing within one millisecond of SRT quantization; output packets must
+match structurally valid SRT cues. Unsupported/malformed evidence fails with a
+specific invariant code and EXTRACTION_INVALID. Audio/video retain positive equal
+packet counts. Matroska MP3 to standalone MP3 is an additional tested extraction pair.
+This does not waive timing, cleanup, source reinspection or exclusive publication.
+
 ExtractionExecutionService specializes RemuxExecutionService's regeneration,
 argument generation and validator selection. Both use the same staging, process,
 timeout, cancellation, progress, confirmation, cleanup and exclusive-publication

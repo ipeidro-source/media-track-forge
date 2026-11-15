@@ -1,6 +1,15 @@
 # 00 — Current Project Status
 
-Snapshot: November 15, 2026. `main` commit `9298fd46`; [successful five-job CI](https://github.com/ipeidro-source/media-track-forge/actions/runs/43630367616). PR-01 through PR-06 are merged. No GitHub Release has been published.
+Snapshot: November 15, 2026. PR-07 documentation is merged at `e3ee5af391`.
+PR-01 through PR-06 provide the implementation baseline; their historical
+[five-job CI](https://github.com/ipeidro-source/media-track-forge/actions/runs/43630367616)
+does not validate PR-08. No GitHub Release has been published.
+
+PR-08 backend work is in progress on a topic branch: subtitle validation diagnostics,
+compatible metadata preservation with plan v2, tested compatibility candidates and
+failed replacement recovery. UI refinements remain gated on Commit 1 hosted CI.
+See [owner audit findings](18-UX-VALIDATION.md), ADRs 041–043 and contracts 14–16.
+No exact owner MKV fix, genuine SMB verification or consumer Windows acceptance is claimed.
 
 ## Status terminology
 

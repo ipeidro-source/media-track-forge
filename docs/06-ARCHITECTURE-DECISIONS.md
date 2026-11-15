@@ -275,3 +275,32 @@ Document 17 records the manual evidence procedure and remaining limits.
 **Provisional ADR-040 — OPEN architectural design (not an accepted solution):** Owner approves the future requirement to write output to trusted mapped/UNC NAS destinations. ADR-039's current local-only output safety restriction remains active until a separately reviewed design and real SMB safety tests exist. Compare local validated staging plus safe remote publishing with private remote-share staging; consider exclusive no-overwrite semantics, incomplete transfer visibility, permissions/ACL, remapping and path races, disconnections, cancellation, cleanup and durability. Never implement by merely disabling the network-output prohibition.
 
 Video/audio transcoding, conditional GPU and automation remain later phases, without implementation authorization.
+
+## November 15, 2026 — PR-08 backend decisions
+
+ADR-041 (proposed implementation under owner-approved B1–B4 scope): replace the
+subtitle packet-equality assumption in ADR-030 with independently scanned text cue
+and millisecond timing comparisons. MP4 mov_text clear samples describe gaps, not
+SRT cues. Audio/video retain positive equal packet scans and timing checks. Failed
+checks carry specific invariant codes as well as EXTRACTION_INVALID. Reject malformed,
+oversized, unprobeable or unmatched output; never waive independent validation.
+Alternatives: suppress validation or count only nonempty output; rejected because
+neither verifies retained source cues. Bounded packet dumps trade capacity for
+auditable evidence; overflow fails safely. Exact owner MKV failure is unresolved.
+
+ADR-042 (proposed implementation of approved metadata direction, supersedes the
+blanket tag exclusion in ADR-022): explicitly preserve tested compatible primary
+container and stream tags, retaining unrelated values across edits. Unsupported
+names and cross-container losses require acknowledgement; do not promise arbitrary
+tags, byte identity or silently normalize unknown names. Known names may change
+case through muxing. Independent validation checks promised values. Plan version 2
+adds output_format_tags and invalidates version 1 review/confirmation by regeneration;
+inspection/extraction presentation versions stay unchanged. Alternative unversioned
+semantic change was rejected. Owner review of this version migration remains pending.
+
+ADR-043 (proposed implementation of approved B3/B4): extend only synthetic-tested
+compatibility pairs (MP4 VP9/Opus to MKV, explicit mov_text to SubRip in MKV, Matroska
+MP3 extraction). Keep one backend policy per operation and audio/video copy only.
+Inspect replacement media before replacing session intent; failure retains edits,
+but invalidates review authority and rejects stale asynchronous results. Inspection
+remains content-based; video eligibility is a separate planning condition.

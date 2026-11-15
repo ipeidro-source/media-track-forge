@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status (November 15, 2026):** PR-01–PR-06 are merged into `main` (`9298fd46`). GUI and trusted UNC/mapped file inputs are implemented but not fully owner-accepted. See [current status](docs/00-CURRENT-STATUS.md); no Release has been published.
+**Status (November 15, 2026):** PR-07 documentation is merged into `main` (`e3ee5af391`); implementation comes from PR-01–PR-06. PR-08 reliability and UX refinement is in progress. GUI and trusted UNC/mapped inputs are not fully owner-accepted. See [current status](docs/00-CURRENT-STATUS.md); no Release has been published.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -28,7 +28,7 @@ units and local-file security limitations. Global help and version remain availa
 Planning is available through `OperationPlanningService`, with explicit stream
 references, deterministic ordering, a conservative tested codec allowlist, metadata
 diagnostics and warning acknowledgements. It creates no output and runs no FFmpeg.
-See the [plan v1 contract](docs/14-OPERATION-PLAN-CONTRACT.md) for the Python API,
+See the [plan contract](docs/14-OPERATION-PLAN-CONTRACT.md) for the Python API,
 supported combinations and limits. There is no public planning/editing CLI.
 
 The Python `RemuxExecutionService` consumes an explicitly revision-confirmed plan,
