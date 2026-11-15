@@ -1,5 +1,7 @@
 # Confirmed remux execution and validation - PR-04
 
+> **Evolution note:** PR-04's safety contract remains intact. Historical deferrals were addressed in subsequent merged PR-05/06 (except packaging/release); see [document 00](00-CURRENT-STATUS.md). Network input D24 does not authorize network destination publication.
+
 The application API executes the existing compatibility policy and plans.
 Inspection schema v1 and plan_version 1 are unchanged. PR-05 extends the backend
 with external SRT, separate extraction plans/validation, cancellation and progress;
