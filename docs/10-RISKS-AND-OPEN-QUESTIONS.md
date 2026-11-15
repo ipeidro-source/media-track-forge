@@ -30,6 +30,10 @@
 - Subtitle packet evidence uses the existing 8 MiB probe cap and 100,000 cue limit;
   large dumps, unavailable durations or unsupported text layouts block safely.
 - Multi-primary media composition remains future product scope, not PR-08 functionality.
+- PR-08 direct metadata language editing validates lowercase three-letter syntax; it
+  does not infer or rewrite unknown source codes or certify a complete language registry.
+  Native scaling tests do not certify OS DPI, screen readers, multiple monitors or
+  consumer Windows ergonomics. Final owner review of the revised workflow is pending.
 
 - NAS/SMB output is an owner-approved **new requirement**, not implemented; choose validated secure staging, exclusive no-overwrite publication and recovery under disconnect/ACL/race conditions. Real share tests required.
 - D24 mapped/UNC read support is implemented, but genuine SMB transport acceptance is still pending.
@@ -155,11 +159,12 @@ D14-D18 resolve SRT encoding/structure, initial extraction and backend cancellat
 progress within document 16. Older importer/extraction deferrals are historical.
 Strict UTF-8/BOM avoids guessing encodings; unsupported legacy files need conversion
 outside the product. Cue timing supports 0..999 hours, 8 MiB and 100,000 cues.
-Extraction enables only six exact source/codec/format combinations; AC-3, MKV video/
-audio extraction and other profiles stay blocked. Positive equal full packet counts
+PR-05 initially enabled six exact source/codec/format combinations; PR-08 adds
+Matroska MP3 extraction. AC-3, MKV video/AAC extraction and other profiles stay blocked. Positive equal full packet counts
 provide elementary truncation evidence when timing is absent, not full decoding or
 content identity. MP4 AAC edit-list priming/padding is not representable in ADTS.
-Mov_text empty/clear sample layouts that change packet count fail conservatively.
+PR-05 rejected mov_text empty/clear samples when packet counts changed; PR-08
+replaces that subtitle-only assumption with independent text/timing cue evidence.
 Trusted synchronous listeners must return promptly or they can delay cancellation/
 timeout observation; the backend owns no unbounded event queue. GUI integration must
 use bounded latest-value delivery. Source snapshot/noncryptographic identity, trusted

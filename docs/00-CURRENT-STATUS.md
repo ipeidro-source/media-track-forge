@@ -5,9 +5,13 @@ PR-01 through PR-06 provide the implementation baseline; their historical
 [five-job CI](https://github.com/ipeidro-source/media-track-forge/actions/runs/43630367616)
 does not validate PR-08. No GitHub Release has been published.
 
-PR-08 backend work is in progress on a topic branch: subtitle validation diagnostics,
-compatible metadata preservation with plan v2, tested compatibility candidates and
-failed replacement recovery. UI refinements remain gated on Commit 1 hosted CI.
+PR-08 changes are on the review branch, not merged: subtitle validation diagnostics,
+compatible metadata preservation with plan v2, tested compatibility additions,
+failed replacement recovery and desktop refinements. Backend commit `977ea5a` passed
+all five jobs in [CI 43740079375](https://github.com/ipeidro-source/media-track-forge/actions/runs/43740079375)
+before GUI edits began. Final-head local/hosted evidence is recorded in
+[PR #8](https://github.com/ipeidro-source/media-track-forge/pull/8); that final run is
+distinct from the backend checkpoint and must pass before readiness.
 See [owner audit findings](18-UX-VALIDATION.md), ADRs 041–043 and contracts 14–16.
 No exact owner MKV fix, genuine SMB verification or consumer Windows acceptance is claimed.
 

@@ -304,3 +304,17 @@ MP3 extraction). Keep one backend policy per operation and audio/video copy only
 Inspect replacement media before replacing session intent; failure retains edits,
 but invalidates review authority and rejects stale asynchronous results. Inspection
 remains content-based; video eligibility is a separate planning condition.
+
+ADR-044 (proposed implementation of approved U1–U10; refines ADR-035/038): use
+numbered freely navigable tabs, compact initial/once-expanded scrollable workspace,
+grouped immutable track references, changed-value text markers and direct effective
+metadata fields with reset. Keep explicit clearing internally and revision invalidation
+for pending edits. Operation owns exact extraction selection using backend discovery;
+primary review shows sources, changes and destination, while complete diagnostics
+remain optional. Alternatives: another compatibility matrix, automatic warning
+acknowledgement, an overwrite option or fabricated progress; rejected. Early local
+destination checks/suggestions run in the existing worker. Progress modes transition
+only when necessary; terminal results and critical recovery evidence remain stable.
+Detach destroyed warning-control variables on the main thread to prevent later
+worker-thread Tk finalizers. Native tests treat warnings as errors; manual consumer
+Windows accessibility/OS-DPI and owner-file acceptance remain separate requirements.

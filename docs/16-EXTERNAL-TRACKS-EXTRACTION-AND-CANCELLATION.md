@@ -1,6 +1,6 @@
 # External SRT, extraction, cancellation and progress - PR-05
 
-> **Evolution note:** This PR-05 technical contract remains unchanged. Historical mentions of PR-06 as future are superseded by its merge; see [document 00](00-CURRENT-STATUS.md). Future safe NAS output requires a separate accepted architecture and genuine SMB tests.
+> **Evolution note:** PR-08 extends compatibility and independent subtitle validation below without changing extraction presentation v1. Historical mentions of PR-06 as future are superseded by its merge; see [document 00](00-CURRENT-STATUS.md). Future safe NAS output requires a separate accepted architecture and genuine SMB tests.
 
 D14-D18 are owner approved. PR-04 is merged at `3bea7ee` with successful main CI
 [43614579922](https://github.com/ipeidro-source/media-track-forge/actions/runs/43614579922).
@@ -66,12 +66,12 @@ It does not reuse the main-video invariant or broaden MKV/MP4 remux compatibilit
 | MP4 alias family, excluding MOV major_brand qt | H.264 video | .h264 | h264 | copy, h264_mp4toannexb |
 | MP4 alias family, excluding MOV | HEVC video | .h265 | hevc | copy, hevc_mp4toannexb |
 | MP4 alias family, excluding MOV | AAC LC audio | .aac | adts | copy, ADTS packaging |
-| AVI | MP3 audio | .mp3 | mp3 | copy |
+| AVI / Matroska | MP3 audio | .mp3 | mp3 | copy |
 | Matroska | SubRip subtitle | .srt | srt | copy |
 | MP4 alias family, excluding MOV | mov_text subtitle | .srt | srt | explicit subtitle conversion |
 
 Only these exact families/codecs/extensions are enabled, subject to mandatory real
-tests on both integration platforms. AC-3, other AAC profiles, MKV H.264/HEVC/audio
+tests on both integration platforms. AC-3, other AAC profiles, MKV H.264/HEVC/AAC
 extraction, MOV and unknown combinations remain unsupported. The Annex B filters
 are specific to the tested MP4-to-elementary paths; no filters are blindly applied
 to arbitrary inputs. Bitstream filtering and ADTS framing are not audio/video

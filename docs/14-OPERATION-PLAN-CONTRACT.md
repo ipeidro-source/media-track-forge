@@ -27,12 +27,13 @@ compatibility policy and pure argument generator are separate components.
 
 | Field | JSON type | Meaning |
 | --- | --- | --- |
-| plan_version | integer | Exactly 1; independent of inspection schema version |
+| plan_version | integer | Exactly 2 in PR-08; independent of inspection schema version |
 | revision | string | Lowercase SHA-256 fingerprint of the exact plan content described below |
 | acknowledged_revision | string or null | Caller-supplied reviewed revision; missing/stale values grant no acknowledgement |
 | sources | array | Complete, unmodified inspection schema v1 documents in FFmpeg input order |
 | output | object | `container`: string mkv/mp4; `requested_path`: original string; `path`: resolved absolute local string or null on invalid input |
 | selections | array | Requested order of `{reference, include: boolean, metadata}`; includes explicit exclusions and invalid requests for review |
+| output_format_tags | object | Version 2 compatible primary container tags explicitly mapped and independently validated |
 | external_tracks | array | Extension records defined below; never fabricated from a filename |
 | included | array | Supported proposed output streams in final deterministic mapping order; blocked requests remain in selections/issues/sources |
 | excluded | array | `{reference, explicit: boolean, action: "exclude"}`; input order, visible omissions even for data/unknown kinds |
@@ -68,7 +69,7 @@ Each `included` entry contains:
 | output_index | integer | Zero-based final mapping position, independent of source index |
 | kind | string | Original normalized stream kind |
 | source_codec | string or null | Inspected codec |
-| target_codec | string or null | Copy codec, mov_text for explicit subtitle conversion, null for validated opaque text attachment |
+| target_codec | string or null | Copy codec, mov_text/SubRip for explicit subtitle conversion, null for validated opaque text attachment |
 | action | string | copy or convert_subtitle; there is no audio/video encode action |
 | output_tags | string-to-string object | Supported source tags plus explicit requested changes |
 | output_disposition | string-to-integer object | Available/requested default/forced values, 0/1; missing source values not fabricated |
@@ -127,7 +128,8 @@ unvalidated. MP4 attachments are blocked.
 | aac audio | copy | copy |
 | mp3 audio | copy | copy |
 | subrip subtitle | copy | convert_subtitle to mov_text, formatting warning |
-| mov_text subtitle | blocked | copy |
+| mov_text subtitle | convert_subtitle to subrip, formatting warning | copy |
+| VP9 video / Opus audio | tested copy from MP4 | blocked |
 | null-codec text/plain attachment with filename | copy | blocked |
 | DTS, AC-3/E-AC-3, ASS/SSA, PGS/VobSub, other codecs/kinds | blocked | blocked |
 
@@ -200,7 +202,7 @@ execution-time revalidation.
 ## Proposed arguments and destination safety
 
 Commands use explicit input positions and source indices, `-map` for every stream,
-per-output-index `-c:N copy` or subtitle-only mov_text, explicit dispositions and
+per-output-index `-c:N copy` or explicit subtitle-only mov_text/SubRip, explicit dispositions and
 metadata, chapter mappings, fixed muxer and `-n` (never overwrite). Global and
 per-stream metadata auto-copy are disabled. `-protocol_whitelist file` applies to
 each input, and stdin is disabled. The generator rejects blocked/unacknowledged
@@ -449,7 +451,7 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
 
 ## PR-04 consumption boundary
 
-PR-03 plans remain declarative and contract v1 is unchanged. PR-04's separate
+Plans remain declarative; PR-08 advances remux metadata to contract v2 as described below. PR-04's separate
 RemuxExecutionService requires an ExecutionRequest with exact reviewed and confirmed
 revisions, fresh source inspections, trusted regeneration and effective warning
 acknowledgements. It never trusts supplied arguments or execution_allowed as

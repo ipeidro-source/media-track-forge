@@ -145,3 +145,24 @@ extraction check with real tools and retained local evidence when tiny trusted
 synthetic share inputs exist. No real share is available in the current agent/CI
 configuration; report this explicitly without skipping mandatory local suites or
 claiming simulated paths are SMB. Document 17 gives commands and evidence limits.
+
+## PR-08 desktop regressions and checkpoints
+
+Commit 1 (977ea5a) passed CI 43740079375: 307 unit tests in all matrix environments,
+84 real-media integration cases on Windows/Ubuntu Python 3.12 and 8 native GUI
+scenarios. Python 3.11/3.13 intentionally omit media/GUI steps; Ubuntu omits native
+GUI. All five jobs and complete setup/cleanup logs were inspected without Node
+runtime/deprecation, runner migration or dependency compatibility warnings.
+
+Refined native tests additionally exercise effective metadata edits/clear/reset and
+non-color change markers, exact Operation extraction targets, unsupported/external
+SRT feedback, no-overwrite dialog/inline errors/free suggestions, failed replacement
+retention, stable activity and terminal cancellation, second-run stale-result clearing,
+main-thread warning-variable disposal and external-import deduplication/removal.
+Child GUI processes treat warnings as errors, including a forced worker garbage
+collection regression for the earlier Tk variable-finalizer warning. Existing keyboard,
+light/dark/scaling, acknowledgement/confirmation, real media and safe teardown cases
+remain mandatory. Final head test counts and CI URL belong in PR #8.
+Native resize coverage includes a 620-pixel logical workspace and scrolling focused
+metadata controls into view. Toolkit canvas, text-label and scrolling adapters use
+the pinned CustomTkinter boundary and require rerunning native tests on upgrades.

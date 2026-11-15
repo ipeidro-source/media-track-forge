@@ -1,5 +1,6 @@
 """Explicit native-display tests; never silently skipped when invoked."""
 
+import gc
 import hashlib
 import json
 import shutil
@@ -12,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from mediatrack_forge.application.control import ExecutionControl
-from mediatrack_forge.application.inspection import snapshot_source
+from mediatrack_forge.application.inspection import InvalidInputError, snapshot_source
 from mediatrack_forge.domain.execution import ExecutionRequest, ExecutionResult
 from mediatrack_forge.domain.media import MediaAsset
 from mediatrack_forge.infrastructure.ffprobe_json import parse_response
@@ -74,6 +75,7 @@ def window(tmp_path: Path) -> Iterator[DesktopWindow]:
                         "codec_type": "audio",
                         "codec_name": "aac",
                         "profile": "LC",
+                        "tags": {"language": "eng", "title": "Original audio"},
                         "disposition": {"default": 0, "forced": 0},
                     },
                 ],
@@ -116,16 +118,15 @@ def test_native_window_track_identity_metadata_review_and_cancel(
     window: DesktopWindow, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     assert window.root.title() == "MediaTrack Forge"
-    assert [window.tabs.tab(name) for name in ("Media", "Operation", "Execution")]
+    assert [window.tabs.tab(name) for name in ("1. Media", "2. Operation", "3. Execution")]
     open_fake(window, monkeypatch)
     window.sort_table("codec")
     audio_row = next(row for row, ref in window._rows.items() if ref.index == 17)
     window.table.selection_set(audio_row)
     window._select_row()
     assert window._selected is not None and window._selected.index == 17
-    window.title_mode.set("Set value")
     window.track_title.set("")
-    window.default.set("Off")
+    window.default.set("No")
     window._save_metadata()
     assert (
         next(
@@ -166,7 +167,6 @@ def test_native_review_invalidated_by_unapplied_metadata_and_destination(
     acknowledge(window)
     window.table.selection_set("track-0")
     window._select_row()
-    window.language_mode.set("Set value")
     window.language.set("eng")
     assert window.controller.plan is None and not window.controller.can_execute
     window.destination.set(str(tmp_path / "different.mkv"))
@@ -273,15 +273,17 @@ def test_real_gui_to_backend_video_only_remux(
 
 @pytest.mark.parametrize("appearance,scale", [("Light", 1.0), ("Dark", 1.25), ("Light", 1.5)])
 def test_native_theme_scaling_and_resize(
-    window: DesktopWindow, appearance: str, scale: float
+    window: DesktopWindow, appearance: str, scale: float, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import customtkinter as ctk
 
     try:
+        open_fake(window, monkeypatch)
         ctk.set_appearance_mode(appearance)
         ctk.set_widget_scaling(scale)
-        window.root.geometry("900x700")
-        window.tabs.set("Media")
+        window._select_reference(next(ref for ref in window._rows.values() if ref.index == 17))
+        window.root.geometry("620x600" if scale == 1.0 else "900x700")
+        window.tabs.set("1. Media")
         deadline = time.monotonic() + 3
         while time.monotonic() < deadline:
             window.root.update()
@@ -290,7 +292,20 @@ def test_native_theme_scaling_and_resize(
             time.sleep(0.01)
         assert window._appearance == appearance
         assert window.table.winfo_width() > 100 and window.table.winfo_height() > 20
-        window.tabs.set("Operation")
+        assert (
+            window.reset_button.winfo_x() + window.reset_button.winfo_width()
+            <= window.reset_button.master.winfo_width() + 2
+        )
+        if scale == 1.0:
+            assert window.media._parent_canvas.yview()[1] < 1
+            window.reset_button._canvas.focus_force()
+            window.root.update()
+            assert (
+                window.root.winfo_rooty()
+                < window.reset_button.winfo_rooty()
+                < window.root.winfo_rooty() + window.root.winfo_height()
+            )
+        window.tabs.set("2. Operation")
         deadline = time.monotonic() + 3
         while time.monotonic() < deadline:
             window.root.update()
@@ -320,3 +335,195 @@ def test_native_failure_preserves_published_cleanup_evidence(window: DesktopWind
     assert "Published: yes" in text and "INCOMPLETE" in text
     assert not window.controller.request_close(False)
     assert window.root.bind("<Alt-Key-1>") and window.root.bind("<Alt-Key-2>")
+
+
+def test_refined_metadata_extraction_destination_and_recovery(
+    window: DesktopWindow, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    window.root.update()
+    assert not window.track_frame.winfo_ismapped()
+    assert not window.metadata_area.winfo_viewable()
+    initial = (window.root.winfo_width(), window.root.winfo_height())
+    open_fake(window, monkeypatch)
+    window.root.update()
+    assert window.root.winfo_height() >= initial[1]
+    assert window.table.item("group-audio", "text") == "Audio"
+    reference = next(ref for ref in window._rows.values() if ref.index == 17)
+    window._select_reference(reference)
+    assert window.language.get() == "eng" and window.track_title.get() == "Original audio"
+    window.track_title.set("Edited")
+    window._save_metadata()
+    row = next(row for row, ref in window._rows.items() if ref == reference)
+    assert window.table.set(row, "title") == "* Edited"
+    assert "changed" in window.table.item(row, "tags")
+    window.track_title.set("Original audio")
+    window._save_metadata()
+    assert window.table.set(row, "title") == "Original audio"
+    window.track_title.set("")
+    window._save_metadata()
+    assert (
+        next(
+            s for s in window.controller.intent.selections if s.reference == reference
+        ).metadata.title
+        == ""
+    )
+    window.reset_metadata()
+    assert window.track_title.get() == "Original audio"
+    window.language.set("invalid-code")
+    with pytest.raises(ValueError, match="three-letter"):
+        window._save_metadata()
+    window.reset_metadata()
+    window.mode.set("Extract")
+    assert window.controller.intent.extraction_target is None
+    assert window.format_menu.cget("values") == ["Unsupported selection"]
+    window.tabs.set("2. Operation")
+    window.root.update()
+    window.extraction_menu._canvas.focus_force()
+    window.extraction_menu._canvas.event_generate("<Right>")
+    window.root.update()
+    assert window.controller.intent.extraction_target is not None
+    assert window.controller.intent.extraction_target.index == 3
+    window.extraction_menu._canvas.event_generate("<Right>")
+    window.root.update()
+    assert window.controller.intent.extraction_target == reference
+    label = next(label for label, ref in window._extraction_rows.items() if ref == reference)
+    window.extraction_selection.set(label)
+    window._choose_extraction()
+    assert window.controller.intent.extraction_target == reference
+    assert window.format_menu.cget("values") == ["aac"]
+    assert "original index 17" in window.extraction_description.get()
+    existing = tmp_path / "occupied.aac"
+    existing.write_bytes(b"untouched")
+    options: dict[str, object] = {}
+
+    def save_dialog(**kwargs: object) -> str:
+        options.update(kwargs)
+        return str(existing)
+
+    monkeypatch.setattr("mediatrack_forge.ui.window.filedialog.asksaveasfilename", save_dialog)
+    window.choose_destination()
+    assert options["confirmoverwrite"] is False
+    window._check_destination()
+    pump(window)
+    assert "exists" in window.destination_error.get()
+    window.suggest_destination()
+    pump(window)
+    assert window.destination.get().endswith(".aac") and Path(window.destination.get()) != existing
+    assert not Path(window.destination.get()).exists() and existing.read_bytes() == b"untouched"
+    previous = window.controller.intent
+
+    def failed_inspection(path: str) -> MediaAsset:
+        raise InvalidInputError("Source unavailable; choose a readable file.")
+
+    monkeypatch.setattr(window.controller.backend, "inspect", failed_inspection)
+    window.open_media()
+    pump(window)
+    assert window.controller.intent == previous and window._selected == reference
+    assert "Source unavailable" in window.controller.error
+    window.root.geometry("780x560")
+    window.root.update()
+    dimensions = (window.root.winfo_width(), window.root.winfo_height())
+    monkeypatch.setattr(window.controller.backend, "inspect", lambda path: previous.sources[0])
+    window.open_media()
+    pump(window)
+    window.root.update()
+    assert (window.root.winfo_width(), window.root.winfo_height()) == dimensions
+    assert window._selected is None and window.controller.intent.mode == "Remux"
+
+
+def test_refined_progress_repeated_execution_and_variable_teardown(
+    window: DesktopWindow, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from mediatrack_forge.domain.execution import ProgressEvent
+    from mediatrack_forge.ui.worker import WorkerReply
+
+    open_fake(window, monkeypatch)
+    window.destination.set(str(tmp_path / "output.mkv"))
+    acknowledge(window)
+    # Force collection in a worker after the old warning controls have been destroyed.
+    window.controller.worker.start(
+        window.controller.generation, "destination", lambda: (gc.collect(), "")[1]
+    )
+    pump(window)
+    starts: list[bool] = []
+    monkeypatch.setattr(window.progress_bar, "start", lambda: starts.append(True))
+    control = ExecutionControl()
+    release = threading.Event()
+    window.controller.worker.start(
+        window.controller.generation, "execute", lambda: release.wait(5), control=control
+    )
+    window.controller.progress = ProgressEvent("running", False, processed_seconds=65)
+    for _ in range(5):
+        window._refresh()
+    assert len(starts) == 1 and "Media position 00:01:05" in window.phase.get()
+    release.set()
+    # Consume the deliberately controlled worker directly; its value is not a product result.
+    deadline = time.monotonic() + 3
+    while window.controller.worker.busy and time.monotonic() < deadline:
+        window.controller.worker.poll()
+        time.sleep(0.01)
+    result = ExecutionResult("cancelled", (), ())
+    window.controller.apply(WorkerReply(window.controller.generation, "execute", result))
+    window._refresh()
+    assert "Cancelled" in window.phase.get() and "indeterminate" not in window.phase.get()
+    assert window.cancel_button.cget("state") == "disabled"
+    window.review()
+    pump(window)
+    for variable in window._warning_vars.values():
+        variable.set(True)
+    window.acknowledge()
+    pump(window)
+    monkeypatch.setattr(
+        "mediatrack_forge.ui.window.messagebox.askyesno", lambda *args, **kwargs: True
+    )
+    window.execute()
+    assert "Result: cancelled" not in window.result_text.get("1.0", "end")
+    window.cancel()
+    pump(window)
+
+
+def test_refined_external_subtitle_group_and_duplicate_feedback(
+    window: DesktopWindow, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from mediatrack_forge.domain.planning import ExternalTrack
+
+    open_fake(window, monkeypatch)
+    path = tmp_path / "external.srt"
+    path.write_text("1\n00:00:00,000 --> 00:00:01,000\nSynthetic\n", encoding="utf-8")
+    source = parse_response(
+        json.dumps(
+            {
+                "format": {"format_name": "srt"},
+                "streams": [{"index": 0, "codec_type": "subtitle", "codec_name": "subrip"}],
+            }
+        ).encode(),
+        snapshot_source(path),
+    )
+    external = ExternalTrack(source.source, "subtitle", 0, "subrip", "srt", validated=True)
+    monkeypatch.setattr(
+        window.controller.backend,
+        "import_subtitles",
+        lambda paths: ((source, external), (source, external)),
+    )
+    monkeypatch.setattr(
+        "mediatrack_forge.ui.window.filedialog.askopenfilenames",
+        lambda **kwargs: (str(path), str(path)),
+    )
+    window.add_subtitles()
+    pump(window)
+    assert window.table.item("group-subtitle", "text") == "Subtitles"
+    assert window._selected is not None and window._selected.source == source.source
+    assert "Skipped 1" in window.status.get()
+    window._copy_source_path()
+    assert window.root.clipboard_get() == str(path)
+    window.mode.set("Extract")
+    label = next(
+        label for label, ref in window._extraction_rows.items() if ref.source == source.source
+    )
+    window.extraction_selection.set(label)
+    window._choose_extraction()
+    assert "already an independent file" in window.extraction_description.get()
+    assert window.format_menu.cget("values") == ["Unsupported selection"]
+    window.remove_external()
+    assert path.is_file() and len(window.controller.intent.sources) == 1
+    assert not window.metadata_area.winfo_viewable()

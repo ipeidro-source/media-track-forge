@@ -85,13 +85,15 @@ python -m pip install --no-build-isolation --no-deps -e .
 python -m mediatrack_forge.ui.desktop
 ```
 
-CustomTkinter 6.0.0 provides one window with Media, Operation and Execution areas.
+CustomTkinter 6.0.0 provides numbered Media, Operation and Execution tabs.
 Inspect local media, edit explicit track intent, add SRT, review remux/extraction,
 acknowledge warnings and separately confirm execution. Backend staging/validation/
 publication and cancellation remain authoritative. The installed alternative entry
 point is `mediatrack-forge-desktop`; the inspection CLI is unchanged.
 See [Windows desktop workflow and smoke procedure](docs/17-WINDOWS-DESKTOP-UI.md).
-Native Windows 10/11 manual acceptance and PR-07 packaging remain pending.
+PR-08 refines direct metadata editing, grouped tracks, operation review, extraction
+selection and progress on its review branch. Native Windows 10/11 owner acceptance
+and separate portable packaging remain pending.
 
 ## Trusted Windows network inputs (D24)
 
@@ -105,4 +107,4 @@ SMB validation limitations. No real SMB execution is claimed from simulated test
 
 ## Upcoming work
 
-Interactive [UX validation](docs/18-UX-VALIDATION.md) precedes GUI refinement and two-artifact Windows portable packaging (`onefile` `.exe` and `onedir` ZIP). D24 allows trusted network **inputs**, pending real SMB acceptance; network **outputs** remain blocked by design until independently verified and authorized. The [roadmap](docs/02-ROADMAP.md) records this future requirement.
+Owner [UX findings](docs/18-UX-VALIDATION.md) inform PR-08 refinement; recheck the revised workflow before two-artifact Windows portable packaging (`onefile` `.exe` and `onedir` ZIP). D24 allows trusted network **inputs**, pending real SMB acceptance; network **outputs** remain blocked until independently verified and authorized. See the [roadmap](docs/02-ROADMAP.md).

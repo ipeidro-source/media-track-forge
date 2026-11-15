@@ -15,6 +15,7 @@ from mediatrack_forge.domain.execution import ExecutionRequest, ProcessConfigura
 from mediatrack_forge.domain.planning import OutputProfile, StreamReference, TrackSelection
 from mediatrack_forge.infrastructure.ffprobe import FFprobeAdapter
 from mediatrack_forge.infrastructure.subtitle_packets import subtitle_cues
+from mediatrack_forge.ui.presentation_model import DesktopBackend
 
 from .conftest import VIDEO, generate
 from .test_planning_mux import planning_tools as planning_tools
@@ -108,3 +109,29 @@ def test_gapped_subtitle_extraction(
             Path(profile.path), 1, "subrip", planning_tools[1], 30
         )
         assert digest(source) == before
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("subtitle", [False, True])
+def test_content_inspection_and_video_eligibility_are_separate(
+    tmp_path: Path, planning_tools: tuple[str, str], subtitle: bool
+) -> None:
+    path = tmp_path / ("captions.mkv" if subtitle else "video.txt")
+    if subtitle:
+        path.write_text("1\n00:00:00,000 --> 00:00:00,300\nSynthetic\n", encoding="utf-8")
+    else:
+        generate(
+            planning_tools[0],
+            [*VIDEO, "-map", "0:v:0", "-c:v", "libx264", "-threads", "1", "-f", "matroska"],
+            path,
+        )
+    backend = DesktopBackend(ProcessConfiguration(ffprobe=planning_tools[1]))
+    asset = backend.inspect(str(path))
+    assert asset.format.name == ("srt" if subtitle else "matroska,webm")
+    plan = OperationPlanningService().plan(
+        (asset,),
+        tuple(TrackSelection(StreamReference(asset.source, s.index)) for s in asset.streams),
+        OutputProfile("mkv", str(tmp_path / "output.mkv")),
+    )
+    assert any(issue.code == "VIDEO_REQUIRED" for issue in plan.issues) == subtitle
+    assert not Path(plan.output.path).exists()

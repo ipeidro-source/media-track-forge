@@ -19,7 +19,7 @@ from mediatrack_forge.infrastructure.ffprobe import FFprobeAdapter
 
 from .conftest import AUDIO, VIDEO, generate
 from .test_planning_mux import planning_tools as planning_tools
-from .test_pr05_e2e import digest
+from .test_pr05_e2e import digest, packets
 
 
 @pytest.mark.integration
@@ -78,6 +78,8 @@ def test_preserved_metadata_and_compatible_copy(
             "title=Video title",
             "-metadata:s:0",
             "comment=Stream comment",
+            "-metadata:s:0",
+            "description=Stream description",
         ],
         source,
     )
@@ -113,6 +115,10 @@ def test_preserved_metadata_and_compatible_copy(
     assert digest(source) == before
     actual = inspector.inspect(profile.path)
     assert [s.codec for s in actual.streams] == [video, audio]
+    for original, output in zip(asset.streams, actual.streams, strict=True):
+        assert packets(planning_tools[1], source, original.index) == packets(
+            planning_tools[1], Path(profile.path), output.index
+        )
     assert metadata_value(actual.format.tags, "title") == "Container title"
     assert metadata_value(actual.format.tags, "artist") == "Creator"
     for key in ("album", "comment", "genre", "date", "copyright", "description"):
@@ -122,3 +128,4 @@ def test_preserved_metadata_and_compatible_copy(
             "Video title" if edit is None else edit or None
         )
         assert metadata_value(actual.streams[0].tags, "comment") == "Stream comment"
+        assert metadata_value(actual.streams[0].tags, "description") == "Stream description"
