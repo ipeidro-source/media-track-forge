@@ -1,5 +1,7 @@
 # OperationPlan contract - plan_version 1
 
+> **Evolution note:** This PR-03 contract remains version 1 and is unchanged. References to *future* execution refer to the original PR-03 planning boundary; PR-04–PR-06 subsequently implemented execution, SRT, GUI and network inputs. Use [document 00](00-CURRENT-STATUS.md) for current state. Network outputs remain forbidden by ADR-039.
+
 PR-03 implements planning only. This contract is separate from inspection
 `schema_version: 1`, whose fields and meaning remain unchanged. Domain snapshots
 are frozen dataclasses with tuples/frozensets; public JSON uses objects and arrays.
