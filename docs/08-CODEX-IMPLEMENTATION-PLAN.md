@@ -12,7 +12,7 @@ Owner approves requirements, merges and Releases; ChatGPT reviews product/archit
 | UX session (no code PR) | UX-01–UX-10 individually and real SMB mapped/UNC **input** verification | Reproducible P0–P3 observations in document 18 |
 | GUI refinement PR (expected #8) | Resolve approved usability issues while preserving backend safety | GUI, real-media, cancellation and manual Windows tests |
 | NAS output design and subsequent implementation (number TBD) | Separately approve safe SMB output architecture before any code | No overwrites/partial committed output, genuine SMB/failure recovery evidence |
-| Packaging PR (historically PR-07, expected #9 or later) | PyInstaller `onedir` executable/ZIP, MIT and third-party notices, mandatory external FFmpeg checks, winget guidance, optional updates and Windows 10/11 acceptance | Owner-approved release candidate, no automatic publication |
+| Packaging PR (historically PR-07, expected #9 or later) | PyInstaller standalone `onefile` `.exe` plus versioned portable `onedir` ZIP, MIT and third-party notices, mandatory external FFmpeg checks, winget guidance, optional updates and Windows 10/11 acceptance | Owner-approved release candidate, no automatic publication |
 | G5 acceptance | All FR/AC/user acceptance and release gates | Explicit separate Release decision |
 | Future phases | Selective transcoding, conditional GPU, batch and library automation | New approved requirements/ADRs |
 
