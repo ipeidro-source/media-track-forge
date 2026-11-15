@@ -1,6 +1,6 @@
 # 09 — GitHub Repository and Development Environment
 
-## Repository proposal
+## Established repository (historical initial proposal below)
 
 - Product name: **MediaTrack Forge**
 - Repository slug: `media-track-forge`
@@ -8,7 +8,7 @@
 - Proposed description: `Windows media track manager for inspecting, remuxing, extracting and cleaning video, audio and subtitle streams with FFmpeg.`
 - Suggested GitHub topics (once accurate): `ffmpeg`, `ffprobe`, `python`, `windows`, `mkv`, `mp4`, `subtitle-tools`, `media-tools`, `remux`, `customtkinter`.
 
-## Create the repository
+## Historical repository initialization (do not repeat on existing clone)
 
 1. Open GitHub → **New repository**, under the intended account.
 2. Use the name and description above. Make it **Public** if the intent is open source immediately, or **Private** if licensing/publication is undecided.
