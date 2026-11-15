@@ -1,5 +1,7 @@
 # 07 — Quality and Test Strategy
 
+Current evidence, acceptance gaps and gate statuses: [document 00](00-CURRENT-STATUS.md). Simulated D24 UNC cases do **not** prove real SMB access; hosted Windows Server 2025 GUI tests do **not** certify Windows 10/11 usability or OS DPI. The human usability protocol is [document 18](18-UX-VALIDATION.md). Any future NAS output implementation requires separate real-SMB safety/failure tests.
+
 ## Test pyramid
 
 1. **Unit tests:** ffprobe parsing, languages, stream mapping, compatibility policy, destination collisions, and job state transitions.
