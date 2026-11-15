@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import ctypes
-import os
 import re
+import sys
 import time
 import tkinter as tk
 from collections.abc import Callable
@@ -154,7 +154,7 @@ class DesktopWindow:
     def _screen_bounds(self) -> tuple[int, int]:
         scale = ctk.ScalingTracker.get_window_scaling(self.root)
         width, height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-        if os.name == "nt":
+        if sys.platform == "win32":
             # SPI_GETWORKAREA reads the primary desktop work area; never sets DPI
             # or system preferences. Leave room for window borders and the taskbar.
             rect = wintypes.RECT()
