@@ -20,7 +20,7 @@ PR-06 reported 299 unit, 66 real-media integration and 8 native Tk scenarios. Ho
 
 - MIT for application-owned source. Dependency redistribution notices still require review.
 - FFmpeg/ffprobe are mandatory external dependencies. Future startup availability/version/capability verification; winget `Gyan.FFmpeg` installation guidance, optional nonblocking update notices; no forced/silent installation.
-- Portable PyInstaller `onedir` executable and versioned ZIP, no installer initially. Defer packaging until UX maturity, verify Windows 10/11, third-party notices and checksums before any Release.
+- Two portable PyInstaller artifacts: **single-file `onefile` `.exe`** and **versioned `onedir` ZIP**, no installer initially. Defer packaging until UX maturity, verify Windows 10/11, third-party notices and checksums before any Release.
 - Owner-approved output writing to trusted SMB/UNC/mapped destinations, **not currently supported**. A separate ADR must determine private staging, independent validation, exclusive no-overwrite publication, disconnection/recovery and durability guarantees.
 - Selective transcoding, GPU and batch automation remain later phases, without implementation authorization.
 
