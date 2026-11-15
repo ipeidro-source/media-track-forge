@@ -105,4 +105,4 @@ SMB validation limitations. No real SMB execution is claimed from simulated test
 
 ## Upcoming work
 
-Interactive [UX validation](docs/18-UX-VALIDATION.md) precedes GUI refinement and Windows portable packaging. D24 allows trusted network **inputs**, pending real SMB acceptance; network **outputs** remain blocked by design until independently verified and authorized. The [roadmap](docs/02-ROADMAP.md) records this future requirement.
+Interactive [UX validation](docs/18-UX-VALIDATION.md) precedes GUI refinement and two-artifact Windows portable packaging (`onefile` `.exe` and `onedir` ZIP). D24 allows trusted network **inputs**, pending real SMB acceptance; network **outputs** remain blocked by design until independently verified and authorized. The [roadmap](docs/02-ROADMAP.md) records this future requirement.
