@@ -181,7 +181,7 @@ backend implementation, not G3 acceptance, GUI, packaging or release publication
   boundaries; native tests and a scoped mypy import override cover the adapter.
   Runtime CLI installations now also install GUI libraries; no display is initialized.
   This resolves ADR-007's GUI proposal without changing tooling decisions.
-- ADR-035 / D20 (accepted): users need direct inspection/edit/review/results without
+- ADR-035 / D20 (historical interaction, superseded by the November 15 wizard revision below): users needed direct inspection/edit/review/results without
   a wizard. Choose one window with Media/Operation/Execution tabs, original immutable
   references, explicit keep/set/clear metadata and within-kind order. Alternative
   auto-resolving defaults/omitting incompatible tracks was rejected. Initially include
@@ -190,8 +190,9 @@ backend implementation, not G3 acceptance, GUI, packaging or release publication
   Only backend-supported extraction extensions are offered; no second codec policy.
 - ADR-036 / D21 (accepted): review cannot authorize another intent. Use generation-
   invalidated immutable plans, all-occurrence warning presentation and explicit
-  revision-bound acknowledgement rebuild, followed by a distinct default-No execution
-  confirmation. Alternatives: auto-acknowledgement or execution_allowed alone; rejected
+  revision-bound acknowledgement rebuild and logically separate revision confirmation.
+  The November 15 owner-approved revision below replaces the old default-No popup
+  with one explicit decision that performs both steps internally. Alternatives: auto-acknowledgement or execution_allowed alone; rejected
   as unsafe. Any edit, including pending metadata, clears review. Worker results cannot
   restore stale authority. The cost is repeated review after edits; backend regeneration
   remains mandatory and public contracts 13-16 are unchanged.
@@ -275,3 +276,91 @@ Document 17 records the manual evidence procedure and remaining limits.
 **Provisional ADR-040 — OPEN architectural design (not an accepted solution):** Owner approves the future requirement to write output to trusted mapped/UNC NAS destinations. ADR-039's current local-only output safety restriction remains active until a separately reviewed design and real SMB safety tests exist. Compare local validated staging plus safe remote publishing with private remote-share staging; consider exclusive no-overwrite semantics, incomplete transfer visibility, permissions/ACL, remapping and path races, disconnections, cancellation, cleanup and durability. Never implement by merely disabling the network-output prohibition.
 
 Video/audio transcoding, conditional GPU and automation remain later phases, without implementation authorization.
+
+## November 15, 2026 — PR-08 backend decisions
+
+ADR-041 (proposed implementation under owner-approved B1–B4 scope): replace the
+subtitle packet-equality assumption in ADR-030 with independently scanned text cue
+and millisecond timing comparisons. MP4 mov_text clear samples describe gaps, not
+SRT cues. Audio/video retain positive equal packet scans and timing checks. Failed
+checks carry specific invariant codes as well as EXTRACTION_INVALID. Reject malformed,
+oversized, unprobeable or unmatched output; never waive independent validation.
+Alternatives: suppress validation or count only nonempty output; rejected because
+neither verifies retained source cues. Bounded packet dumps trade capacity for
+auditable evidence; overflow fails safely. The owner MKV timeout is recorded below.
+
+PR-08 owner retest clarification: the original MKV's `EXTRACTION_PACKET_SCAN`
+label at `59408c0` spans two probes and JSON/count parsing, so it cannot establish
+which operation failed. The focused correction records source/output context and
+fixed failure categories, retaining bounded probes, validation and publication
+boundaries. Typed stdout/stderr overflow remains an InspectionError with exit code 6;
+existing consumers remain compatible. A read-only bounded-output utility gathers
+direct evidence without printing media or raw exceptions. Alternative guessing an SMB
+fault, silently raising limits or accepting missing counts is rejected. The owner's
+read-only result then confirmed the source full scan timed out at 30.078 seconds
+under the old 30-second metadata budget. Add an explicit, documented execution
+configuration packet_scan_timeout_seconds (default 300 per complete probe), leaving
+metadata inspection at 30. Observe the per-job token during packet subprocesses so
+cancellation need not wait for the larger deadline. Reject all nonfinite/nonpositive
+limits before staging. Alternatives: unbounded waits, automatic retries, sampling or
+waiving source evidence; rejected. Capture caps, strict validation and publication
+semantics remain. This is an additive runtime setting, not a plan/schema change.
+Contract 16 owns evidence and cancellation/OS limitations; original-file success is pending.
+
+ADR-042 (proposed implementation of approved metadata direction, supersedes the
+blanket tag exclusion in ADR-022): explicitly preserve tested compatible primary
+container and stream tags, retaining unrelated values across edits. Unsupported
+names and cross-container losses require acknowledgement; do not promise arbitrary
+tags, byte identity or silently normalize unknown names. Known names may change
+case through muxing. Independent validation checks promised values. Plan version 2
+adds output_format_tags and invalidates version 1 review/confirmation by regeneration;
+inspection/extraction presentation versions stay unchanged. Alternative unversioned
+semantic change was rejected. Owner review of this version migration remains pending.
+
+ADR-043 (proposed implementation of approved B3/B4): extend only synthetic-tested
+compatibility pairs (MP4 VP9/Opus to MKV, explicit mov_text to SubRip in MKV, Matroska
+MP3 extraction). Keep one backend policy per operation and audio/video copy only.
+Inspect replacement media before replacing session intent; failure retains edits,
+but invalidates review authority and rejects stale asynchronous results. Inspection
+remains content-based; video eligibility is a separate planning condition.
+
+ADR-044 (owner-approved revision, November 15, 2026; supersedes the earlier U1–U10
+three-tab/compact-start interaction and refines ADR-035/038): use one large resizable
+window with sequential Media, Metadata, Operation, Review and Execution steps. Start
+near 1100 × 800 logical pixels bounded by available work area/scaling; opening media,
+Back/Next and Start over never change user geometry. Separate navigation in WizardState
+from immutable editing intent, backend planning/authorization and Tk rendering. Reuse
+DesktopController and its bounded worker; no second planner, policy or process runner.
+Metadata has the one effective-value editor, including a local searchable ISO 639-2
+picker and exact preservation of unknown/bibliographic codes. Operation owns selection,
+include/order/import and contextual access to that same editor for imported SRT.
+No hidden extraction target, automatic replacement target or silent exclusion is allowed.
+Review plans automatically, presents all material occurrences and optional technical
+details. Execution preserves progress, cancellation and recovery; safe Start over clears
+session/authority without deleting media or resetting geometry. Unverified termination
+or cleanup blocks restart and close. UX-F37/F38 add searchable languages and a single
+controlled inspection-failure modal while preserving a failed replacement session.
+Alternatives: a second window/controller, nested wizard, large GUI dependency, automatic
+geometry changes or duplicated metadata editors; rejected for complexity and confusion.
+The trade-off is explicit step navigation and a bounded language catalog. Native tests
+cover transitions/scaling/teardown; consumer Windows DPI, accessibility, ergonomics and
+new workflow acceptance remain owner checks. No packaging or release is authorized.
+
+### ADR-036 / D21 interaction revision — accepted by owner, November 15, 2026
+
+The original backend authorization invariants remain. Replace individual warning
+checkboxes, Acknowledge selected and the extra confirmation popup with a single explicit
+**Accept warnings & execute** decision (or **Execute operation** without warnings).
+The GUI captures exact generation, immutable intent, reviewed plan/revision and pending
+warning codes, with all affected occurrences presented. It separately rebuilds through
+the existing acknowledgement mechanism, requires the same revision/issues/intent and
+expected effective acknowledgements with no errors/pending warnings, then separately
+constructs the revision-confirmed request. Only the reply belonging to that explicit
+pending decision may continue; stale/changed/rejected replies, edits or cancellation
+revoke it. An unrelated callback cannot execute, duplicate clicks are blocked, and
+opening Review grants no authority. Backend independent reinspection/regeneration,
+source identity, staging, validation, no-overwrite publication and cancellation remain.
+Alternative retaining two explicit UI clicks was rejected by the owner as redundant;
+automatic acceptance on page entry or weakening backend checks remains rejected.
+A changed acknowledgement requires renewed review/action. Tests cover both decision
+paths, exact revisions/warnings, rejected/stale replies, duplicate clicks and safe close.

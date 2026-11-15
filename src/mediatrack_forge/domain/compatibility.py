@@ -5,8 +5,8 @@ from mediatrack_forge.domain.media import Stream
 # Each enabled entry has a real copy/conversion case in test_planning_mux.py.
 COPY_CODECS: dict[str, dict[str, frozenset[str]]] = {
     "mkv": {
-        "video": frozenset({"h264", "hevc", "mpeg4"}),
-        "audio": frozenset({"aac", "mp3"}),
+        "video": frozenset({"h264", "hevc", "mpeg4", "vp9"}),
+        "audio": frozenset({"aac", "mp3", "opus"}),
         "subtitle": frozenset({"subrip"}),
     },
     "mp4": {
@@ -23,6 +23,8 @@ def codec_action(stream: Stream, container: str) -> tuple[str, str | None] | Non
         return "copy", stream.codec
     if container == "mp4" and stream.kind == "subtitle" and stream.codec == "subrip":
         return "convert_subtitle", "mov_text"
+    if container == "mkv" and stream.kind == "subtitle" and stream.codec == "mov_text":
+        return "convert_subtitle", "subrip"
     if stream.kind == "attachment" and container == "mkv":
         tags = dict(stream.tags)
         if stream.codec is None and tags.get("mimetype") == "text/plain" and tags.get("filename"):

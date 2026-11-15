@@ -3,6 +3,7 @@
 import os
 from dataclasses import replace
 
+from mediatrack_forge.application.control import ExecutionControl
 from mediatrack_forge.application.execution import RemuxExecutionService
 from mediatrack_forge.application.execution_ports import (
     Inspector,
@@ -209,10 +210,16 @@ class ExtractionExecutionService(RemuxExecutionService):
         )
         self._validation_ffprobe = ffprobe
 
-    def _validator_for(self, request: ExecutionRequest) -> OutputValidator:
+    def _validator_for(
+        self, request: ExecutionRequest, control: ExecutionControl | None = None
+    ) -> OutputValidator:
         from mediatrack_forge.infrastructure.extraction_validation import ExtractionValidator
 
-        return ExtractionValidator(request.configuration.ffprobe or self._validation_ffprobe)
+        return ExtractionValidator(
+            request.configuration.ffprobe or self._validation_ffprobe,
+            packet_scan_timeout_seconds=request.configuration.packet_scan_timeout_seconds,
+            cancellation=control.cancellation if control is not None else None,
+        )
 
     @staticmethod
     def _arguments(plan: OperationPlan) -> tuple[str, ...]:

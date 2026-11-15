@@ -104,8 +104,9 @@ class OperationPlan:
     acknowledged_warnings: frozenset[str]
     acknowledged_revision: str | None = None
     arguments: tuple[str, ...] | None = None
-    plan_version: int = 1
+    plan_version: int = 2
     confirmation_required: bool = True
+    output_format_tags: Tags = ()
 
     def __post_init__(self) -> None:
         # Also keep dataclasses.replace() from retaining a stale proposed command.

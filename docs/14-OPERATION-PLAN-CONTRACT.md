@@ -1,6 +1,6 @@
-# OperationPlan contract - plan_version 1
+# OperationPlan contract - plan_version 2
 
-> **Evolution note:** This PR-03 contract remains version 1 and is unchanged. References to *future* execution refer to the original PR-03 planning boundary; PR-04–PR-06 subsequently implemented execution, SRT, GUI and network inputs. Use [document 00](00-CURRENT-STATUS.md) for current state. Network outputs remain forbidden by ADR-039.
+> **Evolution note:** PR-08 introduces plan version 2 for explicit compatible metadata preservation. The older PR-03 sections below are historical except where updated by the PR-08 section. References to *future* execution refer to the original PR-03 planning boundary; PR-04–PR-06 subsequently implemented execution, SRT, GUI and network inputs. Use [document 00](00-CURRENT-STATUS.md) for current state. Network outputs remain forbidden by ADR-039.
 
 PR-03 implements planning only. This contract is separate from inspection
 `schema_version: 1`, whose fields and meaning remain unchanged. Domain snapshots
@@ -27,12 +27,13 @@ compatibility policy and pure argument generator are separate components.
 
 | Field | JSON type | Meaning |
 | --- | --- | --- |
-| plan_version | integer | Exactly 1; independent of inspection schema version |
+| plan_version | integer | Exactly 2 in PR-08; independent of inspection schema version |
 | revision | string | Lowercase SHA-256 fingerprint of the exact plan content described below |
 | acknowledged_revision | string or null | Caller-supplied reviewed revision; missing/stale values grant no acknowledgement |
 | sources | array | Complete, unmodified inspection schema v1 documents in FFmpeg input order |
 | output | object | `container`: string mkv/mp4; `requested_path`: original string; `path`: resolved absolute local string or null on invalid input |
 | selections | array | Requested order of `{reference, include: boolean, metadata}`; includes explicit exclusions and invalid requests for review |
+| output_format_tags | object | Version 2 compatible primary container tags explicitly mapped and independently validated |
 | external_tracks | array | Extension records defined below; never fabricated from a filename |
 | included | array | Supported proposed output streams in final deterministic mapping order; blocked requests remain in selections/issues/sources |
 | excluded | array | `{reference, explicit: boolean, action: "exclude"}`; input order, visible omissions even for data/unknown kinds |
@@ -68,7 +69,7 @@ Each `included` entry contains:
 | output_index | integer | Zero-based final mapping position, independent of source index |
 | kind | string | Original normalized stream kind |
 | source_codec | string or null | Inspected codec |
-| target_codec | string or null | Copy codec, mov_text for explicit subtitle conversion, null for validated opaque text attachment |
+| target_codec | string or null | Copy codec, mov_text/SubRip for explicit subtitle conversion, null for validated opaque text attachment |
 | action | string | copy or convert_subtitle; there is no audio/video encode action |
 | output_tags | string-to-string object | Supported source tags plus explicit requested changes |
 | output_disposition | string-to-integer object | Available/requested default/forced values, 0/1; missing source values not fabricated |
@@ -127,7 +128,8 @@ unvalidated. MP4 attachments are blocked.
 | aac audio | copy | copy |
 | mp3 audio | copy | copy |
 | subrip subtitle | copy | convert_subtitle to mov_text, formatting warning |
-| mov_text subtitle | blocked | copy |
+| mov_text subtitle | convert_subtitle to subrip, formatting warning | copy |
+| VP9 video / Opus audio | tested copy from MP4 | blocked |
 | null-codec text/plain attachment with filename | copy | blocked |
 | DTS, AC-3/E-AC-3, ASS/SSA, PGS/VobSub, other codecs/kinds | blocked | blocked |
 
@@ -200,7 +202,7 @@ execution-time revalidation.
 ## Proposed arguments and destination safety
 
 Commands use explicit input positions and source indices, `-map` for every stream,
-per-output-index `-c:N copy` or subtitle-only mov_text, explicit dispositions and
+per-output-index `-c:N copy` or explicit subtitle-only mov_text/SubRip, explicit dispositions and
 metadata, chapter mappings, fixed muxer and `-n` (never overwrite). Global and
 per-stream metadata auto-copy are disabled. `-protocol_whitelist file` applies to
 each input, and stdin is disabled. The generator rejects blocked/unacknowledged
@@ -238,7 +240,8 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
 
 ```json
 {
-  "plan_version": 1,
+  "plan_version": 2,
+  "output_format_tags": {},
   "revision": "0000000000000000000000000000000000000000000000000000000000000000",
   "acknowledged_revision": null,
   "sources": [
@@ -341,8 +344,8 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
   "preservation": [
     {
       "category": "format_tags:0",
-      "status": "exclude",
-      "detail": "Global metadata auto-copy is disabled.",
+      "status": "preserve",
+      "detail": "Compatible primary tags are preserved; other input tags are disclosed.",
       "reference": null
     },
     {
@@ -374,7 +377,7 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
     {
       "category": "other_tags",
       "status": "preserve",
-      "detail": "Only language/title and validated attachment filename/MIME tags are copied.",
+      "detail": "Compatible tags survive edits; unsupported tags are disclosed by name.",
       "reference": {
         "source": {
           "path": "/examples/source.mkv",
@@ -448,7 +451,7 @@ snapshot numbers are illustrative, not filesystem or execution guarantees.
 
 ## PR-04 consumption boundary
 
-PR-03 plans remain declarative and contract v1 is unchanged. PR-04's separate
+Plans remain declarative; PR-08 advances remux metadata to contract v2 as described below. PR-04's separate
 RemuxExecutionService requires an ExecutionRequest with exact reviewed and confirmed
 revisions, fresh source inspections, trusted regeneration and effective warning
 acknowledgements. It never trusts supplied arguments or execution_allowed as
@@ -477,3 +480,35 @@ snapshots require fresh review; drive aliases cannot redirect confirmed canonica
 inputs. Output paths remain local-only: UNC and native Windows remote/unknown
 volumes block before staging and are checked again before publication. File-share
 input support does not broaden codecs, extraction formats or publication semantics.
+
+## PR-08 version 2 metadata and compatibility policy
+
+Plan version 2 adds `output_format_tags` (string-to-string object), included in the
+revision. The planner explicitly preserves compatible primary container tags:
+title, artist, album, comment, genre, date, copyright and description. Other input
+container tags are not merged. Known names match case-insensitively across muxers;
+unknown names are never silently normalized. Stream tags preserve language/title,
+plus MKV comment/description or MP4 handler_name; validated attachment tags remain.
+Overrides preserve unrelated tags; null retains, empty text clears, false clears a
+flag. Unsupported tag names are disclosed individually in acknowledgement warnings.
+Generated encoder/duration/brand metadata is not a user-tag preservation guarantee.
+
+Independent output validation compares promised tags to source values; MP4's
+previous language/title uncertainty remains explicitly acknowledged. No byte-identical
+metadata or arbitrary tag round trip is promised. Version 1 plans require regeneration
+and fresh review; old revisions and confirmations cannot authorize version 2.
+Inspection schema and extraction presentation version remain 1; extraction still
+explicitly excludes metadata. Existing mappings and acknowledgement rules are unchanged.
+
+Additional tested candidates: VP9 video and Opus audio copied from MP4 to MKV;
+mov_text to MKV explicitly encodes SubRip and requires formatting acknowledgement.
+No audio/video encoder is generated. Hosted evidence is required before readiness.
+DTS, AC-3/E-AC-3, ASS/SSA, bitmap subtitles and arbitrary combinations stay blocked.
+
+## PR-08 wizard interaction adapter
+
+Public plan schemas, revisions and all-occurrence code acknowledgements are unchanged.
+One explicit final GUI decision may request acknowledgement and then confirmation,
+provided the regenerated plan, complete issues, intent, generation and revision still
+match the reviewed evidence and no pending warnings/errors remain. Merely displaying
+Review never supplies either authority. See ADR-036 and document 17.

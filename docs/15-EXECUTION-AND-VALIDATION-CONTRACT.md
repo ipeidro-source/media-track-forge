@@ -9,6 +9,11 @@ see document 16. There is no new CLI, GUI, video/audio transcoding or release wo
 
 ## API and explicit confirmation
 
+PR-08 uses regenerated remux plan version 2 (contract 14) for explicit compatible
+container/stream metadata preservation. Independently validate promised container
+tags against output; existing layout/timing/publication/cancellation protections
+remain. Old plan revisions cannot authorize the new policy.
+
 ```python
 from mediatrack_forge.application.execution import RemuxExecutionService
 from mediatrack_forge.domain.execution import ExecutionRequest, ProcessConfiguration
@@ -30,6 +35,14 @@ not authentication or proof that a human clicked a GUI. No boolean authorizes a
 different revision. `ProcessConfiguration` also accepts trusted `ffmpeg`/`ffprobe`
 executable overrides; otherwise PATH is used. Timeouts must be finite and positive.
 There are no arbitrary command fragments or user-supplied FFmpeg option strings.
+
+PR-08 packet-scan correction adds optional `packet_scan_timeout_seconds=300` to
+ProcessConfiguration for each extraction completeness probe. Metadata inspection
+remains at `probe_timeout_seconds=30`; FFmpeg execution has its own timeout. All
+configured limits are finite positive values checked before staging. Remux validation
+retains its existing metadata timeout. Extraction scans observe per-job cancellation
+without changing OutputValidator's metadata timeout argument or publication authority.
+Contract 16 records the confirmed source timeout, diagnostics and per-process bounds.
 
 `RemuxExecutionService` is synchronous and GUI-independent, suitable for a caller's
 worker thread. Inspection, managed process, output validation and staging ports
@@ -280,3 +293,14 @@ network filesystem operations can outwait subprocess deadlines; the GUI waits fo
 safe worker completion and never force-publishes or deletes potentially active data.
 POSIX mounted-network identification remains outside existing guarantees; this
 Windows input change does not certify remote output filesystems.
+
+## PR-08 explicit wizard decision
+
+The final GUI button replaces the old extra confirmation popup, not the backend
+confirmation requirement. DesktopController separately acknowledges captured pending
+warning codes for the exact reviewed revision, verifies unchanged evidence, then sets
+reviewed_revision and confirmed_revision to that same revision in ExecutionRequest.
+Without warnings the explicit click is still mandatory. A changed/failed/stale reply,
+cancellation or superseding intent cannot auto-launch. Independent backend regeneration,
+validation, cancellation and publication are unchanged. Safe Start over is UI state
+reset only after verified terminal cleanup and never removes sources or published files.

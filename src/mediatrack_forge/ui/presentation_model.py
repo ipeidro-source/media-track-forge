@@ -1,7 +1,9 @@
 """Display-independent immutable editing intent and generation-safe UI orchestration."""
 
+import os
 from collections.abc import Callable
 from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Literal, TypedDict, Unpack, cast
 
 from mediatrack_forge.application.control import ExecutionControl
@@ -30,6 +32,7 @@ from mediatrack_forge.domain.planning import (
     TrackSelection,
 )
 from mediatrack_forge.infrastructure.ffprobe import FFprobeAdapter
+from mediatrack_forge.infrastructure.planning_paths import destination_path
 from mediatrack_forge.ui.worker import Worker, WorkerReply
 
 
@@ -67,6 +70,36 @@ class DesktopBackend:
         return self.inspector.inspect(
             path, timeout_seconds=self.configuration.probe_timeout_seconds
         )
+
+    @staticmethod
+    def destination_feedback(intent: EditingIntent, extension: str) -> str:
+        try:
+            path = destination_path(intent.destination)
+            if path.suffix.lower() != "." + extension:
+                return "The filename extension must match the selected output format."
+            if os.path.lexists(path):
+                return "Destination exists. Choose a new filename; overwriting is unavailable."
+            if any(path == asset.source.path for asset in intent.sources):
+                return "Choose a filename different from every source."
+            if not path.parent.is_dir():
+                return "Choose an existing local output folder."
+            return ""
+        except (OSError, ValueError, RuntimeError):
+            return "Choose a supported local output path. Network destinations are unavailable."
+
+    @staticmethod
+    def suggest_destination(intent: EditingIntent, filename: str) -> str:
+        parent = Path(intent.destination).parent if intent.destination else Path.home()
+        name = Path(filename)
+        for number in range(1, 101):
+            candidate = parent / f"{name.stem}{'' if number == 1 else f'-{number}'}{name.suffix}"
+            try:
+                path = destination_path(str(candidate))
+                if not os.path.lexists(path) and path.parent.is_dir():
+                    return str(path)
+            except (OSError, ValueError, RuntimeError):
+                break
+        return ""
 
     def import_subtitles(
         self, paths: tuple[str, ...]
@@ -133,8 +166,12 @@ class DesktopController:
         self.close_pending = False
         self.closed = False
         self.recovery_required = False
+        self.destination_feedback = ""
+        self.inspection_revision = 0
+        self._authorization: tuple[int, EditingIntent, OperationPlan, frozenset[str]] | None = None
 
     def invalidate(self) -> None:
+        self._authorization = None
         self.generation += 1
         self.plan = None
         self.reviewed_revision = None
@@ -142,6 +179,7 @@ class DesktopController:
         self.error = None
         self.result = None
         self.progress = None
+        self.destination_feedback = ""
 
     def _editable(self) -> None:
         if self.worker.busy or self.closed or self.recovery_required:
@@ -162,7 +200,6 @@ class DesktopController:
 
     def open_media(self, path: str) -> None:
         self._editable()
-        self.intent = EditingIntent()
         self.invalidate()
         self._start("inspect", lambda: self.backend.inspect(path))
 
@@ -172,6 +209,17 @@ class DesktopController:
             raise ValueError("Open primary media before adding SRT files.")
         self.invalidate()
         self._start("subtitles", lambda: self.backend.import_subtitles(paths))
+
+    def check_destination(self, extension: str) -> None:
+        self._editable()
+        intent = self.intent
+        self._start("destination", lambda: self.backend.destination_feedback(intent, extension))
+
+    def suggest_destination(self, filename: str) -> None:
+        self._editable()
+        self.invalidate()
+        intent = self.intent
+        self._start("suggest", lambda: self.backend.suggest_destination(intent, filename))
 
     def stream(self, reference: StreamReference) -> Stream:
         return next(
@@ -263,6 +311,48 @@ class DesktopController:
         )
 
     @property
+    def can_authorize(self) -> bool:
+        return (
+            not self.worker.busy
+            and not self.closed
+            and not self.recovery_required
+            and self.plan is not None
+            and self.plan.intrinsically_valid
+            and (bool(self.plan.pending_warnings) or self.plan.execution_allowed)
+            and self.reviewed_revision == self.plan.revision
+            and self._authorization is None
+        )
+
+    def accept_and_execute(self) -> None:
+        """One explicit user decision; acknowledgement and confirmation stay separate."""
+        if not self.can_authorize or self.plan is None:
+            raise ValueError("Review the current valid plan before executing.")
+        plan = self.plan
+        if not plan.pending_warnings:
+            self.execute(plan.revision)
+            return
+        codes = frozenset(plan.pending_warnings)
+        self._authorization = (self.generation, self.intent, plan, codes)
+        try:
+            self.acknowledge(plan.effective_acknowledged_warnings | codes, plan.revision)
+        except Exception:
+            self._authorization = None
+            raise
+
+    def start_over(self) -> None:
+        self._editable()
+        if (
+            self.result is None
+            or not self.result.cleanup_complete
+            or self.result.state not in ("completed", "cancelled", "failed", "timed_out")
+        ):
+            raise ValueError("Wait for a verified terminal result before starting over.")
+        self.invalidate()
+        self.intent = EditingIntent()
+        self.close_pending = False
+        self.status = "Open a media file to begin."
+
+    @property
     def can_execute(self) -> bool:
         return (
             not self.worker.busy
@@ -291,6 +381,7 @@ class DesktopController:
         self._start("execute", lambda: self.backend.execute(request, control), control=control)
 
     def cancel(self) -> None:
+        self._authorization = None
         if self.worker.cancel():
             self.status = "Cancelling; waiting for safe backend termination..."
         elif self.worker.busy:
@@ -300,6 +391,7 @@ class DesktopController:
         if self.closed or reply.generation != self.generation:
             return
         if reply.error is not None:
+            self._authorization = None
             if reply.kind == "execute":
                 self.recovery_required = True
             self.error = reply.error
@@ -309,6 +401,7 @@ class DesktopController:
                 self.status += " Termination/cleanup is unverified; keep recovery details visible."
             return
         if reply.kind == "inspect":
+            self.inspection_revision += 1
             asset = cast(MediaAsset, reply.value)
             self.intent = EditingIntent(
                 sources=(asset,),
@@ -317,6 +410,23 @@ class DesktopController:
                 ),
             )
             self.status = "Inspected. All streams initially included; review output compatibility."
+        elif reply.kind == "destination":
+            self.destination_feedback = cast(str, reply.value)
+            self.status = (
+                self.destination_feedback
+                or "New local destination available; execution will recheck it."
+            )
+        elif reply.kind == "suggest":
+            path = cast(str, reply.value)
+            if path:
+                self.intent = replace(self.intent, destination=path)
+                self.status = (
+                    "Suggested a free filename. Review before execution; availability is rechecked."
+                )
+            else:
+                self.status = (
+                    "Choose an existing supported local output folder, then try a new filename."
+                )
         elif reply.kind == "subtitles":
             imported = cast(tuple[tuple[MediaAsset, ExternalTrack], ...], reply.value)
             known = {a.source for a in self.intent.sources}
@@ -325,6 +435,7 @@ class DesktopController:
                 if asset.source not in known:
                     unique.append((asset, track))
                     known.add(asset.source)
+            skipped = len(imported) - len(unique)
             imported = tuple(unique)
             self.intent = replace(
                 self.intent,
@@ -336,9 +447,41 @@ class DesktopController:
                     for a, _ in imported
                 ),
             )
-            self.status = "SRT sources added. Review track metadata and defaults."
+            self.status = f"Added {len(imported)} SRT source(s)."
+            if skipped:
+                self.status += (
+                    f" Skipped {skipped} already-present source(s); files remain untouched."
+                )
         elif reply.kind in ("plan", "acknowledge"):
             plan = cast(OperationPlan, reply.value)
+            authorization, self._authorization = self._authorization, None
+            if reply.kind == "acknowledge" and authorization is not None:
+                generation, intent, reviewed, codes = authorization
+                if (
+                    generation != self.generation
+                    or intent != self.intent
+                    or self.plan != reviewed
+                    or self.reviewed_revision != reviewed.revision
+                    or plan.revision != reviewed.revision
+                    or plan.issues != reviewed.issues
+                    or not plan.intrinsically_valid
+                    or not plan.execution_allowed
+                    or plan.pending_warnings
+                    or plan.effective_acknowledged_warnings
+                    != reviewed.effective_acknowledged_warnings | codes
+                ):
+                    self.invalidate()
+                    self.plan = plan
+                    self.reviewed_revision = plan.revision
+                    self.error = (
+                        "The reviewed plan or warnings changed. Review and choose Execute again."
+                    )
+                    self.status = self.error
+                    return
+                self.plan = plan
+                self.reviewed_revision = plan.revision
+                self.execute(reviewed.revision)
+                return
             if reply.kind == "acknowledge" and self.reviewed_revision != plan.revision:
                 self.invalidate()
                 self.error = (
@@ -360,7 +503,9 @@ class DesktopController:
                 terminal=True,
             )
             self.recovery_required = not self.result.cleanup_complete
-            self.status = result_text(self.result)
+            self.status = (
+                f"{self.result.state.replace('_', ' ').capitalize()}. See Execution for results."
+            )
             self.confirmed_revision = None
             self.reviewed_revision = None
         else:

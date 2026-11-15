@@ -27,6 +27,7 @@ class ProcessConfiguration:
     ffprobe: str | None = None
     timeout_seconds: float = 300.0
     probe_timeout_seconds: float = 30.0
+    packet_scan_timeout_seconds: float = 300.0
 
 
 @dataclass(frozen=True)

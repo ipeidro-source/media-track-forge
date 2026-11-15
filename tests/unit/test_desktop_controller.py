@@ -43,7 +43,9 @@ def model(tmp_path: Path) -> DesktopController:
             stream(23, "data", "bin_data"),
         ],
     )
-    source = replace(source, format=replace(source.format, tags=(("title", "Synthetic"),)))
+    source = replace(
+        source, format=replace(source.format, tags=(("unvalidated_tag", "Synthetic"),))
+    )
     controller.apply(WorkerReply(0, "inspect", source))
     controller.change(destination=str(tmp_path / "out.mkv"))
     return controller
@@ -213,7 +215,7 @@ def test_external_add_edit_remove_and_primary_replacement(
     backend.inspect.return_value = source
     model.backend = backend
     model.open_media(str(source.source.path))
-    assert model.plan is None and not model.intent.sources
+    assert model.plan is None and model.intent.sources
     settle(model)
     assert model.intent.sources == (source,) and not model.intent.external_tracks
     model.apply(WorkerReply(model.generation - 1, "inspect", model.intent.sources[0]))

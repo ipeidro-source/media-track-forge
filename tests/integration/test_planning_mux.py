@@ -78,7 +78,7 @@ def execute_test_plan(
     ]
     for item in plan.included:
         value = plan.arguments[plan.arguments.index(f"-c:{item.output_index}") + 1]
-        assert value == ("mov_text" if item.action == "convert_subtitle" else "copy")
+        assert value == (item.target_codec if item.action == "convert_subtitle" else "copy")
         if item.source_stream.kind in ("video", "audio"):
             assert value == "copy"
     # This is the only execution site: a temporary integration-test output, not application code.
@@ -101,6 +101,8 @@ CASES = [
     ("h264", "mp3", "mp4"),
     ("h264", "mp3", "mkv"),
     ("mpeg4", "mp3", "mkv"),
+    ("vp9", "aac", "mkv"),
+    ("h264", "opus", "mkv"),
 ]
 
 
@@ -108,8 +110,14 @@ CASES = [
 def test_enabled_video_audio_copy_matrix(
     tmp_path: Path, planning_tools: tuple[str, str], video: str, audio: str, target: str
 ) -> None:
-    source_path = tmp_path / ("source.avi" if video == "mpeg4" else "source.mkv")
-    encoder = {"h264": "libx264", "hevc": "libx265", "mpeg4": "mpeg4"}[video]
+    source_path = tmp_path / (
+        "source.avi"
+        if video == "mpeg4"
+        else "source.mp4"
+        if video == "vp9" or audio == "opus"
+        else "source.mkv"
+    )
+    encoder = {"h264": "libx264", "hevc": "libx265", "mpeg4": "mpeg4", "vp9": "libvpx-vp9"}[video]
     args = [
         *VIDEO,
         *AUDIO,
@@ -122,7 +130,7 @@ def test_enabled_video_audio_copy_matrix(
         "-threads",
         "1",
         "-c:a",
-        "libmp3lame" if audio == "mp3" else "aac",
+        {"mp3": "libmp3lame", "aac": "aac", "opus": "libopus"}[audio],
     ]
     if video in ("h264", "hevc"):
         args += ["-preset", "ultrafast"]
@@ -143,7 +151,7 @@ def test_enabled_video_audio_copy_matrix(
 
 
 @pytest.mark.parametrize(
-    "codec,target", [("subrip", "mkv"), ("subrip", "mp4"), ("mov_text", "mp4")]
+    "codec,target", [("subrip", "mkv"), ("subrip", "mp4"), ("mov_text", "mp4"), ("mov_text", "mkv")]
 )
 def test_enabled_subtitle_matrix(
     tmp_path: Path, planning_tools: tuple[str, str], codec: str, target: str

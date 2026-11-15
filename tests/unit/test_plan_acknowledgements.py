@@ -38,7 +38,7 @@ def base(tmp_path: Path) -> OperationPlan:
         [stream(0, "video", "h264"), stream(2, "video", "hevc"), stream(3, "audio", "aac")],
     )
     # A constant warning category present for both MKV and MP4.
-    source = replace(source, format=replace(source.format, tags=(("comment", "original"),)))
+    source = replace(source, format=replace(source.format, tags=(("unvalidated_tag", "original"),)))
     return OperationPlanningService().plan(
         (source,),
         tuple(select(source, i) for i in (0, 2, 3)),

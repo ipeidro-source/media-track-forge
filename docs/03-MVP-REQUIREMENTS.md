@@ -11,6 +11,11 @@
 
 ## Stream editing and output
 
+PR-08 approved refinement: preserve compatible existing metadata across unrelated
+edits, disclose concrete unsupported tags and validate promised values independently.
+Explicit metadata clearing remains distinct from retaining the source value. Tested
+mov_text-to-SubRip conversion into MKV requires formatting-loss acknowledgement.
+
 - **FR-05:** Explicitly retain/remove tracks, reorder tracks within their types, and set supported language, title, and default metadata.
 - **FR-06:** Remux without re-encoding video or audio when the output container supports the codecs. MKV and MP4 are output formats; AVI is initially input-only.
 - **FR-07:** For MP4, convert supported text subtitles to `mov_text` after warning that styling may change. For MKV, copy compatible SRT subtitle streams. Never silently convert bitmap subtitle images to text.
@@ -91,3 +96,13 @@ Tk tests separately cover controls/review/confirmation/progress/cancel/close and
 real video-only operation. Controlled GUI fakes are not FFmpeg evidence. Exact
 counts/platform runs belong in the PR. Manual Windows 10/11 keyboard/accessibility/
 OS-DPI checks and packaging remain acceptance requirements; no full MVP is claimed.
+
+## PR-08 owner-approved wizard interaction
+
+FR-15 uses sequential Media → Metadata → Operation → Review → Execution, stable
+large startup sizing, searchable local ISO 639-2 selection (UX-F37) and a controlled
+failed-inspection modal (UX-F38). FR-10 review generates automatically and displays all
+warnings/errors. One final explicit decision performs logically separate revision-bound
+acknowledgement and confirmation; no extra popup is required. Exact selected extraction
+identity, editable imported SRT metadata, source safety, no-overwrite validation and
+safe reset/close remain mandatory. ADRs 036/044 and document 17 are normative.

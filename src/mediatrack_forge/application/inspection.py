@@ -5,7 +5,7 @@ import os
 import re
 import stat
 from pathlib import Path
-from typing import Protocol
+from typing import Literal, Protocol
 
 from mediatrack_forge.domain.media import MediaAsset, MediaSource
 
@@ -34,6 +34,14 @@ class ProbeTimeoutError(InspectionError):
 
 class ProbeResponseError(InspectionError):
     exit_code = 6
+
+
+class ProbeOutputLimitError(ProbeResponseError):
+    """A bounded pipe overflow; channel is controlled, never external diagnostic text."""
+
+    def __init__(self, channel: Literal["stdout", "stderr"]) -> None:
+        self.channel = channel
+        super().__init__(f"ffprobe {channel} exceeded the safety limit.")
 
 
 class MediaProbe(Protocol):

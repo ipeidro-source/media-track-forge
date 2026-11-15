@@ -18,6 +18,37 @@
 
 ## Current open risks and decisions (November 15, 2026)
 
+- Original MKV retest at `59408c0` failed inside the old combined packet-scan stage.
+  That code alone could not identify the operation. The owner's direct read-only
+  result confirms a source-count timeout at 30.078 seconds on a 1,660,724,038-byte
+  UNC file. Complete scans had incorrectly shared the 30-second metadata budget.
+  The correction separates an explicit default 300-second packet-scan limit, observes
+  cancellation, and keeps every completeness check (contract 16). A source timeout
+  does not prove an SMB fault or guarantee success within 300 seconds. No sampling,
+  retries or larger capture bounds are introduced; owner-reported original-file success is recorded in document 18.
+- The long synthetic HEVC/E-AC-3/SubRip fixture also exposes a separate nonzero
+  clock-origin/rebasing mismatch after both counts pass. Timing rejection remains
+  intact; this does not explain a failure still inside packet scanning. Any timestamp
+  correction must preserve independently verified cue timing rather than widen tolerance.
+
+- PR-08: synthetic MP4 gaps reproduce clear-sample packet mismatch. The owner's MKV
+  source-count timeout is a distinct failure, confirmed by direct read-only diagnosis
+  rather than attributed to MP4 clear samples. Original-file extraction after correction
+  is now owner-reported successful; complete SMB transport/failure acceptance remains pending.
+- PR-08 proposes plan version 2 for metadata preservation (ADR-042), requiring fresh
+  review for v1 callers. Compatible known tags are explicitly mapped and validated;
+  arbitrary tags, casing and FFmpeg-generated tags cannot be guaranteed byte-identical.
+  Unsupported names require acknowledgement. Alternative implicit metadata copying
+  was rejected as unverifiable. Owner approval of the migration is pending review.
+- Subtitle packet evidence uses the existing 8 MiB probe cap and 100,000 cue limit;
+  large dumps, unavailable durations or unsupported text layouts block safely.
+- Multi-primary media composition remains future product scope, not PR-08 functionality.
+- PR-08 language selection uses a local searchable ISO 639-2 catalog; the backend
+  retains validation authority. It does not rewrite original unknown codes or claim
+  a complete language registry.
+  Native scaling tests do not certify OS DPI, screen readers, multiple monitors or
+  consumer Windows ergonomics. Final owner review of the revised workflow is pending.
+
 - NAS/SMB output is an owner-approved **new requirement**, not implemented; choose validated secure staging, exclusive no-overwrite publication and recovery under disconnect/ACL/race conditions. Real share tests required.
 - D24 mapped/UNC read support is implemented, but genuine SMB transport acceptance is still pending.
 - Windows 10/11 manual UI, accessibility, OS DPI and portable executable acceptance are pending.
@@ -142,11 +173,12 @@ D14-D18 resolve SRT encoding/structure, initial extraction and backend cancellat
 progress within document 16. Older importer/extraction deferrals are historical.
 Strict UTF-8/BOM avoids guessing encodings; unsupported legacy files need conversion
 outside the product. Cue timing supports 0..999 hours, 8 MiB and 100,000 cues.
-Extraction enables only six exact source/codec/format combinations; AC-3, MKV video/
-audio extraction and other profiles stay blocked. Positive equal full packet counts
+PR-05 initially enabled six exact source/codec/format combinations; PR-08 adds
+Matroska MP3 extraction. AC-3, MKV video/AAC extraction and other profiles stay blocked. Positive equal full packet counts
 provide elementary truncation evidence when timing is absent, not full decoding or
 content identity. MP4 AAC edit-list priming/padding is not representable in ADTS.
-Mov_text empty/clear sample layouts that change packet count fail conservatively.
+PR-05 rejected mov_text empty/clear samples when packet counts changed; PR-08
+replaces that subtitle-only assumption with independent text/timing cue evidence.
 Trusted synchronous listeners must return promptly or they can delay cancellation/
 timeout observation; the backend owns no unbounded event queue. GUI integration must
 use bounded latest-value delivery. Source snapshot/noncryptographic identity, trusted
@@ -185,3 +217,19 @@ is unavailable in this environment (no mapping; enumeration unavailable); offlin
 simulation and actual local tests must not be presented as proof of remote access.
 The explicit real-share utility/manual procedure is in document 17. Network output
 requires a separate capability/safety decision. No credentials or shares are created.
+
+## Owner-approved wizard assumptions and residual risks
+
+The five-step design supersedes the compact tab workflow. One explicit final click
+represents both the user's warning decision and execution confirmation, but internal
+acknowledgement regeneration and exact revision confirmation remain separate. An
+unmatched/failed acknowledgement never continues automatically; backend checks remain.
+A local catalog of more than 70 terminology codes avoids a network/framework dependency;
+it is not the complete ISO registry. Existing unknown/bibliographic codes remain exact,
+including when another field is edited; explicitly choosing Unspecified clears them.
+Imported tracks reuse the same Metadata step through a contextual action. These are
+reversible presentation choices; alternatives and rationale are in ADR-044.
+Primary work-area startup sizing does not prove multi-monitor or real OS-DPI ergonomics.
+The owner must review the new workflow, keyboard/screen-reader limitations, small-screen
+layouts and safe recovery presentation. A successful original UNC extraction does not
+certify SMB dialect, disconnection recovery, ACL failures or network output safety.

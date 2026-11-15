@@ -67,6 +67,10 @@ Phase 1 adds `TranscodePlan` and codec/quality settings. Phase 2 adds `BatchJob`
 
 ## Implemented PR-03 planning entities
 
+PR-08 proposes plan version 2 with immutable `output_format_tags`, included in the
+revision and serialized explicitly. MetadataIntent keep/change/clear semantics and
+source snapshots are unchanged; contract 14 defines the migration from version 1.
+
 | Entity | Actual responsibility |
 | --- | --- |
 | StreamReference | Full immutable PR-02 source identity plus original stream index |

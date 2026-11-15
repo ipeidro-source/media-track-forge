@@ -17,6 +17,7 @@ EXTRACTION_MATRIX = (
     ("hevc", "mp4", "h265", "hevc", "hevc_mp4toannexb"),
     ("aac", "mp4", "aac", "adts", None),
     ("mp3", "avi", "mp3", "mp3", None),
+    ("mp3", "matroska", "mp3", "mp3", None),
     ("subrip", "matroska", "srt", "srt", None),
     ("mov_text", "mp4", "srt", "srt", None),
 )

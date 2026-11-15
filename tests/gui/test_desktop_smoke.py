@@ -17,11 +17,26 @@ import pytest
         "test_native_theme_scaling_and_resize[Dark-1.25]",
         "test_native_theme_scaling_and_resize[Light-1.5]",
         "test_native_failure_preserves_published_cleanup_evidence",
+        "test_refined_metadata_extraction_destination_and_recovery",
+        "test_refined_progress_repeated_execution_and_variable_teardown",
+        "test_refined_external_subtitle_group_and_duplicate_feedback",
+        "test_native_language_search_clear_unknown_and_keyboard",
+        "test_native_invalid_plan_blocks_explicit_execute",
+        "test_native_keyboard_navigation_and_exact_selected_extraction",
     ],
 )
 def test_native_desktop_smoke(case: str) -> None:
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", f"tests/gui/scenarios.py::{case}", "-v", "-s"],
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            f"tests/gui/scenarios.py::{case}",
+            "-v",
+            "-s",
+            "-W",
+            "error",
+        ],
         capture_output=True,
         timeout=60,
     )

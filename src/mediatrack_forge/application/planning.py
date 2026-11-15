@@ -7,6 +7,7 @@ from typing import Literal, cast
 from mediatrack_forge.application.inspection import InvalidInputError, snapshot_source
 from mediatrack_forge.domain.compatibility import codec_action
 from mediatrack_forge.domain.media import MediaAsset, Stream
+from mediatrack_forge.domain.metadata import FORMAT_TAGS, STREAM_TAGS, compatible_tags
 from mediatrack_forge.domain.planning import (
     CompatibilityIssue,
     ExcludedStream,
@@ -69,17 +70,24 @@ class OperationPlanningService:
                         "INVALID_STREAM_IDENTITY", "error", "Source stream identities are invalid."
                     )
                 lookup[reference] = input_index, stream
-            if asset.format.tags:
+            kept_format = (
+                compatible_tags(asset.format.tags, FORMAT_TAGS) if input_index == 0 else ()
+            )
+            lost_format = set(dict(asset.format.tags)) - set(dict(kept_format))
+            if any("\x00" in value for _, value in kept_format):
+                issue("INVALID_METADATA", "error", "Container metadata cannot contain a NUL byte.")
+            if lost_format:
                 issue(
                     "FORMAT_METADATA_EXCLUDED",
                     "warning",
-                    "Global container tags are not copied by the initial planning policy.",
+                    f"Container tags cannot be preserved: {', '.join(sorted(lost_format))}.",
+                    suggestion="Keep the source for these tags; inspect details before proceeding.",
                 )
             preservation.append(
                 PreservationDecision(
                     f"format_tags:{input_index}",
-                    "exclude",
-                    "Global metadata auto-copy is disabled.",
+                    "uncertain" if lost_format else "preserve",
+                    "Compatible primary tags are preserved; other input tags are disclosed.",
                 )
             )
 
@@ -211,12 +219,14 @@ class OperationPlanningService:
             kept_tags = {
                 key: val
                 for key, val in tags.items()
-                if key in ("language", "title")
+                if key.lower()
+                in STREAM_TAGS.get(output.container, frozenset()) - {"filename", "mimetype"}
                 or (stream.kind == "attachment" and key in ("filename", "mimetype"))
             }
             for key in ("language", "title"):
                 requested = getattr(intent, key)
                 if requested is not None:
+                    kept_tags = {k: v for k, v in kept_tags.items() if k.lower() != key}
                     kept_tags[key] = requested
                 preservation.append(
                     PreservationDecision(
@@ -228,7 +238,11 @@ class OperationPlanningService:
                         reference,
                     )
                 )
-            extra_tags = set(tags) - set(kept_tags)
+            extra_tags = {
+                key
+                for key in tags
+                if key.lower() not in STREAM_TAGS.get(output.container, frozenset())
+            }
             if any("\x00" in value for value in kept_tags.values()):
                 issue(
                     "INVALID_METADATA", "error", "Output metadata contains a NUL byte.", reference
@@ -244,14 +258,15 @@ class OperationPlanningService:
                 issue(
                     "STREAM_METADATA_EXCLUDED",
                     "warning",
-                    "Stream tags outside the supported metadata policy will be excluded.",
+                    f"Stream tags cannot be preserved: {', '.join(sorted(extra_tags))}.",
                     reference,
+                    "Keep the source for unsupported tags; compatible tags remain preserved.",
                 )
             preservation.append(
                 PreservationDecision(
                     "other_tags",
                     "exclude" if extra_tags else "preserve",
-                    "Only language/title and validated attachment filename/MIME tags are copied.",
+                    "Compatible tags survive edits; unsupported tags are disclosed by name.",
                     reference,
                 )
             )
@@ -301,7 +316,7 @@ class OperationPlanningService:
                 issue(
                     "SUBTITLE_FORMATTING_MAY_CHANGE",
                     "warning",
-                    "Explicit SubRip to mov_text subtitle encoding may change formatting.",
+                    f"Converting {stream.codec} to {action[1]} may change subtitle formatting.",
                     reference,
                 )
             included.append(
@@ -434,6 +449,9 @@ class OperationPlanningService:
             tuple(issues),
             acknowledged_warnings,
             acknowledged_revision,
+            output_format_tags=compatible_tags(sources[0].format.tags, FORMAT_TAGS)
+            if sources
+            else (),
         )
         if plan.intrinsically_valid and not plan.pending_warnings:
             plan = replace(plan, arguments=build_arguments(plan))

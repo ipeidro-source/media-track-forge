@@ -250,13 +250,21 @@ def test_publication_cleanup_failure_is_explicit(execution_request: ExecutionReq
 
 
 @pytest.mark.parametrize("seconds", [0.0, -1.0, float("nan"), float("inf")])
+@pytest.mark.parametrize(
+    "field", ["timeout_seconds", "probe_timeout_seconds", "packet_scan_timeout_seconds"]
+)
 def test_invalid_timeout_never_stages_or_runs(
-    execution_request: ExecutionRequest, seconds: float
+    execution_request: ExecutionRequest, seconds: float, field: str
 ) -> None:
     runner = Mock()
     store = Mock()
     configured = replace(
-        execution_request, configuration=ProcessConfiguration(timeout_seconds=seconds)
+        execution_request,
+        configuration=ProcessConfiguration(
+            timeout_seconds=seconds if field == "timeout_seconds" else 30,
+            probe_timeout_seconds=seconds if field == "probe_timeout_seconds" else 30,
+            packet_scan_timeout_seconds=seconds if field == "packet_scan_timeout_seconds" else 30,
+        ),
     )
     result = service(execution_request, runner=runner, staging=store).execute(configured)
     assert result.diagnostics[0].code == "INVALID_TIMEOUT"

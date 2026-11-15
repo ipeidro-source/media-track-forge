@@ -1,6 +1,6 @@
-# Windows desktop interface - PR-06
+# Windows desktop interface - PR-06 and PR-08
 
-**Current state (November 15, 2026):** PR-06 is merged on main at `9298fd46`; CI 43630367616 passed. D19–D24 are implemented with real SMB input verification and owner Windows 10/11 usability acceptance pending. The GUI contract below remains normative; packaging and safe remote outputs are future separately gated work. No G4/full MVP acceptance or Release is inferred from smoke tests.
+**Current state (November 15, 2026):** PR-06 is merged on main at `9298fd46`; CI 43630367616 passed. D19–D24 are implemented with real SMB input verification and owner Windows 10/11 usability acceptance pending. PR-08 refines the GUI on a topic branch after passing backend CI 43740079375; packaging and safe remote outputs are future separately gated work. No G4/full MVP acceptance or Release is inferred from smoke tests.
 
 ## Setup and launch
 
@@ -18,7 +18,7 @@ mediatrack-forge-desktop
 
 FFmpeg/ffprobe remain external trusted native programs on PATH. The existing
 `mediatrack-forge inspect` CLI and inspection/planning/execution contracts 13–16
-are unchanged. Backend and presentation-model imports do not initialize a display
+retain their safety boundaries; PR-08 remux metadata uses plan v2. Backend and presentation-model imports do not initialize a display
 or import CustomTkinter; the desktop launcher loads the window lazily.
 
 The selected runtime dependency is `customtkinter==6.0.0`, verified against
@@ -28,79 +28,128 @@ is pinned to 0.8.0 in the complete development snapshot; existing packaging 26.3
 also satisfies its requirements. No unrelated dependencies were upgraded. Runtime
 installation now includes these GUI dependencies even for CLI users, but backend
 use needs no display. Tk is supplied by Python/OS, not installed by pip. Review
-CustomTkinter's published CC0 and darkdetect's license alongside the unresolved
-application license before PR-07 distribution. No binaries are bundled here.
+CustomTkinter's published CC0 and darkdetect's license alongside the MIT application license before portable distribution. No binaries are bundled here.
 
-## One window, three areas
+## One window, five sequential steps
 
-Media contains Open Media (native file dialog), Add SRT files (multi-selection),
-Remove external, source/container/duration/size/dimensions/count summary and a
-scrollable track table. Inspection success never implies output compatibility.
-Opening a new primary clears external sources, editing intent and review state.
+The owner-approved PR-08 follow-up replaces the three-tab interaction with one
+window and five steps: **Media → Metadata → Operation → Review → Execution**.
+`ui/wizard.py` owns navigation only; the same display-independent DesktopController,
+immutable EditingIntent, backend services and generation-safe worker remain authoritative.
+The step indicator is informational: it cannot bypass inspection, planning or authorization.
+Back/Next preserve valid pending work. Busy work disables navigation and edits.
+Execution has no Back path, including after completion; use safe Start over instead.
 
-The table displays inclusion, original index, kind, codec, language/title,
-default/forced flags, requested within-kind ordering and primary/external source.
-Sorting column headings is presentation-only. Every row maps to a full immutable
-StreamReference; row position or row label is never a media index. Audio, video,
-subtitle, attachment, data and unknown streams remain visible. Initially every
-stream is included, preserving source order; unsupported selections/default
-conflicts remain visible blockers, never silently resolved or omitted. Explicit
-Include/exclude actions produce explicit selection intent. Zero audio/subtitles
-is valid for remux. Move up/down affects only peers of the same kind; final
-backend grouping and order are shown in the review.
+Start near 1100 × 800 logical pixels, bounded by the primary Windows work area and
+CustomTkinter window scaling. Read-only SPI_GETWORKAREA excludes the taskbar; a
+screen-size fallback is used off Windows or if that query fails. Normal resizing
+is supported. Opening/replacing media, navigation and Start over never reset geometry.
+All five content areas scroll. Tables have horizontal scrolling, fields expand,
+labels wrap and focus scrolls controls into view. Native widget scaling coverage is
+separate from actual Windows DPI and multiple-monitor acceptance.
 
-Metadata editing separates Keep original from Set value. Empty Set value explicitly
-clears language/title; Keep original maps to None. Default/Forced use Keep original,
-On and Off. Source snapshots remain immutable. Apply metadata saves changes;
-review also applies pending edits. Merely editing a field invalidates prior review,
-so an unapplied field can never leave Execute enabled. Navigating to another row
-saves previous pending metadata. Imported SRT metadata is kept consistent between
-the explicit selection and its ExternalTrack record. Duplicate imports are ignored
-by source identity, without deleting files. Removing an external source removes
-only session intent. Malformed SRT is reported through the existing validator.
+### Media
 
-Operation contains Remux/Extract mode, output format, native destination chooser,
-chapter policy, review, warning acknowledgements and Execute. MKV/MP4 and chapter
-restrictions are backend-authoritative. Select Use for extraction on one Media row
-to establish an exact original stream target. Available extensions come from
-ExtractionPlanningService policy discovery; the GUI has no separate compatibility
-matrix. Unsupported tracks remain inspectable and visible, with no fabricated
-conversion/extension. Changing mode preserves inspection but invalidates review.
-The save dialog never authorizes overwrite; the planner and exclusive publisher
-remain authoritative. Missing parents and changed inputs are rechecked by execution.
-No directories are created implicitly.
+Open Media (Ctrl+O) is available in Media only. Show filename and full source path,
+container, HH:MM:SS duration, IEC file size, resolution and stream counts. Detailed
+track editing belongs to Metadata and Operation. Next requires successful inspection.
+A valid replacement resets editing/review intent; failed replacement preserves source,
+selection and edits while invalidating review. Each user-initiated inspection failure
+shows one modal **Unable to open media** dialog with controlled explanatory text,
+including preservation of the previous workspace when applicable. Raw vendor logs or
+unexpected exception text never appear. The existing bounded controlled category
+remains in status; a second failure modal is not generated by polling.
 
-Execution presents phase, determinate/indeterminate progress, processed media time,
-Cancel and final result/validation evidence. Completed means validation, exclusive
-publication and normal cleanup succeeded. A failed result with published=true is
-shown with its actual destination and incomplete cleanup, never “no file created”.
-Source files and published results are never deleted by GUI actions.
+### Metadata
 
-## Review, acknowledgement and final confirmation
+The metadata list shows effective values and original indices. Select a track to edit
+Language, Title, Default and Forced. Apply saves pending output intent; Next and
+switching tracks save valid pending edits. Reset to original restores source values.
+Text and bold change markers do not rely on color. Invalid language input leaves the
+user on this step with an inline explanation. No metadata edit is required.
 
-Review invokes the existing planner on a captured immutable EditingIntent in the
-worker. Human-readable output shows all sources, exact destination/format, selection
-and metadata intent (including keep/clear), final maps/order, exclusions, codec
-actions, chapters/attachments preservation, bitstream filters and every diagnostic
-with its severity, source reference and available suggestion. Generated FFmpeg
-arguments are not editable through the GUI. Errors block execution; there is no
-ignore-errors control.
+Select language opens a small native Tk search dialog. Search by name or code;
+Down, arrows, Enter and Escape support keyboard use. A local catalog of more than
+70 ISO 639-2 terminology codes is used without a runtime network dependency. It is
+an intentionally bounded selection aid, not a complete registry or a replacement
+for backend validation. Code/name provenance: [Library of Congress ISO 639-2](https://www.loc.gov/standards/iso639-2/php/code_list.php).
+New selections store three-letter codes (for example fra/deu, not fr/de). Existing
+unknown or bibliographic codes remain exact, available as **Preserve original code**.
+**Unspecified** stores an explicit empty language intent, distinct from retaining an
+unknown source value. Title clearing, false flag intent and source immutability remain.
 
-Each warning code has an initially unchecked acknowledgement control. The review
-shows every occurrence and each checkbox states how many occurrences it covers.
-The explicit Acknowledge selected action rebuilds using that exact revision and
-selected codes. Partial acknowledgement leaves pending warnings; changed regenerated
-revision discards stale acknowledgement and requires another review. Opening the
-review does not grant acknowledgement. Execute is disabled until intrinsic validity,
-effective acknowledgement and the reviewed revision match. The separate Execute
-confirmation dialog defaults to No, describes the exact destination and constructs
-ExecutionRequest with that reviewed/confirmed revision only after Yes.
+### Operation
 
-Any source/external/order/inclusion/metadata/container/destination/chapter/mode/target
-edit invalidates the plan and review/confirmation. Monotonic generations reject
-superseded worker results. Completion consumes confirmation; another operation needs
-fresh review. The backend independently regenerates and checks everything before
-processing and publication, regardless of GUI state.
+This step owns grouped tracks, exact immutable source references and original indices,
+within-kind ordering, include/exclude, multi-SRT import/deduplication and contextual
+session-only removal. All initial source tracks remain included; unsupported tracks
+are never silently omitted. Sorting is presentation-only. No extraction track is
+chosen automatically. Metadata has its own list/editor; the Operation table shows
+current effective metadata without duplicating that editor. **Edit imported metadata**
+opens the same Metadata step for a selected imported SRT; Next returns to Operation.
+Removing an imported source never deletes its file.
+
+Configure output for Remux or Extract to show contextual settings. Backend discovery
+supplies extraction formats; there is no second compatibility matrix or hidden target
+selector. The selected Operation row is the exact extraction target, including original
+index; changing a selected extraction target clears its destination proposal without
+changing other tracks' inclusion. Imported SRT is already independent, so Extract is
+disabled for it. No selection or unsupported selection also disables Extract.
+
+The bottom **Remux** button is available with inspected media and no conflicting work;
+it reviews all intended included tracks. **Extract** reviews exactly the supported
+selected internal track. Both enter Review and automatically start planning. Intrinsically
+invalid remux intent can reach Review for actionable errors, but cannot execute.
+Choose MKV/MP4 for remux or the backend-supported extension for extraction, choose or
+edit a new local destination, optionally suggest a free filename, and set chapter
+preservation for remux. Changes invalidate stale review; incompatible format/target
+proposals are discarded. File checks/suggestions run on the existing worker. Native
+Save never offers overwrite; execution rechecks paths and publishes exclusively.
+
+### Review and the explicit execution decision
+
+There is no Review plan button: entering Review starts planning against captured
+immutable intent. While preparing, show working status and disable execution.
+Present Source → Changes → Destination, exact files, included/excluded tracks/order,
+copy/conversion, metadata changes, format, errors and material warnings. States are
+**Ready to execute**, **Warnings require acceptance** and **Cannot execute**. All
+warning occurrences remain visible in a scrollable summary, grouped by code with
+source/index and suggestions; complete technical plan details remain expandable.
+There are no per-warning checkboxes or Acknowledge selected action.
+
+The single final action is **Accept warnings & execute** when pending warnings exist,
+or **Execute operation** otherwise. No redundant confirmation popup follows it.
+Displaying Review never authorizes anything. That explicit click captures generation,
+immutable intent, reviewed plan/revision and exactly its pending warning codes. With
+warnings, DesktopController first calls the existing revision-bound acknowledgement
+rebuild. It then requires unchanged intent, current reviewed plan/revision, complete
+issue occurrences, intrinsic validity, no pending warnings and precisely the expected
+effective acknowledged codes. Only that matching acknowledgement reply can continue
+the captured decision into the separate revision-confirmed ExecutionRequest.
+
+Changed/rejected/failed/stale acknowledgement aborts continuation and remains in
+Review for renewed user action; unrelated worker replies cannot launch execution.
+Edits and cancellation revoke continuation, duplicate clicks are blocked, and closing
+during acknowledgement revokes launch before waiting for a safe reply. No-warning
+execution still requires the explicit click and exact revision confirmation. Backend
+source reinspection/regeneration, validation and publication checks are unchanged.
+ADRs 036 and 044 record the replacement of the previous two-click interaction.
+
+### Execution, Start over and Close
+
+Keep operation identity, phase, reliable percentage or activity, HH:MM:SS media position
+and separate elapsed time, cancellation, validation, output path, cleanup and optional
+technical diagnostics. No optimistic completion or fabricated percentage is introduced.
+Critical recovery details remain visible when technical details are collapsed.
+**Cancel operation** uses the backend control and waits for actual safe completion.
+
+After safely completed, cancelled or failed results, show **Start over** and **Close**.
+Start over invalidates generations and clears sources/external intent, selection,
+metadata fields, destinations, review/acknowledgement/confirmation, progress and results.
+It cancels obsolete destination callbacks and retains geometry/preferences, sources
+and published files. Reset is rejected while work, termination or cleanup is unverified.
+Recovery instructions stay visible and unsafe restart/close stay blocked; no force-close
+shortcut is provided. Close follows the existing safe controller lifecycle.
 
 ## Background work and lifecycle
 
@@ -145,8 +194,10 @@ changing another process's DPI configuration. Automated widget scaling checks us
 Window size can be adjusted for the desktop. Higher scaling and actual 100/125/150%
 Windows settings remain in the manual acceptance checklist.
 
-Ctrl+O opens media, Ctrl+R reviews, Ctrl+Enter requests execution confirmation and
-Escape requests cancellation. Alt+1/2/3 switch Media/Operation/Execution areas.
+Ctrl+O opens media in Media, Ctrl+R enters Review from Operation, Ctrl+Enter makes
+the explicit execution decision in Review, and Escape requests cancellation.
+Alt+Left/Right use guarded Back/Next; they do not jump forward through review.
+Each step gives focus to its primary control after layout.
 The table supports arrows, Space inclusion and Alt+Up/Down within-kind movement.
 Tab traversal reaches metadata/actions; adapted
 CustomTkinter button/option/checkbox canvases expose focus with a visible outline.
@@ -183,7 +234,7 @@ deadlines, rather than assuming immediate rendering. Missing Tk/display/media to
 fail the invoked smoke suite; no hidden skip or fake passing desktop is used.
 
 Smoke scenarios cover title/areas, track population/sorting/identity, explicit
-metadata clearing, review/checkboxes/confirmation, progress/cancellation, safe close,
+metadata clearing, sequential review/authorization, progress/cancellation, safe close,
 published cleanup-failure presentation, light/dark/widget scaling and teardown.
 Controlled backend cases validate GUI interaction only. A separately identified
 real GUI-to-backend synthetic H.264/AAC-to-video-only MP4 case validates actual
@@ -203,16 +254,20 @@ Manual Windows 10/11 checklist before final acceptance:
 
 1. Launch from a clean development environment; resize at 100/125/150% OS DPI.
 2. Inspect synthetic media; sort/select tracks and verify original indices.
-3. Edit keep/set/clear tags and flags, reorder peers, add/remove multiple SRT files.
-4. Review remux and extraction, resolve blockers and explicitly acknowledge warnings.
-5. Reject the first confirmation; verify no execution. Confirm a fresh reviewed plan.
+3. Edit/apply/clear/reset metadata and flags, revert highlighted values, reorder peers,
+   import duplicate/multiple SRTs and contextually remove one without deleting its file.
+4. Review remux and extraction; verify automatic planning, exact target/order and actionable blockers.
+5. Verify no execution before the final click, all warning occurrences visible, then
+   choose Accept warnings & execute or go Back. There is no second confirmation popup.
 6. Observe progress, cancel, then close during work; verify safe backend completion.
 7. Inspect published/failed/cancelled and cleanup evidence; originals remain intact.
+   Start over after each safe terminal state; verify empty Media and unchanged geometry.
+   Confirm incomplete cleanup blocks restart/close and retains recovery information.
 8. Check light/dark, full keyboard traversal, native pickers and screen-reader limits.
 
 No recent-files/history persistence, telemetry, protocol media URLs, GUI process runner,
 video/audio transcoding, batch, PyInstaller, portable ZIP, installer or release is
-introduced. PR-07 must address packaging, dependency notices/license, executable
+introduced. A separate future packaging PR must address dependency notices/license, executable
 smoke and owner-authorized release gates separately.
 
 ## D24 trusted Windows network media sources
@@ -267,9 +322,11 @@ output rejection and native volume classification. They are not real SMB evidenc
 Existing real local media and native GUI suites remain mandatory in all their
 required CI environments. Do not rename these simulations as network integration.
 
-No mapped SMB drive was present in the current agent environment, and share
-enumeration was unavailable. Real SMB operations were therefore not executed here;
-no SMB connection/dialect or remote-server compatibility is certified. Do not create
+The owner reports successful original UNC MKV extraction at cc592045 with 1,006
+source/output packets and subtitle cues validated, successful local publication and
+complete cleanup (document 18). No mapped SMB drive was available to the agent;
+network fault/recovery tests were not executed here. No SMB connection/dialect,
+arbitrary remote-server compatibility or complete network acceptance is certified. Do not create
 shares/mappings or use private media/credentials merely to fabricate passing evidence.
 
 When the owner provides genuine trusted shares containing tiny synthetic fixtures,

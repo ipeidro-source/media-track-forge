@@ -273,7 +273,7 @@ def test_metadata_intent_source_immutable_and_default_conflicts(tmp_path: Path) 
 
 def test_metadata_loss_and_implicit_exclusions_require_acknowledgement(tmp_path: Path) -> None:
     video = stream(0, "video", "h264") | {
-        "tags": {"language": "und", "comment": "significant"},
+        "tags": {"language": "und", "unvalidated_tag": "significant"},
         "disposition": {"default": 0, "forced": 0, "original": 1},
     }
     source = asset(tmp_path, [video, stream(3, "data", "bin_data"), stream(7, "unknown", None)])
@@ -451,6 +451,7 @@ def test_public_contract_deterministic_and_command_policy(tmp_path: Path) -> Non
     plan = OperationPlanningService().plan((source,), selections, output)
     document = plan_document(plan)
     assert set(document) == {
+        "output_format_tags",
         "plan_version",
         "revision",
         "acknowledged_revision",
@@ -491,7 +492,7 @@ def test_public_contract_deterministic_and_command_policy(tmp_path: Path) -> Non
             "output_disposition": {"default": 0, "forced": 0},
         }
     ]
-    assert document["plan_version"] == 1 and document["confirmation_required"] is True
+    assert document["plan_version"] == 2 and document["confirmation_required"] is True
     assert json.loads(serialize_plan(plan)) == document
     assert serialize_plan(plan) == serialize_plan(
         OperationPlanningService().plan((source,), selections, output)
@@ -511,7 +512,7 @@ def test_public_contract_deterministic_and_command_policy(tmp_path: Path) -> Non
     invalid = OperationPlanningService().plan((source,), (), output)
     with pytest.raises(ValueError):
         build_arguments(invalid)
-    assert blocked.plan_version == 1
+    assert blocked.plan_version == 2
 
 
 def test_complete_documented_example_is_stable_contract(tmp_path: Path) -> None:
