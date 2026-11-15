@@ -1,74 +1,27 @@
-# 08 — Incremental Codex Implementation Plan
+# 08 — Incremental Implementation Plan
 
-## Collaboration
+## Governance
 
-- **ChatGPT:** product scope, architecture, specifications, decision tracking, and requirement reviews.
-- **Codex:** scoped implementation, local validation, tests, documentation updates, and draft/reviewable PRs.
-- **Project owner:** approves product decisions, reviews and merges PRs, authorizes tags and releases.
+Owner approves requirements, merges and Releases; ChatGPT reviews product/architecture; Codex implements only separately authorized scopes with repeatable tests. Each code feature uses a branch and PR, never commits directly to main. Concurrent agents use separate git worktrees.
 
-Start with one Codex working tree. For concurrent agents, use **separate branches and separate `git worktree` directories**; never share a mutable working tree.
+## Current queue (November 15, 2026)
 
-## Initial PR backlog
-
-| Suggested PR | Deliverable | Acceptance |
+| Order | Work | Acceptance/evidence |
 | --- | --- | --- |
-| PR-01 | Installable package scaffold, pytest/Ruff/mypy, Windows/Linux CI, dependency maintenance and deferred release gates | Reproducible development environment and passing initial tests |
-| PR-02 | ffprobe adapter, stream domain model, `inspect` CLI with stable JSON | Correctly report track types, codecs, language and format without GUI |
-| PR-03 | Compatibility policy and declarative operation plans | Exact stream mappings; reject unsupported codecs/containers |
-| PR-04 | Safe MKV/MP4 remux, temporary outputs, validation | AC-01 to AC-07 and AC-12 as applicable |
-| PR-05 | Track selection, metadata, extraction and safe cancellation | AC-08 to AC-10; related requirements and tests |
-| PR-06 | Windows UI for inspection, track controls and preview/confirmation | End-to-end operation without CLI; clear errors |
-| PR-07 | Final Windows CI, portable package, docs and smoke tests | MVP candidate ready for an explicitly authorized Release |
+| Documentation PR (expected #7) | Consolidate status, license, roadmap, open NAS design and UX test protocol | Documentation-only diff, references and owner review |
+| UX session (no code PR) | UX-01–UX-10 individually and real SMB mapped/UNC **input** verification | Reproducible P0–P3 observations in document 18 |
+| GUI refinement PR (expected #8) | Resolve approved usability issues while preserving backend safety | GUI, real-media, cancellation and manual Windows tests |
+| NAS output design and subsequent implementation (number TBD) | Separately approve safe SMB output architecture before any code | No overwrites/partial committed output, genuine SMB/failure recovery evidence |
+| Packaging PR (historically PR-07, expected #9 or later) | PyInstaller standalone `onefile` `.exe` plus versioned portable `onedir` ZIP, MIT and third-party notices, mandatory external FFmpeg checks, winget guidance, optional updates and Windows 10/11 acceptance | Owner-approved release candidate, no automatic publication |
+| G5 acceptance | All FR/AC/user acceptance and release gates | Explicit separate Release decision |
+| Future phases | Selective transcoding, conditional GPU, batch and library automation | New approved requirements/ADRs |
 
-The PR sequence is a planning aid, not an excuse to merge untested functionality. Map each PR to the detailed FR/AC list.
+Actual GitHub PR numbers cannot be reserved and may differ as further work is interleaved. **Do not start Codex yet.**
 
-## Recommended first Codex prompt
+## Historical completion
 
-> Work only on PR-01 of the MediaTrack Forge roadmap. Read AGENTS.md, README.md and docs/01–10. Identify contradictions and record non-blocking assumptions in docs/10. Create a feature branch and implement only an installable Python skeleton, tooling, initial unit tests and Windows CI. Use English for every project artifact, comment, commit and PR. Do not implement the full GUI, transcode video/audio, merge your PR, or publish a Release. Run the relevant checks, describe actual results and open a small PR for review.
+PR-01 foundation, PR-02 inspection, PR-03 planning, PR-04 safe remux, PR-05 SRT/extraction/cancellation and PR-06 GUI/D24 have all merged into main at `9298fd46` ([passing CI 43630367616](https://github.com/ipeidro-source/media-track-forge/actions/runs/43630367616)). Their original contracts, test counts, scope and decisions remain traceable through merged PRs. Historical Codex prompts and pending declarations are not current instructions.
 
-## Deliverables for every iteration
+## Expected future PR reports
 
-Goal; linked requirements/acceptance criteria; changed files; validation steps and results; risks; open decisions; and a recommendation for the next review gate.
-
-Prefer small PRs. Do not edit `main` from a second session while Codex is implementing in another branch without reconciling the latest remote changes.
-
-PR-01 is merged; its main CI passed at d0ca69b8078694adf307acf8209696077d7ba07f
-([baseline run](https://github.com/ipeidro-source/media-track-forge/actions/runs/43596665120)).
-PR-02 implements the external ffprobe adapter, immutable inspection domain, service,
-JSON CLI and synthetic-media integration coverage for inspection-only FR-01/FR-02.
-Its review and hosted CI evidence belong in the PR description. G1 must only be
-accepted after all required inspection checks and owner review; later G2-G5 work
-remains deferred. No media-editing acceptance criterion is claimed by these tests.
-
-## PR-03 iteration state
-
-PR-02 is merged at 392ce94 with successful main CI. PR-03 implements D4-D8 planning
-on its own feature branch. Test evidence and actual hosted results are recorded
-in the PR. G2 requires owner review/acceptance. PR-04 execution and all subsequent
-features remain separately authorized work, not part of this iteration.
-
-## PR-04 iteration state
-
-PR-03 is merged with revision-bound warning acknowledgements. D9-D13 authorize
-PR-04 remux execution/validation/exclusive publication only. Its final PR description
-must contain real Windows/Ubuntu service-level E2E and log evidence. PR-05 extraction,
-user cancellation and later GUI/release work remain deferred. G3 is not completed
-by the remux-only iteration.
-
-## PR-05 approved iteration
-
-PR-01..04 are merged; latest verified main is 3bea7ee with passing CI. D14-D18
-approve external SRT, conservative extraction, cancellation and progress on the
-dedicated PR-05 branch. Document 16 defines the backend contract. Preserve existing
-tests and all five required CI jobs and inspect their complete final logs.
-PR-06 GUI and PR-07 packaging remain unimplemented. G3 requires owner acceptance;
-do not merge, tag or release as part of implementation.
-
-## PR-06 approved iteration
-
-Continue the existing feat/windows-desktop-gui branch from merged PR-05 3b9a560.
-D19-D23 authorize the documented desktop interface and GUI-independent controller,
-bounded worker, exact plan review/confirmation, cancellation and safe shutdown.
-Preserve all backend tests and contracts 13-16. Complete native smoke and all five
-CI jobs with actual full-log evidence. PR-07 packaging and final desktop executable
-acceptance remain deferred. Do not merge, tag, publish a Release or claim G4 complete.
+Record linked requirements/ADR, scope, changed files, unit/integration/native Windows tests with actual evidence, CI checks, security compatibility, risks and explicit separation of implemented, verified, owner-accepted and released. No tags, merges or Releases without express owner authorization.

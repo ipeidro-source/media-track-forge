@@ -1,8 +1,8 @@
-# 04 — Proposed Architecture
+# 04 — Architecture (Implemented Baseline and Historical Proposals)
 
 ## Principles
 
-Python 3.11+ was selected in PR-01; CustomTkinter is approved for PR-06. Design a Windows-first desktop GUI over a UI-independent core. Treat FFmpeg and ffprobe as external executables whose presence and capabilities are checked. The MVP works offline with local files.
+Python 3.11+ and a GUI-independent core were selected in PR-01; the CustomTkinter/ttk desktop was implemented by PR-06. FFmpeg and ffprobe remain required external executables. Mapped/UNC trusted inputs are supported under D24 (real SMB testing pending); output remains local-only. Startup winget guidance/updates and safe network publication are planned, not implemented. See [current status](00-CURRENT-STATUS.md).
 
 ```text
 Windows Desktop UI (CustomTkinter)
@@ -18,7 +18,7 @@ FFprobe adapter              FFmpeg command planner
                                   Output validator / safe publisher
 ```
 
-## Proposed modules
+## Original proposed modules (historical; implemented packages are below)
 
 - `domain/`: immutable media entities, stream identities, operation plans, compatibility warnings.
 - `probe/`: ffprobe JSON parsing, input normalization, errors, and timeouts.

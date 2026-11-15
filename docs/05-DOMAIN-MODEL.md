@@ -22,9 +22,9 @@ scalar metadata stays None; unknown language codes and Unicode remain unchanged.
 Inspection does not require video: future main-video output invariants below apply
 to planning, not probing. Source size/mtime is rechecked after successful probing.
 
-## Proposed future operation model
+## Original operation model proposal (historical)
 
-The following broader model is a planning baseline. The PR-03 section below identifies actual planning fields; execution/publication entities remain proposals.
+The following original proposal is retained for traceability, **not** as the current domain API. PR-03–PR-05 implemented planning/execution/validation domain and application values documented below and in contracts 14–16.
 
 | Entity / value object | Responsibility | Representative fields |
 | --- | --- | --- |
@@ -82,7 +82,7 @@ Phase 1 adds `TranscodePlan` and codec/quality settings. Phase 2 adds `BatchJob`
 
 PlannedStream carries the expected-output responsibilities; a second duplicate
 ExpectedOutputStream model is unnecessary. Frozen tuples/frozensets keep snapshots
-immutable. ExecutionJob and ValidationReport remain future implementation. Complete
+immutable. The original mutable ExecutionJob proposal was not adopted; the implemented execution/validation equivalents are explained below. Complete
 fields, semantics and versioning are defined in [plan contract v1](14-OPERATION-PLAN-CONTRACT.md).
 
 ## Implemented PR-04 execution values
@@ -95,8 +95,7 @@ summary, observed inspection snapshot and structured ValidationChecks; checks
 distinguish passed/warning/error and record optional timing evidence in seconds.
 These values provide the ExecutionJob/ValidationReport responsibilities without
 introducing a mutable job scheduler. Completed requires validation, publication
-and normal cleanup. Failed and timed_out are explicit; future cancellation is not
-implemented. Existing inspection and operation-plan field semantics are unchanged.
+and normal cleanup. Failed and timed_out were implemented by PR-04; PR-05 subsequently implemented cancellation. Existing inspection and operation-plan field semantics are unchanged.
 
 ## Implemented PR-05 values
 

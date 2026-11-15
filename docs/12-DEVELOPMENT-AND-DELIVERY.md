@@ -1,5 +1,7 @@
 # Development and delivery foundation
 
+**Current delivery context (November 15, 2026):** PR-01–PR-06 merged. Detailed PR-01–PR-06 notes below are historical evidence, not current status; see [document 00](00-CURRENT-STATUS.md). MIT for application code is approved. External FFmpeg/ffprobe remain mandatory; future startup compatibility checks/winget guidance and optional updates are planned. The portable PyInstaller `onedir` ZIP (without installer) awaits UX maturity, third-party notices, and consumer Windows 10/11 testing. No Release is authorized.
+
 ## Implemented in PR-01
 
 An installable Python 3.11+ package, four layer boundaries, offline unit tests,
@@ -90,8 +92,7 @@ unchanged from PR-01.
 derives distribution metadata from it; the CLI and future release validator read
 the same value. Initial scaffold version is `0.1.0`, without creating a release.
 Use three numeric components and exact `v<version>` release tags. Test equality
-against installed metadata. License metadata is intentionally absent while
-ADR-008 remains pending; this does not grant a license or authorize distribution.
+against installed metadata. Historical PR-01 state: license metadata was absent while ADR-008 was pending. The owner accepted MIT on November 15, 2026. Third-party notices and distribution acceptance remain pending.
 
 ## CI policy and verified dependencies
 

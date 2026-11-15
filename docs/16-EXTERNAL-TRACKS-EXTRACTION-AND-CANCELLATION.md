@@ -1,5 +1,7 @@
 # External SRT, extraction, cancellation and progress - PR-05
 
+> **Evolution note:** This PR-05 technical contract remains unchanged. Historical mentions of PR-06 as future are superseded by its merge; see [document 00](00-CURRENT-STATUS.md). Future safe NAS output requires a separate accepted architecture and genuine SMB tests.
+
 D14-D18 are owner approved. PR-04 is merged at `3bea7ee` with successful main CI
 [43614579922](https://github.com/ipeidro-source/media-track-forge/actions/runs/43614579922).
 This branch adds backend APIs only. G3 requires independent owner review; GUI and

@@ -16,15 +16,22 @@
 | R10 | Overly broad MVP | Enforce approval gates and small PRs |
 | R11 | Mature free competitors limit general converter differentiation | Focus on predictable track operations and later library automation |
 
-## Open questions
+## Current open risks and decisions (November 15, 2026)
+
+- NAS/SMB output is an owner-approved **new requirement**, not implemented; choose validated secure staging, exclusive no-overwrite publication and recovery under disconnect/ACL/race conditions. Real share tests required.
+- D24 mapped/UNC read support is implemented, but genuine SMB transport acceptance is still pending.
+- Windows 10/11 manual UI, accessibility, OS DPI and portable executable acceptance are pending.
+- MIT is approved for own code; third-party notices, FFmpeg external dependency checks, winget/update UX and distribution compliance remain outstanding.
+
+## Historical open questions (preserved for traceability)
 
 - Confirm product name, repository slug, trademark availability and final external branding.
-- Choose and record the final license for application code; assess FFmpeg redistributions, third-party notices and codec considerations.
+- **Resolved direction:** MIT for application code; third-party notices and codec/license checks remain necessary.
 - Confirm exact MVP support for external audio and any subtitle formats beyond SRT; test rather than promise broad compatibility.
 - Specify behavior for multiple video streams, MKV attachments and chapters, forced/default subtitle flags, and metadata loss when changing containers.
 - Determine codec-specific file extensions and bitstream-filter requirements for track extraction.
 - Confirm final English UI wording and accessibility expectations.
-- Decide portable ZIP versus installer; whether FFmpeg remains an external dependency.
+- **Resolved direction:** standalone `onefile` `.exe` plus portable `onedir` ZIP without installer; external FFmpeg/ffprobe mandatory. Startup and winget guidance are planned.
 - Define end-user positioning: general local tool versus library optimization specialist.
 - Agree CI/CD versioning and tag/release policy.
 - Re-estimate effort after PR-02 and PR-03.

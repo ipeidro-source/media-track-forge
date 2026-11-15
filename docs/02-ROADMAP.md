@@ -1,63 +1,42 @@
 # 02 — Roadmap, Estimates, and Approval Gates
 
-Estimates are **rough development-effort ranges**, not calendar commitments. Reassess them after the first Codex PRs.
+This document owns **planning, sequencing and approval gates**. Current implementation and test evidence are recorded in [document 00](00-CURRENT-STATUS.md); detailed Codex backlog belongs to [document 08](08-CODEX-IMPLEMENTATION-PLAN.md). Historical PR narratives and rough effort estimates are preserved in merged PRs/commits and are not live delivery promises.
 
-| Phase | Scope | Preliminary effort | Exit condition |
-| --- | --- | ---: | --- |
-| MVP (v0.x) | Inspect local media, select/remove tracks, add SRT, support video-only output, remux/extract, validate AVI/MP4/MKV input and MKV/MP4 output | 25–40 h for core functionality, plus cross-cutting quality work | E2E cases and acceptance criteria in document 03 |
-| Phase 1 — Transcoding | Selective H.264/H.265 video and AAC audio encoding; quality/bitrate presets, robust progress/cancellation | +30–50 h | Repeatable conversions and explicit codec decisions without breaking stream-copy workflows |
-| Phase 2 — Automation | Batch queues, subtitle-file matching, conditional GPU support, sampling, size estimates, and simple rules | +40–70 h | Recoverable batch workflow and per-file output validation |
-| Cross-cutting quality and delivery | CI/CD, FFmpeg integration testing, Windows packaging, user documentation, licenses, Releases | +20–35 h | Tested portable artifact and release process |
-| Optional future | Headless CLI/Docker/NAS use, Plex/Jellyfin-oriented workflows, commercial packaging | Not estimated | Separate ADR and authorization |
+## Present MVP and upcoming work
 
-**Original overall planning estimate:** 115–195 effort-hours for a reasonably complete desktop product. These categories overlap; do not double-count tests/CI included in each PR.
+| Milestone | Scope | Status |
+| --- | --- | --- |
+| Backend MVP | Inspection, track planning, SRT import, safe remux/extraction, progress/cancellation | Implemented PR-01–PR-05; owner acceptance separate |
+| Windows desktop GUI | CustomTkinter/ttk, review/confirmation and progress | Implemented PR-06; human UX and Win10/11 checks pending |
+| Documentation consolidation | Live status, traceability, cleanup, roadmap, UX protocol and MIT | Approved documentary PR |
+| Usability validation | UX-01–UX-10 and real SMB **read** test | Approved protocol, not yet executed |
+| UX/UI refinement | Simplify workflows without weakening backend invariants | Planned from findings; code not authorized |
+| Network destination support | Write to trusted UNC/mapped NAS while preserving safe publication | Owner-approved **requirement**, design and implementation pending |
+| Windows packaging | Two downloadable artifacts: PyInstaller `onefile` `.exe` and `onedir` portable ZIP; no installer, FFmpeg external and mandatory | Planned after UI maturity, no executable or release yet |
+| MVP acceptance/release | Owner-reviewed AC, consumer Windows and real-share evidence where applicable | Pending; explicit Release authorization required |
+| Phase 1 | Selective H.264/H.265 video and AAC audio transcoding, quality presets | Deferred |
+| Phase 2 | Batch automation, subtitle matching, GPU if justified, resource/size planning | Deferred |
+| Optional future | Additional codec/subtitle combinations, NAS libraries, Plex/Jellyfin, headless Docker/CLI and commercial options | Ideas, separate approvals |
 
-## Approval gates
+Original early estimates (MVP 25–40 h, selective transcoding +30–50 h, batch/automation +40–70 h, quality/delivery +20–35 h; overall 115–195 overlapping hours) remain **historical**; re-estimate after usability and NAS-output design.
 
-- **G0:** documentation and GitHub repository established.
-- **G1:** tested core scaffold and ffprobe inspection.
-- **G2:** compatibility rules and declarative operation planning.
-- **G3:** remux/extraction engine and E2E validation.
-- **G4:** Windows GUI and portable packaging.
-- **G5:** reviewed MVP; release only when explicitly authorized.
-- **G6:** separate decision to implement transcoding, GPU, or batch processing.
+## Original approval gates (identifiers preserved)
 
-Documenting later phases **does not authorize Codex to implement them during the MVP**.
+- **G0:** Repository and documentation established — complete.
+- **G1:** Core scaffold and inspection — implemented.
+- **G2:** Compatibility and declarative plans — implemented.
+- **G3:** Safe remux/extraction and E2E validation — implementation present; owner acceptance separate.
+- **G4:** Windows GUI and portable packaging — GUI code implemented, UX/packaging and Windows 10/11 acceptance incomplete.
+- **G5:** Full reviewed MVP; Release only by express owner approval — pending.
+- **G6:** Separate approval to start transcoding, GPU and batch — not given.
 
-## Working principles
+## Order and non-negotiable boundaries
 
-Use narrow PRs; review acceptance criteria at each gate; update the roadmap with actual results and newly discovered constraints. Never represent a planned feature as already implemented.
+1. Documentation PR reviewed independently; no automatic merge.
+2. Execute UX scenarios individually and record P0–P3 human findings in [18](18-UX-VALIDATION.md).
+3. Define GUI refinements from evidence, independently approve Codex specification, preserve immutable inputs, warning/confirmation revision binding, safe staging, validation and cancellation.
+4. Evaluate NAS output safety separately (provisional ADR-040): local validated staging and safe remote publication versus controlled private remote staging; demand evidence for atomic visibility, no overwrite, cleanup, ACL, disconnect and durability. **Do not simply allow UNC destinations under D24.**
+5. After GUI maturity prepare both standalone Windows `.exe` and portable `onedir` ZIP, startup FFmpeg/ffprobe compatibility checks, winget guidance and optional updates; no silent installs. Validate license notices, checksums and Windows 10/11.
+6. Owner decides whether all G4/G5 evidence suffices; tagging/publication requires separate explicit authorization.
 
-## Current milestone evidence
-
-PR-01 and PR-02 are merged. The PR-02 main baseline is
-`392ce9456f63ca2cdc836b168766b43d10035d37`, with successful
-[main CI](https://github.com/ipeidro-source/media-track-forge/actions/runs/43604124796).
-PR-03 targets G2 with compatibility policy and declarative plans only. G2 remains
-pending review and acceptance by the owner; no execution, publication or GUI gate
-is completed by planning tests.
-
-## PR-04 iteration evidence boundary
-
-PR-03 is merged at a91493fe67203716300b015ada481140f546de8a, with passing
-[post-merge CI](https://github.com/ipeidro-source/media-track-forge/actions/runs/43608930710).
-PR-04 implements confirmed remux execution, staged validation and exclusive
-publication. Its actual hosted evidence belongs in the PR. G3 remains incomplete:
-extraction and full user cancellation are PR-05 responsibilities; GUI/release
-gates are not advanced by this iteration.
-
-## PR-05 iteration
-
-PR-04 is merged at 3bea7ee; main CI 43614579922 passed. D14-D18 approve the
-remaining backend external SRT, exact-matrix extraction, cancellation and progress
-work on this branch. Evidence and review belong in PR-05; G3 remains pending owner
-acceptance. PR-06 implements GUI interaction; PR-07 addresses packaging/Windows
-desktop smoke checks and release gates. Neither is implemented here.
-
-## PR-06 desktop iteration
-
-PR-05 is merged at 3b9a560 with successful main CI 43618260739. Approved D19-D23
-authorize the native desktop workflow on this branch. Unit/controller, real-media
-orchestration and explicit Windows Tk smoke evidence belong in PR-06. G4 remains
-incomplete until PR-07 packaging and native Windows 10/11 acceptance; no release
-gate is advanced automatically. The complete desktop contract is document 17.
+The historical label “PR-07 packaging” is superseded by the owner-approved sequence: a documentation PR first, then UI refinement and packaging after UX. GitHub allocates actual PR numbers; NAS implementation can change numbering. Requirements live in [03](03-MVP-REQUIREMENTS.md), approved decisions in [06](06-ARCHITECTURE-DECISIONS.md), open risks in [10](10-RISKS-AND-OPEN-QUESTIONS.md).

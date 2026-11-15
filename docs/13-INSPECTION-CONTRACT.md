@@ -1,5 +1,7 @@
 # Inspection JSON contract - schema version 1
 
+> **Evolution note:** This PR-02 contract is unchanged. Historical descriptions of later functionality being deferred refer to its original scope, not present status. PR-01–PR-06 are merged; see [document 00](00-CURRENT-STATUS.md). D24 allows trusted UNC/mapped **input** but not network output.
+
 PR-02 implements inspection only for FR-01 and FR-02. It does not establish output
 container compatibility, track editing or any remux/extraction acceptance criterion.
 

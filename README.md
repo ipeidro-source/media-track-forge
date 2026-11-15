@@ -1,6 +1,6 @@
 # MediaTrack Forge
 
-**Status:** PR-01 through PR-05 are merged. PR-06 on this branch adds the Windows desktop workflow using the existing safe backend. PR-07 packaging and release approval remain deferred; no release is published.
+**Status (November 15, 2026):** PR-01–PR-06 are merged into `main` (`9298fd46`). GUI and trusted UNC/mapped file inputs are implemented but not fully owner-accepted. See [current status](docs/00-CURRENT-STATUS.md); no Release has been published.
 
 A free, open-source, Windows-first desktop application for **inspecting, adding, removing, extracting, and rearranging video, audio, and subtitle tracks**, and changing media containers without video or audio re-encoding whenever possible. Selective transcoding, batch processing, and intelligent library optimization are planned for later phases.
 
@@ -65,7 +65,7 @@ The MVP reads local media and trusted Windows file-share media (D24); output pub
 
 **Language policy:** all project artifacts must be written in **English**, including documentation, ADRs, source-code comments/docstrings, commit messages, PR descriptions, Issues, tests, UI copy, and instructions to Codex. ChatGPT may explain the project conversationally in Spanish if the user asks, but changes committed to the repository must remain in English.
 
-The repository name `media-track-forge` and the final license are subject to confirmation before public release.
+The project uses the name `media-track-forge`. Application-owned code is under [MIT](LICENSE); third-party redistribution notices remain a packaging/release gate.
 
 ## PR-05 backend APIs
 
@@ -102,3 +102,7 @@ review/reinspection. HTTP/FTP/other media URLs remain blocked; FFmpeg/ffprobe us
 only the file protocol. Outputs must remain on supported local volumes: network
 publication is not enabled. See document 17 for access, timeout, identity and real
 SMB validation limitations. No real SMB execution is claimed from simulated tests.
+
+## Upcoming work
+
+Interactive [UX validation](docs/18-UX-VALIDATION.md) precedes GUI refinement and two-artifact Windows portable packaging (`onefile` `.exe` and `onedir` ZIP). D24 allows trusted network **inputs**, pending real SMB acceptance; network **outputs** remain blocked by design until independently verified and authorized. The [roadmap](docs/02-ROADMAP.md) records this future requirement.

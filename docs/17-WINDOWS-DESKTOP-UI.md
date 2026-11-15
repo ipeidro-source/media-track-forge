@@ -1,9 +1,6 @@
 # Windows desktop interface - PR-06
 
-PR-05 is merged at `3b9a560` with successful main CI 43618260739. Owner-approved
-D19–D23 authorize this desktop interface. PR-07 packaging, desktop executable
-validation and explicitly authorized release publication remain deferred. No G4
-or complete MVP acceptance is inferred from GUI smoke tests.
+**Current state (November 15, 2026):** PR-06 is merged on main at `9298fd46`; CI 43630367616 passed. D19–D24 are implemented with real SMB input verification and owner Windows 10/11 usability acceptance pending. The GUI contract below remains normative; packaging and safe remote outputs are future separately gated work. No G4/full MVP acceptance or Release is inferred from smoke tests.
 
 ## Setup and launch
 

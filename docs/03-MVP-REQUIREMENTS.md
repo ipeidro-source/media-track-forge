@@ -1,5 +1,7 @@
 # 03 — MVP Functional Requirements and Acceptance Criteria
 
+**Status note:** Requirements are normative, not evidence of implementation or human acceptance; see [document 00](00-CURRENT-STATUS.md). Network **input** support was added under D24, while network **output** is a separately approved future requirement and remains blocked in code.
+
 ## Input and inspection
 
 - **FR-01:** Open local AVI, MP4, MKV, MOV, and other ffprobe-readable media. Display a clear error for unreadable files. Acceptance of an input format does not guarantee every output conversion.
