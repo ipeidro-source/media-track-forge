@@ -1,6 +1,6 @@
 # 01 — Product Vision and Scope
 
-**Status:** initial accepted planning baseline; unresolved assumptions remain explicitly tracked.
+**Status:** approved product vision; current implementation/acceptance is tracked in [document 00](00-CURRENT-STATUS.md).
 
 ## Problem
 
